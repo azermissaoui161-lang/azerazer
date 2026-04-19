@@ -38,6 +38,8 @@ import FinanceAccountsPage      from './pages/finance/pages/AccountsPage';
 import FinanceReportsPage       from './pages/finance/pages/ReportsPage';
 import FinanceSettingsPage      from './pages/finance/pages/SettingsPage';
 import FinanceDepensesPage from './pages/finance/pages/DepensesPage';
+import FinanceDashboard from './pages/finance/DashboardFinancier';
+
 /* =========================
    REDIRECT TO HOME
 ========================= */

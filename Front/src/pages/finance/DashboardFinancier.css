@@ -1,37 +1,77 @@
-/* DashboardFinancier.css */ 
-/* src/pages/finance/DashboardFinancier.css */
-.dashboard-financier {
+/* --- Global Container --- */
+.dashboard-container {
+  padding: 30px;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+/* --- Layout Grid (Vertical Stack) --- */
+.dashboard-grid {
+  display: flex;
+  flex-direction: column; /* HEDHI HIA ELI T'RATTABHOM TAHT BADHOM */
+  gap: 25px;
+  max-width: 1000px; /* Centrale */
+  margin: 0 auto;
+}
+
+/* --- Card Design --- */
+.card {
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+}
+
+/* --- Title Styling --- */
+.card h3 {
+  margin-top: 0;
+  margin-bottom: 25px;
+  color: #2b3674;
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-left: 5px solid #1cc88a; /* Finance Green */
+  padding-left: 15px;
+  display: flex;
+  align-items: center;
+}
+
+/* --- Chart Wrapper --- */
+.chart-container {
+  width: 100%;
+  height: 350px; /* Hauteur fixe bch el graphs mayjiwch sghar */
+  position: relative;
+}
+
+/* --- Responsive (Mobile) --- */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 15px;
+  }
+  .card {
+    padding: 15px;
+  }
+  .chart-container {
+    height: 250px; /* Tsghar chwaya 3al portable */
+  }
+}
+.dashboard-grid {
+  display: flex;
+  flex-direction: column; /* Hathi tkhalli kol chay ta7et b3adhhom */
+  gap: 20px; /* Espace bin el cards */
   padding: 20px;
 }
 
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-  margin-bottom: 30px;
-}
-
-.stat-card {
+.card {
+  background: white;
   padding: 20px;
   border-radius: 8px;
-  color: white;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  width: 100%; /* Card tched l'3ard l'koll */
 }
 
-.stat-card.revenu { background: #28a745; }
-.stat-card.depense { background: #dc3545; }
-.stat-card.benefice { background: #007bff; }
-
-table {
+.chart-container {
+  height: 300px;
   width: 100%;
-  border-collapse: collapse;
-}
-
-th, td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-}
-
-th {
-  background-color: #f8f9fa;
 }
