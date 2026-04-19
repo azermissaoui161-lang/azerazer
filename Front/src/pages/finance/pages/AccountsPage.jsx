@@ -151,7 +151,7 @@ function AccountsPage({ showNotif }) {
 
   const openModal = (mode, item = null) => {
     if (item && mode === 'edit') {
-      setFormData({ ...item, balance: (item.capital ?? item.balance ?? 0).toString(), inMoneyFlow: Boolean(item.inMoneyFlow) })
+      setFormData({ ...item, balance: (item.capital ?? item.balance ?? 0).toString(),  })
     } else {
       setFormData({ ...EMPTY_ACCOUNT })
     }
@@ -205,23 +205,7 @@ function AccountsPage({ showNotif }) {
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
         <button className="btn-primary" onClick={() => openModal('add')}>+ Nouveau compte</button>
       </div>
-      <div className="filters-container">
-        <div className="search-box">
-          <span className="search-icon">🔍</span>
-          <input type="text" placeholder="Rechercher..." value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })} className="search-input" />
-          {filters.search && <button className="clear-search" onClick={() => setFilters({ ...filters, search: '' })}>×</button>}
-        </div>
-        <div className="filter-group">
-          <select className="filter-select" value={filters.type} onChange={e => setFilters({ ...filters, type: e.target.value })}>
-            <option value="tous">Tous types</option><option value="Banque">Banque</option><option value="Épargne">Épargne</option><option value="Créance">Créance</option><option value="Dette">Dette</option>
-          </select>
-          <select className="filter-select" value={filters.status} onChange={e => setFilters({ ...filters, status: e.target.value })}>
-            <option value="tous">Tous statuts</option><option value="actif">Actif</option><option value="inactif">Inactif</option>
-          </select>
-          <button className="btn-reset-filters" onClick={resetFilters}>↻ Réinitialiser</button>
-        </div>
-      </div>
+     
 
       <div className="accounts-grid">
         {paginatedData.map(a => (
@@ -243,7 +227,6 @@ function AccountsPage({ showNotif }) {
             <div className="account-card-footer">
               <button className="btn-small" onClick={() => navigate(`/finance/transactions?account=${encodeURIComponent(a.id)}`)}>Voir transactions</button>
               <button className="btn-icon" onClick={() => openModal('edit', a)}>✏️</button>
-              <button className="btn-icon" onClick={() => openModal('delete', a)}>🗑️</button>
             </div>
           </div>
         ))}
@@ -272,24 +255,7 @@ function AccountsPage({ showNotif }) {
         </div>
       )}
 
-      {modal.isOpen && modal.mode === 'delete' && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content modal-small" onClick={e => e.stopPropagation()}>
-            <div className="modal-header"><h3>⚠️ Confirmation</h3><button className="modal-close" onClick={closeModal}>×</button></div>
-            <div className="modal-body">
-              <p>Êtes-vous sûr de vouloir supprimer cet élément ?</p>
-              {modal.item?.balance !== 0 && (
-                <p className="text-warning">⚠️ Attention : Ce compte a un solde de {formatCurrency(modal.item?.balance)}.</p>
-              )}
-              <p className="text-danger">Cette action est irréversible.</p>
-            </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={closeModal}>Annuler</button>
-              <button className="btn-danger" onClick={handleDelete}>Supprimer</button>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   )
 }

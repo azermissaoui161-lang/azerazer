@@ -21,7 +21,6 @@ const COLORS = {
   mutedBg: '#edf2f7',
   defaultBg: '#e2e8f0',
 }
-
 const STATUS_CONFIG = {
   payé: { color: COLORS.success, bg: COLORS.successBg },
   'en attente': { color: COLORS.warning, bg: COLORS.warningBg },
