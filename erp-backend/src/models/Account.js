@@ -44,6 +44,7 @@ const accountSchema = new mongoose.Schema({
     default: 0,
     set: v => Math.round(v * 100) / 100 // Arrondi à 2 décimales
   },
+  initialBalance: { type: Number, default: 0 },
   inMoneyFlow: {
     type: Boolean,
     default: false,
@@ -165,10 +166,14 @@ accountSchema.virtual('children', {
 });
 
 // ✅ Méthodes d'instance
+// Daxel models/Account.js
 accountSchema.methods.credit = async function(amount, session) {
- 
-    this.balance -= amount;
- 
+  // Lezem el balance i-koun akbar men amount
+  if (this.balance < amount) {
+    throw new Error("Solde insuffisant: Vous avez atteint votre capital disponible.");
+  }
+  
+  this.balance -= amount;
   return this.save({ session });
 };
 

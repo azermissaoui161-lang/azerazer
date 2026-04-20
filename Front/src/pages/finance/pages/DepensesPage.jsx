@@ -4,6 +4,7 @@ import './depenses.css'
 // 1. Import el service el jdid
 import { depensesService } from '../../../services/depensesService' 
 import { accountService } from '../../../services/accountService'
+import {transactionService} from '../../../services/transactionService'
 import {
   extractApiErrorMessage,
   mapAccountToUi,
@@ -299,6 +300,7 @@ function DepensesPage({ showNotif }) {
   const [modal, setModal] = useState({ isOpen: false, mode: 'add', item: null })
   const [formData, setFormData] = useState({ ...EMPTY_DEPENSE })
   const [loading, setLoading] = useState(true)
+  const [accounts, setAccounts] = useState([])
 
   const formatCurrency = (amount) =>
     (amount || 0).toLocaleString('fr-FR', FORMAT_OPTIONS.currency)
@@ -306,19 +308,24 @@ function DepensesPage({ showNotif }) {
     d ? new Date(d).toLocaleDateString('fr-FR', FORMAT_OPTIONS.date) : ''
 
   // 3. Modification loadData pour utiliser depensesService.getAll()
-  const loadData = async () => {
+ const loadData = async () => {
     try {
-      setLoading(true)
-      const response = await depensesService.getAll()
-      // MongoDB yestaamel _id, donc lezemna nmapiw el id lel front
-      const formatted = (response.data || []).map(d => ({
+      setLoading(true) // Tawa t-khedem 3adi
+      const [depRes, accRes] = await Promise.all([
+        depensesService.getAll(),
+        accountService.getAll({ limit: 200 })
+      ])
+      
+      const formatted = (depRes.data || []).map(d => ({
         ...d,
         id: d._id, 
-        amount: -Math.abs(d.amount) // Garder le signe négatif pour l'affichage
+        amount: -Math.abs(d.amount)
       }))
+      
       setDepenses(formatted)
+      setAccounts(pickList(accRes, ['data']).map(mapAccountToUi)) // Tawa 'accounts' mawjouda
     } catch (error) {
-      notify('Impossible de charger les données du serveur', 'error')
+      notify('Impossible de charger les données', 'error')
     } finally {
       setLoading(false)
     }
@@ -427,22 +434,41 @@ function DepensesPage({ showNotif }) {
   }
 
   // 4. Utilisation de depensesService.create()
+ // 4. Utilisation de depensesService.create() + Update automatique du compte
   const handleAdd = async () => {
     try {
-      const dataToSave = {
-        ...formData,
-        amount: Math.abs(parseFloat(formData.amount)) // Le backend gère le stockage
-      }
+      const amount = Math.abs(parseFloat(formData.amount) || 0);
+      const selectedAccount = accounts.find(a => String(a.id) === String(formData.account));
       
-      await depensesService.create(dataToSave)
-      await loadData()
-      closeModal()
-      notify('Dépense ajoutée avec succès')
+      if (!selectedAccount) throw new Error("Veuillez choisir un compte");
+
+      // LOGIQUE: 
+      // Si el solde (balance) est négatif, n-rodouh positif b-ch n-karnouh b-el montant.
+      // Esempio: Solde = -150, Math.abs(-150) = 150 (Dispo)
+      const soldeDispo = Math.abs(selectedAccount.solde || 0);
+
+      // LE CHECK: 
+      // Ken el solde dispo (l'argent qu'il reste) < Montant
+      if (soldeDispo < amount) {
+        notify(`Opération bloquée: Solde insuffisant ! (Reste: ${soldeDispo.toFixed(2)}€, Besoin: ${amount.toFixed(2)}€)`, 'error');
+        return;
+      }
+
+      // 2. Si le check passe, on envoie la requête
+      const dataToSave = { ...formData, amount: amount };
+      await depensesService.create(dataToSave);
+
+      // 3. Après création, le backend va lancer la méthode .credit() 
+      // qui va faire : this.balance -= amount
+      
+      await loadData();
+      closeModal();
+      notify('Dépense enregistrée et solde mis à jour');
+      
     } catch (error) {
-      notify(error.response?.data?.message || "Erreur lors de l'ajout", 'error')
+      notify(error.message || "Erreur de traitement", 'error');
     }
   }
-
   // 5. Utilisation de depensesService.update()
   const handleUpdate = async () => {
     try {
@@ -610,8 +636,13 @@ function DepensesPage({ showNotif }) {
                   <span className="category-badge">{d.category}</span>
                 </td>
                 <td className="text-danger">
-                  <strong>-{formatCurrency(Math.abs(d.amount))}</strong>
-                </td>
+<input 
+  type="number" 
+  name="amount" 
+  value={formData.amount || ''} 
+  onChange={(e) => setFormData({ ...formData, amount: e.target.value })} 
+  placeholder="Montant"
+/>                </td>
                 <td>
                   <StatusBadge status={d.status} />
                 </td>

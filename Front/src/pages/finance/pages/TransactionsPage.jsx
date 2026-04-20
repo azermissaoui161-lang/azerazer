@@ -83,11 +83,14 @@ const TransactionForm = ({ formData, setFormData, accounts }) => {
     <div className="form-group"><label>Description *</label><input type="text" value={fd.description} onChange={e => set('description', e.target.value)} required /></div>
     <div className="form-row">
       <div className="form-group"><label>Montant *</label><input type="number" value={fd.amount} onChange={e => set('amount', e.target.value)} step="0.01" required /></div>
-      <div className="form-group"><label>Type *</label><select value={fd.type} onChange={e => set('type', e.target.value)}><option value="revenu">Revenu</option><option value="dépense">Dépense</option></select></div>
-    </div>
+      <div className="form-group"><label>Type *</label> <div value="revenu" value={fd.type} onChange={e => set('type', e.target.value)}>Revenu</div>
+    </div></div>
     <div className="form-row">
       <div className="form-group"><label>Catégorie *</label><select value={fd.category} onChange={e => set('category', e.target.value)}>
-        <option value="Vente">Vente</option><option value="Achat">Achat</option><option value="Salaires">Salaires</option><option value="Loyer">Loyer</option>
+        <option value="Vente">Vente produit</option><option value="Loyer">Loyer</option> <option value="autre">Autre revenu</option>
+      <option value="vente_marchandise">Vente marchandise</option>      <option value="dividende">Dividendes reçus</option>
+
+      
       </select></div>
       <div className="form-group"><label>Compte *</label><select value={fd.account || ''} onChange={e => set('account', e.target.value)}>
         <option value="" disabled>-- Sélectionnez un compte --</option>

@@ -225,8 +225,24 @@ function AccountsPage({ showNotif }) {
               {a.iban && <div className="account-iban"><span>IBAN</span><small>{a.iban}</small></div>}
             </div>
             <div className="account-card-footer">
-              <button className="btn-small" onClick={() => navigate(`/finance/transactions?account=${encodeURIComponent(a.id)}`)}>Voir transactions</button>
-              <button className="btn-icon" onClick={() => openModal('edit', a)}>✏️</button>
+<button 
+  className="btn-small" 
+  onClick={() => {
+    // Check el category mta3 el compte
+    if (a.name === 'Compte Revenu') {
+      // Houni redirect lel transactions mta3 ventes
+      navigate(`/finance/transactions`);
+    } else if (a.name === 'Compte Dépenses') {
+      // Houni redirect lel page mta3 depenses (achat)
+      navigate(`/finance/depenses?account=${encodeURIComponent(a.id)}`);
+    } else {
+      // Cas par défaut (banque, etc.)
+      navigate(`/finance/transactions?account=${encodeURIComponent(a.id)}`);
+    }
+  }}
+>
+  Voir transactions
+</button>              <button className="btn-icon" onClick={() => openModal('edit', a)}>✏️</button>
             </div>
           </div>
         ))}
