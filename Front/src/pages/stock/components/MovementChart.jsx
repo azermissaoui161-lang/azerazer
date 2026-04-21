@@ -7,58 +7,129 @@ const MovementLineChart = ({ dataEntree, dataSortie }) => {
 
   useEffect(() => {
     const ctx = chartRef.current.getContext('2d');
-    
+
     if (chartInstance.current) {
       chartInstance.current.destroy();
     }
 
+    const makeGradient = (color) => {
+      const g = ctx.createLinearGradient(0, 0, 0, 220);
+      g.addColorStop(0, color + '2e');
+      g.addColorStop(1, color + '03');
+      return g;
+    };
+
     chartInstance.current = new Chart(ctx, {
-      type: 'line', // Type Line Chart
+      type: 'line',
       data: {
         labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
         datasets: [
           {
-            label: 'Évolution Entrées',
+            label: 'Entrées',
             data: dataEntree || [30, 45, 35, 60, 50, 70],
-            borderColor: '#48bb78', // Akhdar
-            backgroundColor: 'rgba(72, 187, 120, 0.1)',
-            fill: true, // Bach ya3bi taht el khatt bchwaya loun
-            tension: 0.3 // Bach el khatt iji fih chwaya courbe (smooth)
+            borderColor: '#34d399',
+            backgroundColor: makeGradient('#34d399'),
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
+            pointBackgroundColor: '#34d399',
+            pointBorderColor: '#0f172a',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
           },
           {
-            label: 'Évolution Sorties',
+            label: 'Sorties',
             data: dataSortie || [20, 35, 40, 30, 45, 55],
-            borderColor: '#f56565', // Ahmar
-            backgroundColor: 'rgba(245, 101, 101, 0.1)',
+            borderColor: '#f87171',
+            backgroundColor: makeGradient('#f87171'),
             fill: true,
-            tension: 0.3
+            tension: 0.4,
+            borderWidth: 2,
+            pointBackgroundColor: '#f87171',
+            pointBorderColor: '#0f172a',
+            pointBorderWidth: 2,
+            pointRadius: 4,
+            pointHoverRadius: 6,
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { position: 'top' },
-          title: { display: true, text: 'Tendance des Mouvements de Stock' }
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#1e293b',
+            titleColor: '#94a3b8',
+            bodyColor: '#f1f5f9',
+            borderColor: '#334155',
+            borderWidth: 1,
+            padding: 10,
+            mode: 'index',
+            intersect: false,
+          }
         },
         scales: {
+          x: {
+            grid: { color: 'rgba(148,163,184,0.07)', drawBorder: false },
+            ticks: { color: '#64748b', font: { size: 11 } },
+            border: { display: false },
+          },
           y: {
             beginAtZero: true,
-            title: { display: true, text: 'Quantité' }
+            grid: { color: 'rgba(148,163,184,0.07)', drawBorder: false },
+            ticks: { color: '#64748b', font: { size: 11 }, padding: 6 },
+            border: { display: false },
           }
-        }
+        },
+        animation: { duration: 700, easing: 'easeOutQuart' }
       }
     });
 
-    return () => {
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
-      }
-    };
+    return () => { chartInstance.current?.destroy(); };
   }, [dataEntree, dataSortie]);
 
-  return <canvas ref={chartRef}></canvas>;
+  const entrees = dataEntree || [30, 45, 35, 60, 50, 70];
+  const sorties = dataSortie || [20, 35, 40, 30, 45, 55];
+
+  return (
+    <div style={{
+      background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
+      borderRadius: '16px',
+      padding: '24px',
+      border: '1px solid rgba(148,163,184,0.12)',
+      fontFamily: "'Inter', 'Segoe UI', sans-serif",
+    }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+        <div>
+          <h3 style={{ margin: 0, color: '#f1f5f9', fontSize: '15px', fontWeight: 600 }}>
+            Tendance des mouvements
+          </h3>
+          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '12px' }}>
+            Janvier – Juin
+          </p>
+        </div>
+
+        {/* Légende custom */}
+        <div style={{ display: 'flex', gap: '14px' }}>
+          {[['#34d399', 'Entrées'], ['#f87171', 'Sorties']].map(([color, label]) => (
+            <span key={label} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#94a3b8' }}>
+              <span style={{ display: 'inline-block', width: '20px', height: '2px', background: color, borderRadius: '2px' }} />
+              {label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Chart */}
+      <div style={{ position: 'relative', height: '220px' }}>
+        <canvas ref={chartRef} role="img" aria-label="Graphique ligne évolution entrées et sorties de stock" />
+      </div>
+    </div>
+  );
 };
 
 export default MovementLineChart;

@@ -11,7 +11,7 @@ import {
 } from '../../../utils/frontendApiAdapters'
 import { transactionService } from '../../../services/transactionService'
 import { depensesService } from '../../../services/depensesService'
-
+import'./ReportsPage.css'
 const FORMAT_OPTIONS = {
   currency: { style: 'currency', currency: 'EUR' },
   date: { day: '2-digit', month: '2-digit', year: 'numeric' },

@@ -6,6 +6,10 @@ import {
   mapAccountToUi,
   pickList,
 } from '../../../utils/frontendApiAdapters'
+import'./AccountsPage.css'
+
+
+
 
 const COLORS = {
   success: '#48bb78', warning: '#ed8936', danger: '#f56565', muted: '#718096',

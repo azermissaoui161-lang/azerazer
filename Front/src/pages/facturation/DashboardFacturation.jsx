@@ -1,48 +1,39 @@
 ﻿import React from 'react';
-import KpiCommandeParMois from './components/KpiCommandeParMois';
+import KpiCommandeParMois    from './components/KpiCommandeParMois';
 import KpiTotalCommandeParClient from './components/KpiTotalCommandeParClient';
-import KpiFactureStatus from './components/KpiFactureStatus';
+import KpiFactureStatus      from './components/KpiFactureStatus';
 import './DashboardFacturation.css';
 
-const DashboardFacturation = () => {
-  return (
-    <div className="dashboard-container">
-      <header className="dashboard-header">
-        <h1>Tableau de Bord Facturation</h1>
+const DashboardFacturation = () => (
+  <div className="df">
+
+    <header className="df-header">
+      <div>
+        <h1>Tableau de bord facturation</h1>
         <p>Suivi des performances et de la trésorerie</p>
-      </header>
-
-      <div className="dashboard-grid">
-        
-        {/* KPI 1: Evolution Mensuelle (Full Width) */}
-        <div className="card full-width">
-          <h3> Évolution Mensuelle des Commandes</h3>
-          <div className="chart-container">
-            <KpiCommandeParMois />
-          </div>
-        </div>
-
-        {/* KPI 2: Payé vs Impayé */}
-        <div className="card">
-          <h3> Payé vs Impayé (Mensuel)</h3>
-          <div className="chart-container">
-            <KpiFactureStatus />
-          </div>
-        </div>
-
-        {/* KPI 3: Analyse par Client */}
-        <div className="card">
-          <h3> Analyse des Commandes par Client</h3>
-          
-            <KpiTotalCommandeParClient />
-            
-          
-        </div>
-
       </div>
+      <span className="df-badge">Trésorerie</span>
+    </header>
+
+    <div className="df-grid">
+
+      {/* Évolution mensuelle — pleine largeur */}
+      <div className="card">
+        <KpiCommandeParMois />
+      </div>
+
+      {/* Factures + Clients — 2 colonnes */}
+      <div className="row-2">
+        <div className="card">
+          <KpiFactureStatus />
+        </div>
+        <div className="card">
+          <KpiTotalCommandeParClient />
+        </div>
+      </div>
+
     </div>
-    
-  );
-};
+  </div>
+);
 
 export default DashboardFacturation;

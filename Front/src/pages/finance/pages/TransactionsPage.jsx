@@ -8,7 +8,7 @@ import {
   mapAccountToUi,
   pickList,
 } from '../../../utils/frontendApiAdapters'
-
+import'./TransactionsPage.css'
 const COLORS = {
   success: '#48bb78', warning: '#ed8936', danger: '#f56565', muted: '#718096',
   successBg: '#c6f6d5', warningBg: '#feebc8', dangerBg: '#fed7d7',
@@ -88,8 +88,7 @@ const TransactionForm = ({ formData, setFormData, accounts }) => {
     <div className="form-row">
       <div className="form-group"><label>Catégorie *</label><select value={fd.category} onChange={e => set('category', e.target.value)}>
         <option value="Vente">Vente produit</option><option value="Loyer">Loyer</option> <option value="autre">Autre revenu</option>
-      <option value="vente_marchandise">Vente marchandise</option>      <option value="dividende">Dividendes reçus</option>
-
+      <option value="vente_marchandise">Vente marchandise</option>
       
       </select></div>
       <div className="form-group"><label>Compte *</label><select value={fd.account || ''} onChange={e => set('account', e.target.value)}>

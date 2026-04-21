@@ -5,6 +5,7 @@ import AccountSettings from "../../../components/forms/AccountSettings"
 import userService from "../../../services/userService"
 import { getUserRole, getUserEmail } from "../../../utils/auth"
 import { extractApiErrorMessage } from "../../../utils/frontendApiAdapters"
+import "./SettingsPage.css"
 
 function SettingsPage() {
   const navigate = useNavigate()
@@ -82,7 +83,7 @@ function SettingsPage() {
     const trimmedLastName = userSettings.lastName.trim()
     const trimmedEmail = userSettings.email.trim()
 
-    if (!trimmedFirstName) nextErrors.firstName = "Le pr\u00E9nom est requis"
+    if (!trimmedFirstName) nextErrors.firstName = "Le prénom est requis"
     if (!trimmedLastName) nextErrors.lastName = "Le nom est requis"
     if (!trimmedEmail) nextErrors.email = "L'email est requis"
 
@@ -98,7 +99,7 @@ function SettingsPage() {
       if (!userSettings.newPassword) {
         nextErrors.newPassword = "Veuillez entrer un nouveau mot de passe"
       } else if (userSettings.newPassword.length < 6) {
-        nextErrors.newPassword = "Le nouveau mot de passe doit contenir au moins 6 caract\u00E8res"
+        nextErrors.newPassword = "Le nouveau mot de passe doit contenir au moins 6 caractères"
       }
       if (!userSettings.confirmPassword) {
         nextErrors.confirmPassword = "Veuillez confirmer le nouveau mot de passe"
@@ -110,12 +111,12 @@ function SettingsPage() {
     setSettingsErrors(nextErrors)
 
     if (Object.keys(nextErrors).length > 0) {
-      setSettingsMessage({ type: "error", text: "Veuillez corriger les champs indiqu\u00E9s." })
+      setSettingsMessage({ type: "error", text: "Veuillez corriger les champs indiqués." })
       return
     }
 
     setUpdating(true)
-    setSettingsMessage({ type: "info", text: "Mise \u00E0 jour en cours..." })
+    setSettingsMessage({ type: "info", text: "Mise à jour en cours..." })
     setSettingsErrors({})
 
     try {
@@ -132,11 +133,11 @@ function SettingsPage() {
       }
 
       setSettingsErrors({})
-      setSettingsMessage({ type: "success", text: "Profil mis \u00E0 jour avec succ\u00E8s !" })
+      setSettingsMessage({ type: "success", text: "Profil mis à jour avec succès !" })
     } catch (error) {
       setSettingsMessage({
         type: "error",
-        text: extractApiErrorMessage(error, "Impossible de mettre \u00E0 jour le profil")
+        text: extractApiErrorMessage(error, "Impossible de mettre à jour le profil")
       })
     } finally {
       setUpdating(false)
@@ -148,31 +149,23 @@ function SettingsPage() {
   }
 
   return (
-    <div style={{
-      background: "white",
-      borderRadius: "16px",
-      padding: "32px",
-      boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
-    }}>
-      <h1 style={{
-        fontSize: "1.8rem",
-        color: "#1a202c",
-        margin: "0 0 32px 0",
-        textAlign: "center"
-      }}>
-        {"Param\u00E8tres du profil"}
+    <div className="settings-page-container">
+      <h1 className="settings-page-title">
+        Paramètres du profil
       </h1>
-      <AccountSettings
-        userSettings={userSettings}
-        handleSettingsChange={handleSettingsChange}
-        handleSaveSettings={handleSaveSettings}
-        settingsMessage={settingsMessage}
-        fieldErrors={settingsErrors}
-        updating={updating}
-        onClose={handleBackToAccueil}
-        standalone={true}
-        onCancel={handleBackToAccueil}
-      />
+      <div className="settings-page-content">
+        <AccountSettings
+          userSettings={userSettings}
+          handleSettingsChange={handleSettingsChange}
+          handleSaveSettings={handleSaveSettings}
+          settingsMessage={settingsMessage}
+          fieldErrors={settingsErrors}
+          updating={updating}
+          onClose={handleBackToAccueil}
+          standalone={true}
+          onCancel={handleBackToAccueil}
+        />
+      </div>
     </div>
   )
 }

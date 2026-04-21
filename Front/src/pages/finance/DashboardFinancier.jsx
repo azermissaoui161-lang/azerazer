@@ -5,24 +5,35 @@ import './DashboardFinancier.css';
 
 const DashboardFinancier = () => {
   return (
-    <div className="dashboard-grid">
-      
-      {/* Chart 1: Évolution */}
-      <div className="card">
-        <h3>📈 Évolution du Recette Mensuelle</h3>
-        <div className="chart-container">
-          <KpiEvolutionRecettes />
-        </div>
+    <div className="dashboard-container">
+      <div className="dashboard-header">
+        <h1>Tableau de bord financier</h1>
+        <p>Période : Janvier – Août 2024</p>
       </div>
 
-      {/* Chart 2: Comparaison */}
-      <div className="card">
-        <h3>⚖️ Recettes vs Dépenses</h3>
-        <div className="chart-container">
-          <KpiRecetteDepense />
-        </div>
-      </div>
+      <div className="dashboard-grid">
 
+        <div className="card">
+          <div className="card-title">
+            <span className="card-title-accent" />
+            Évolution de la recette mensuelle
+          </div>
+          <div className="chart-container">
+            <KpiEvolutionRecettes />
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-title">
+            <span className="card-title-accent" />
+            Recettes vs dépenses
+          </div>
+          <div className="chart-container">
+            <KpiRecetteDepense />
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };

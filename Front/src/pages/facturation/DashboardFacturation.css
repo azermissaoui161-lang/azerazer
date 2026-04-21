@@ -1,128 +1,67 @@
-/* --- Container Principal --- */
-.dashboard-container {
-  padding: 30px;
-  background-color: #f4f7fe; /* Loun khfif lel backround */
+* { box-sizing: border-box; }
+
+.df {
+  padding: 24px;
+  background: #060d1a;
   min-height: 100vh;
   font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
-/* --- Header Section --- */
-.dashboard-header {
-  margin-bottom: 35px;
-  text-align: left;
-}
-
-.dashboard-header h1 {
-  color: #2b3674;
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.dashboard-header p {
-  color: #a3aed0;
-  font-size: 1.1rem;
-}
-
-/* --- Layout: Cards tahet badhom --- */
-.dashboard-grid {
+/* Header */
+.df-header {
   display: flex;
-  flex-direction: column; /* Ykallihom ijiw verticalement */
-  gap: 30px;
-  max-width: 1100px;
-  margin: 0 auto; /* Zentrage */
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 24px;
 }
-
-/* --- Card Design --- */
-.card {
-  background: #ffffff;
-  padding: 25px;
+.df-header h1 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+.df-header p {
+  font-size: 11px;
+  color: #475569;
+  margin-top: 3px;
+}
+.df-badge {
+  background: rgba(96, 165, 250, 0.1);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  color: #60a5fa;
+  font-size: 10px;
+  padding: 4px 12px;
   border-radius: 20px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.02); /* Shadow ndhifa */
-  border: 1px solid #e3e8ee;
-  width: 100%;
-  box-sizing: border-box; /* Bech padding maykabberch el card */
 }
 
-.card h3 {
-  margin-top: 0;
-  margin-bottom: 25px;
-  color: #2b3674;
-  font-size: 1.25rem;
-  font-weight: 700;
-  border-left: 5px solid #4318ff; /* Khatt bleu mezyen 3al jnab */
-  padding-left: 15px;
+/* Grid */
+.df-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
-/* --- Chart Containers --- */
-/* Hedha makhsous lel charts (Line/Bar) bech dima 3andhom hauteur fixe */
-.chart-container {
-  width: 100%;
-  height: 220px;
-  position: relative;
-  margin-bottom: 10px;
+/* Two-column row */
+.row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
 }
 
-/* --- Tableau Styling (KPI 2) --- */
-.table-wrapper {
-  width: 100%;
-  overflow-x: auto; /* Responsive ken el tableau kbir */
-  margin-top: 20px;
-  border-top: 1px solid #f4f7fe;
-  padding-top: 15px;
+/* Card */
+.card {
+  background: linear-gradient(145deg, #0f172a, #1e293b);
+  border-radius: 14px;
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-.modern-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-}
-
-.modern-table th {
-  padding: 15px;
-  background-color: #f8fafc;
-  color: #707eae;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 1px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.modern-table td {
-  padding: 15px;
-  border-bottom: 1px solid #f4f7fe;
-  color: #2b3674;
-  font-weight: 500;
-  font-size: 0.95rem;
-}
-
-.modern-table tr:hover {
-  background-color: #f9fbff;
-}
-
-/* --- Classes Lel Alwan (Helper Classes) --- */
-.text-success {
-  color: #05cd99 !important;
-  font-weight: 700;
-}
-
-.text-danger {
-  color: #ee5d50 !important;
-  font-weight: 700;
-}
-
-/* --- Responsive Layout (Portable) --- */
+/* Responsive */
 @media (max-width: 768px) {
-  .dashboard-container {
-    padding: 15px;
-  }
-  
-  .card {
-    padding: 15px;
-  }
-  
-  .dashboard-header h1 {
-    font-size: 1.5rem;
-  }
+  .df         { padding: 16px; }
+  .row-2      { grid-template-columns: 1fr; }
+  .df-header h1 { font-size: 1rem; }
 }
