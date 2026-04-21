@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './depenses.css'
-// 1. Import el service el jdid
-import { depensesService } from '../../../services/depensesService' 
+import { depensesService } from '../../../services/depensesService'
 import { accountService } from '../../../services/accountService'
-import {transactionService} from '../../../services/transactionService'
 import {
   extractApiErrorMessage,
   mapAccountToUi,
@@ -22,6 +20,7 @@ const COLORS = {
   mutedBg: '#edf2f7',
   defaultBg: '#e2e8f0',
 }
+
 const STATUS_CONFIG = {
   payé: { color: COLORS.success, bg: COLORS.successBg },
   'en attente': { color: COLORS.warning, bg: COLORS.warningBg },
@@ -59,25 +58,14 @@ const EMPTY_DEPENSE = {
 }
 
 const DEPENSE_CATEGORIES = [
-  'Achat',
-  'Loyer',
-  'Salaires',
-  'Charges sociales',
-  'Assurances',
-  'Fournitures',
-  'Transport',
-  'Marketing',
-  'Services extérieurs',
-  'Impôts',
-  'Autre',
+  'Achat', 'Loyer', 'Salaires', 'Charges sociales', 'Assurances',
+  'Fournitures', 'Transport', 'Marketing', 'Services extérieurs', 'Impôts', 'Autre',
 ]
 
 const NoResults = ({ onReset }) => (
   <div className="no-results">
     <p>Aucune dépense trouvée</p>
-    <button className="btn-reset" onClick={onReset}>
-      Réinitialiser
-    </button>
+    <button className="btn-reset" onClick={onReset}>Réinitialiser</button>
   </div>
 )
 
@@ -85,143 +73,81 @@ const Pagination = ({ total, pagination, setPagination }) => {
   const totalPages = Math.ceil(total / pagination.itemsPerPage)
   const start = total > 0 ? (pagination.currentPage - 1) * pagination.itemsPerPage + 1 : 0
   const end = Math.min(pagination.currentPage * pagination.itemsPerPage, total)
-
   return (
     <div className="pagination">
       <span className="pagination-info">
         {total > 0 ? `${start}-${end} sur ${total}` : '0 élément'}
       </span>
       <div className="pagination-controls">
-        <button
-          className="pagination-btn"
-          onClick={() =>
-            setPagination((p) => ({
-              ...p,
-              currentPage: Math.max(1, p.currentPage - 1),
-            }))
-          }
-          disabled={pagination.currentPage === 1}
-        >
-          ←
-        </button>
+        <button className="pagination-btn"
+          onClick={() => setPagination(p => ({ ...p, currentPage: Math.max(1, p.currentPage - 1) }))}
+          disabled={pagination.currentPage === 1}>←</button>
         {[...Array(totalPages)].map((_, i) => {
           const page = i + 1
-          const show =
-            page === 1 ||
-            page === totalPages ||
+          const show = page === 1 || page === totalPages ||
             (page >= pagination.currentPage - 2 && page <= pagination.currentPage + 2)
-          if (show)
-            return (
-              <button
-                key={page}
-                className={`pagination-btn ${pagination.currentPage === page ? 'active' : ''}`}
-                onClick={() => setPagination((p) => ({ ...p, currentPage: page }))}
-              >
-                {page}
-              </button>
-            )
+          if (show) return (
+            <button key={page}
+              className={`pagination-btn ${pagination.currentPage === page ? 'active' : ''}`}
+              onClick={() => setPagination(p => ({ ...p, currentPage: page }))}>
+              {page}
+            </button>
+          )
           if (page === pagination.currentPage - 3 || page === pagination.currentPage + 3)
             return <span key={page} className="pagination-dots">...</span>
           return null
         })}
-        <button
-          className="pagination-btn"
-          onClick={() =>
-            setPagination((p) => ({
-              ...p,
-              currentPage: Math.min(totalPages, p.currentPage + 1),
-            }))
-          }
-          disabled={pagination.currentPage === totalPages || total === 0}
-        >
-          →
-        </button>
+        <button className="pagination-btn"
+          onClick={() => setPagination(p => ({ ...p, currentPage: Math.min(totalPages, p.currentPage + 1) }))}
+          disabled={pagination.currentPage === totalPages || total === 0}>→</button>
       </div>
-      <select
-        className="pagination-limit"
-        value={pagination.itemsPerPage}
-        onChange={(e) =>
-          setPagination({ currentPage: 1, itemsPerPage: Number(e.target.value) })
-        }
-      >
-        {[10, 25, 50, 100].map((v) => (
-          <option key={v} value={v}>
-            {v} par page
-          </option>
-        ))}
+      <select className="pagination-limit" value={pagination.itemsPerPage}
+        onChange={e => setPagination({ currentPage: 1, itemsPerPage: Number(e.target.value) })}>
+        {[10, 25, 50, 100].map(v => <option key={v} value={v}>{v} par page</option>)}
       </select>
     </div>
   )
 }
 
-const DepenseForm = ({ formData, setFormData }) => {
+// ✅ Fix Bug 1 : accounts passé en prop depuis le parent, plus de loadData/notify/setLoading internes
+const DepenseForm = ({ formData, setFormData, accounts }) => {
   const fd = formData
   const set = (field, value) => setFormData({ ...fd, [field]: value })
-    const [accounts, setAccounts] = useState([])
-  const [filters, setFilters] = useState({ search: '', type: 'tous', status: 'tous' })
-  const loadData = async () => {
-      try {
-        const res = await accountService.getAll({ limit: 200 })
-        setAccounts(pickList(res, ['data']).map(mapAccountToUi))
-      } catch (error) {
-        notify(extractApiErrorMessage(error, 'Impossible de charger les comptes'), 'error')
-      } finally {
-        setLoading(false)
-      }
-    }
-  
-    useEffect(() => { loadData() }, [])
 
   return (
     <>
       <div className="form-group">
         <label>Description *</label>
-        <input
-          type="text"
-          value={fd.description}
-          onChange={(e) => set('description', e.target.value)}
-          required
-          placeholder="Ex: Achat fournitures bureau"
-        />
+        <input type="text" value={fd.description}
+          onChange={e => set('description', e.target.value)}
+          required placeholder="Ex: Achat fournitures bureau" />
       </div>
 
       <div className="form-row">
         <div className="form-group">
           <label>Montant *</label>
-          <input
-            type="number"
-            value={fd.amount}
-            onChange={(e) => set('amount', e.target.value)}
-            step="0.01"
-            required
-            placeholder="0.00"
-          />
+          <input type="number" value={fd.amount}
+            onChange={e => set('amount', e.target.value)}
+            step="0.01" required placeholder="0.00" />
         </div>
         <div className="form-group">
           <label>Fournisseur</label>
-          <input
-            type="text"
-            value={fd.fournisseur}
-            onChange={(e) => set('fournisseur', e.target.value)}
-            placeholder="Nom du fournisseur"
-          />
+          <input type="text" value={fd.fournisseur}
+            onChange={e => set('fournisseur', e.target.value)}
+            placeholder="Nom du fournisseur" />
         </div>
       </div>
 
       <div className="form-row">
         <div className="form-group">
           <label>Catégorie *</label>
-          <select value={fd.category} onChange={(e) => set('category', e.target.value)}>
-            {DEPENSE_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
+          <select value={fd.category} onChange={e => set('category', e.target.value)}>
+            {DEPENSE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
           </select>
         </div>
         <div className="form-group">
           <label>Statut *</label>
-          <select value={fd.status} onChange={(e) => set('status', e.target.value)}>
+          <select value={fd.status} onChange={e => set('status', e.target.value)}>
             <option value="payé">Payé</option>
             <option value="en attente">En attente</option>
             <option value="en retard">En retard</option>
@@ -231,53 +157,37 @@ const DepenseForm = ({ formData, setFormData }) => {
 
       <div className="form-row">
         <div className="form-group">
-<div className="form-group">
-  <label>Compte de paiement *</label>
-  <select 
-    className="filter-select" 
-    value={fd.account || ''} 
-    onChange={e => set('account', e.target.value)}
-    required
-  >
-    <option value="" disabled>-- Sélectionnez un compte --</option>
-    {accounts.map(acc => (
-      <option key={acc.id} value={acc.id}>{acc.name}</option>
-    ))}
-  </select>
-</div>
+          <label>Compte de paiement *</label>
+          <select className="filter-select" value={fd.account || ''}
+            onChange={e => set('account', e.target.value)} required>
+            <option value="" disabled>-- Sélectionnez un compte --</option>
+            {accounts.map(acc => (
+              <option key={acc.id} value={acc.id}>{acc.name}</option>
+            ))}
+          </select>
           <br /><br />
           <label>Date de la dépense *</label>
-          <input
-            type="date"
+          <input type="date"
             value={fd.date ? fd.date.split('T')[0] : ''}
-            onChange={(e) => set('date', e.target.value)}
-            required
-          />
+            onChange={e => set('date', e.target.value)} required />
         </div>
         <div className="form-group">
           <label>Date d'échéance</label>
-          <input
-            type="date"
+          <input type="date"
             value={fd.dateEcheance ? fd.dateEcheance.split('T')[0] : ''}
-            onChange={(e) => set('dateEcheance', e.target.value)}
-          />
+            onChange={e => set('dateEcheance', e.target.value)} />
         </div>
       </div>
 
       <div className="form-group">
         <label>Notes / Référence</label>
-        <textarea
-          value={fd.notes}
-          onChange={(e) => set('notes', e.target.value)}
-          rows="3"
-          placeholder="Informations complémentaires, numéro de facture..."
-        />
+        <textarea value={fd.notes} onChange={e => set('notes', e.target.value)}
+          rows="3" placeholder="Informations complémentaires, numéro de facture..." />
       </div>
     </>
   )
 }
 
-// 2. Na7ina el storageService w badalnah b'khedma direct m3a el API mte3ek
 function DepensesPage({ showNotif }) {
   const navigate = useNavigate()
   const notify = (msg, type) => {
@@ -288,12 +198,8 @@ function DepensesPage({ showNotif }) {
 
   const [depenses, setDepenses] = useState([])
   const [filters, setFilters] = useState({
-    search: '',
-    status: 'tous',
-    category: 'tous',
-    dateRange: { start: '', end: '' },
-    montantMin: '',
-    montantMax: '',
+    search: '', status: 'tous', category: 'tous',
+    dateRange: { start: '', end: '' }, montantMin: '', montantMax: '',
   })
   const [pagination, setPagination] = useState({ currentPage: 1, itemsPerPage: 10 })
   const [sort, setSort] = useState({ key: 'date', direction: 'desc' })
@@ -302,28 +208,21 @@ function DepensesPage({ showNotif }) {
   const [loading, setLoading] = useState(true)
   const [accounts, setAccounts] = useState([])
 
-  const formatCurrency = (amount) =>
-    (amount || 0).toLocaleString('fr-FR', FORMAT_OPTIONS.currency)
-  const formatDate = (d) =>
-    d ? new Date(d).toLocaleDateString('fr-FR', FORMAT_OPTIONS.date) : ''
+  const formatCurrency = (amount) => (amount || 0).toLocaleString('fr-FR', FORMAT_OPTIONS.currency)
+  const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-FR', FORMAT_OPTIONS.date) : ''
 
-  // 3. Modification loadData pour utiliser depensesService.getAll()
- const loadData = async () => {
+  const loadData = async () => {
     try {
-      setLoading(true) // Tawa t-khedem 3adi
+      setLoading(true)
       const [depRes, accRes] = await Promise.all([
         depensesService.getAll(),
         accountService.getAll({ limit: 200 })
       ])
-      
       const formatted = (depRes.data || []).map(d => ({
-        ...d,
-        id: d._id, 
-        amount: -Math.abs(d.amount)
+        ...d, id: d._id, amount: -Math.abs(d.amount)
       }))
-      
       setDepenses(formatted)
-      setAccounts(pickList(accRes, ['data']).map(mapAccountToUi)) // Tawa 'accounts' mawjouda
+      setAccounts(pickList(accRes, ['data']).map(mapAccountToUi))
     } catch (error) {
       notify('Impossible de charger les données', 'error')
     } finally {
@@ -331,55 +230,37 @@ function DepensesPage({ showNotif }) {
     }
   }
 
-  useEffect(() => {
-    loadData()
-  }, [])
+  useEffect(() => { loadData() }, [])
 
   const resetFilters = () => {
     setFilters({
-      search: '',
-      status: 'tous',
-      category: 'tous',
-      dateRange: { start: '', end: '' },
-      montantMin: '',
-      montantMax: '',
+      search: '', status: 'tous', category: 'tous',
+      dateRange: { start: '', end: '' }, montantMin: '', montantMax: '',
     })
-    setPagination((p) => ({ ...p, currentPage: 1 }))
+    setPagination(p => ({ ...p, currentPage: 1 }))
   }
 
   const filteredData = useMemo(() => {
-    return depenses.filter((item) => {
+    return depenses.filter(item => {
       if (filters.search) {
         const s = filters.search.toLowerCase()
-        if (
-          ![
-            item.description,
-            item.id,
-            item.fournisseur,
-            item.category,
-          ].some((f) => f?.toLowerCase().includes(s))
-        )
-          return false
+        if (![item.description, item.id, item.fournisseur, item.category]
+          .some(f => f?.toLowerCase().includes(s))) return false
       }
       if (filters.status !== 'tous' && item.status !== filters.status) return false
       if (filters.category !== 'tous' && item.category !== filters.category) return false
-      if (filters.dateRange.start && item.date && item.date < filters.dateRange.start)
-        return false
-      if (filters.dateRange.end && item.date && item.date > filters.dateRange.end)
-        return false
-      if (filters.montantMin && (Math.abs(item.amount) || 0) < parseFloat(filters.montantMin))
-        return false
-      if (filters.montantMax && (Math.abs(item.amount) || 0) > parseFloat(filters.montantMax))
-        return false
+      if (filters.dateRange.start && item.date && item.date < filters.dateRange.start) return false
+      if (filters.dateRange.end && item.date && item.date > filters.dateRange.end) return false
+      if (filters.montantMin && (Math.abs(item.amount) || 0) < parseFloat(filters.montantMin)) return false
+      if (filters.montantMax && (Math.abs(item.amount) || 0) > parseFloat(filters.montantMax)) return false
       return true
     })
   }, [depenses, filters])
 
   const stats = useMemo(() => {
-    const total = filteredData.length
-    const paye = filteredData.filter((d) => d.status === 'payé').length
-    const attente = filteredData.filter((d) => d.status === 'en attente').length
-    const retard = filteredData.filter((d) => d.status === 'en retard').length
+    const paye = filteredData.filter(d => d.status === 'payé').length
+    const attente = filteredData.filter(d => d.status === 'en attente').length
+    const retard = filteredData.filter(d => d.status === 'en retard').length
     const montantTotal = filteredData.reduce((sum, d) => sum + Math.abs(d.amount || 0), 0)
     return { totalDepenses: montantTotal, totalPaye: paye, totalAttente: attente, totalRetard: retard }
   }, [filteredData])
@@ -389,25 +270,15 @@ function DepensesPage({ showNotif }) {
       let valA = a[sort.key]
       let valB = b[sort.key]
       if (['date', 'dateEcheance', 'createdAt'].includes(sort.key)) {
-        valA = new Date(valA || 0)
-        valB = new Date(valB || 0)
+        valA = new Date(valA || 0); valB = new Date(valB || 0)
       }
       if (['amount'].includes(sort.key)) {
-        valA = Math.abs(Number(valA)) || 0
-        valB = Math.abs(Number(valB)) || 0
+        valA = Math.abs(Number(valA)) || 0; valB = Math.abs(Number(valB)) || 0
       }
-      return valA < valB
-        ? sort.direction === 'asc'
-          ? -1
-          : 1
-        : valA > valB
-        ? sort.direction === 'asc'
-          ? 1
-          : -1
-        : 0
+      return valA < valB ? (sort.direction === 'asc' ? -1 : 1)
+        : valA > valB ? (sort.direction === 'asc' ? 1 : -1) : 0
     })
   }, [filteredData, sort])
-  
 
   const paginatedData = sortedData.slice(
     (pagination.currentPage - 1) * pagination.itemsPerPage,
@@ -433,52 +304,29 @@ function DepensesPage({ showNotif }) {
     setFormData({ ...EMPTY_DEPENSE })
   }
 
-  // 4. Utilisation de depensesService.create()
- // 4. Utilisation de depensesService.create() + Update automatique du compte
   const handleAdd = async () => {
     try {
-      const amount = Math.abs(parseFloat(formData.amount) || 0);
-      const selectedAccount = accounts.find(a => String(a.id) === String(formData.account));
-      
-      if (!selectedAccount) throw new Error("Veuillez choisir un compte");
-
-      // LOGIQUE: 
-      // Si el solde (balance) est négatif, n-rodouh positif b-ch n-karnouh b-el montant.
-      // Esempio: Solde = -150, Math.abs(-150) = 150 (Dispo)
-      const soldeDispo = Math.abs(selectedAccount.solde || 0);
-
-      // LE CHECK: 
-      // Ken el solde dispo (l'argent qu'il reste) < Montant
+      const amount = Math.abs(parseFloat(formData.amount) || 0)
+      const selectedAccount = accounts.find(a => String(a.id) === String(formData.account))
+      if (!selectedAccount) throw new Error("Veuillez choisir un compte")
+      const soldeDispo = Math.abs(selectedAccount.solde || 0)
       if (soldeDispo < amount) {
-        notify(`Opération bloquée: Solde insuffisant ! (Reste: ${soldeDispo.toFixed(2)}€, Besoin: ${amount.toFixed(2)}€)`, 'error');
-        return;
+        notify(`Opération bloquée: Solde insuffisant ! (Reste: ${soldeDispo.toFixed(2)}€, Besoin: ${amount.toFixed(2)}€)`, 'error')
+        return
       }
-
-      // 2. Si le check passe, on envoie la requête
-      const dataToSave = { ...formData, amount: amount };
-      await depensesService.create(dataToSave);
-
-      // 3. Après création, le backend va lancer la méthode .credit() 
-      // qui va faire : this.balance -= amount
-      
-      await loadData();
-      closeModal();
-      notify('Dépense enregistrée et solde mis à jour');
-      
+      await depensesService.create({ ...formData, amount })
+      await loadData()
+      closeModal()
+      notify('Dépense enregistrée et solde mis à jour')
     } catch (error) {
-      notify(error.message || "Erreur de traitement", 'error');
+      notify(error.message || "Erreur de traitement", 'error')
     }
   }
-  // 5. Utilisation de depensesService.update()
+
   const handleUpdate = async () => {
     try {
-      const targetId = modal.item?.id // C'est l'ID de MongoDB (_id)
-      const dataToUpdate = {
-        ...formData,
-        amount: Math.abs(parseFloat(formData.amount))
-      }
-
-      await depensesService.update(targetId, dataToUpdate)
+      const targetId = modal.item?.id
+      await depensesService.update(targetId, { ...formData, amount: Math.abs(parseFloat(formData.amount)) })
       await loadData()
       closeModal()
       notify('Dépense modifiée avec succès')
@@ -487,11 +335,9 @@ function DepensesPage({ showNotif }) {
     }
   }
 
-  // 6. Utilisation de depensesService.delete()
   const handleDelete = async () => {
     try {
-      const targetId = modal.item?.id
-      await depensesService.delete(targetId)
+      await depensesService.delete(modal.item?.id)
       await loadData()
       closeModal()
       notify('Dépense supprimée')
@@ -500,7 +346,6 @@ function DepensesPage({ showNotif }) {
     }
   }
 
-  // 7. Utilisation de depensesService.exportToCSV()
   const handleExport = async () => {
     try {
       await depensesService.exportToCSV()
@@ -510,13 +355,15 @@ function DepensesPage({ showNotif }) {
     }
   }
 
-  if (loading)
-    return (
-      <div className="finance-loading">
-        <div className="spinner"></div>
-        <p>Chargement des dépenses...</p>
-      </div>
-    )
+  const toggleSort = (key) => setSort(s => ({ key, direction: s.key === key && s.direction === 'asc' ? 'desc' : 'asc' }))
+  const sortIcon = (key) => sort.key === key ? (sort.direction === 'asc' ? ' ↑' : ' ↓') : ''
+
+  if (loading) return (
+    <div className="finance-loading">
+      <div className="spinner"></div>
+      <p>Chargement des dépenses...</p>
+    </div>
+  )
 
   return (
     <div className="depenses-content">
@@ -540,59 +387,35 @@ function DepensesPage({ showNotif }) {
       </div>
 
       <div className="depenses-actions">
-        <button className="btn-primary" onClick={() => openModal('add')}>
-          + Nouvelle dépense
-        </button>
-        <button className="btn-export" onClick={handleExport}>
-          📥 Exporter CSV
-        </button>
+        <button className="btn-primary" onClick={() => openModal('add')}>+ Nouvelle dépense</button>
+        <button className="btn-export" onClick={handleExport}>📥 Exporter CSV</button>
       </div>
 
       <div className="filters-container">
         <div className="search-box">
           <span className="search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Rechercher par description, fournisseur..."
+          <input type="text" placeholder="Rechercher par description, fournisseur..."
             value={filters.search}
-            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            className="search-input"
-          />
+            onChange={e => setFilters({ ...filters, search: e.target.value })}
+            className="search-input" />
           {filters.search && (
-            <button
-              className="clear-search"
-              onClick={() => setFilters({ ...filters, search: '' })}
-            >
-              ×
-            </button>
+            <button className="clear-search" onClick={() => setFilters({ ...filters, search: '' })}>×</button>
           )}
         </div>
         <div className="filter-group">
-          <select
-            className="filter-select"
-            value={filters.status}
-            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-          >
+          <select className="filter-select" value={filters.status}
+            onChange={e => setFilters({ ...filters, status: e.target.value })}>
             <option value="tous">Tous statuts</option>
             <option value="payé">Payé</option>
             <option value="en attente">En attente</option>
             <option value="en retard">En retard</option>
           </select>
-          <select
-            className="filter-select"
-            value={filters.category}
-            onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-          >
+          <select className="filter-select" value={filters.category}
+            onChange={e => setFilters({ ...filters, category: e.target.value })}>
             <option value="tous">Toutes catégories</option>
-            {DEPENSE_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
+            {DEPENSE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
           </select>
-          <button className="btn-reset-filters" onClick={resetFilters}>
-            ↻ Réinitialiser
-          </button>
+          <button className="btn-reset-filters" onClick={resetFilters}>↻ Réinitialiser</button>
         </div>
       </div>
 
@@ -600,27 +423,20 @@ function DepensesPage({ showNotif }) {
         <table className="depenses-full-table">
           <thead>
             <tr>
-              <th onClick={() => setSort({ key: 'id', direction: sort.direction === 'asc' ? 'desc' : 'asc' })}>
-                N° {sort.key === 'id' && (sort.direction === 'asc' ? '↑' : '↓')}
-              </th>
-              <th onClick={() => setSort({ key: 'date', direction: sort.direction === 'asc' ? 'desc' : 'asc' })}>
-                Date {sort.key === 'date' && (sort.direction === 'asc' ? '↑' : '↓')}
-              </th>
-              <th onClick={() => setSort({ key: 'dateEcheance', direction: sort.direction === 'asc' ? 'desc' : 'asc' })}>
-                Échéance {sort.key === 'dateEcheance' && (sort.direction === 'asc' ? '↑' : '↓')}
-              </th>
+              <th onClick={() => toggleSort('id')}>N°{sortIcon('id')}</th>
+              <th onClick={() => toggleSort('date')}>Date{sortIcon('date')}</th>
+              <th onClick={() => toggleSort('dateEcheance')}>Échéance{sortIcon('dateEcheance')}</th>
               <th>Description</th>
               <th>Fournisseur</th>
               <th>Catégorie</th>
-              <th onClick={() => setSort({ key: 'amount', direction: sort.direction === 'asc' ? 'desc' : 'asc' })}>
-                Montant {sort.key === 'amount' && (sort.direction === 'asc' ? '↑' : '↓')}
-              </th>
+              {/* ✅ Fix Bug 2 : affiche la valeur, pas un input */}
+              <th onClick={() => toggleSort('amount')}>Montant{sortIcon('amount')}</th>
               <th>Statut</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            {paginatedData.map((d) => (
+            {paginatedData.map(d => (
               <tr key={d.id} className={d.status === 'en retard' ? 'row-overdue' : ''}>
                 <td className="depense-number" title={d.id}>...{d.id.slice(-5)}</td>
                 <td>{formatDate(d.date)}</td>
@@ -632,31 +448,13 @@ function DepensesPage({ showNotif }) {
                   {d.notes && <small className="notes-indicator">📝</small>}
                 </td>
                 <td>{d.fournisseur || '-'}</td>
-                <td>
-                  <span className="category-badge">{d.category}</span>
-                </td>
-                <td className="text-danger">
-<input 
-  type="number" 
-  name="amount" 
-  value={formData.amount || ''} 
-  onChange={(e) => setFormData({ ...formData, amount: e.target.value })} 
-  placeholder="Montant"
-/>                </td>
-                <td>
-                  <StatusBadge status={d.status} />
-                </td>
+                <td><span className="category-badge">{d.category}</span></td>
+                <td className="text-danger">{formatCurrency(Math.abs(d.amount))}</td>
+                <td><StatusBadge status={d.status} /></td>
                 <td>
                   <div className="action-buttons">
-                    <button className="action-btn" onClick={() => openModal('edit', d)}>
-                      ✏️
-                    </button>
-                    <button
-                      className="action-btn delete"
-                      onClick={() => openModal('delete', d)}
-                    >
-                      🗑️
-                    </button>
+                    <button className="action-btn" onClick={() => openModal('edit', d)}>✏️</button>
+                    <button className="action-btn delete" onClick={() => openModal('delete', d)}>🗑️</button>
                   </div>
                 </td>
               </tr>
@@ -670,32 +468,19 @@ function DepensesPage({ showNotif }) {
 
       {modal.isOpen && modal.mode !== 'delete' && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content modal-depense" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content modal-depense" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>
-                {modal.mode === 'add'
-                  ? '➕ Nouvelle dépense'
-                  : '✏️ Modifier la dépense'}
-              </h3>
-              <button className="modal-close" onClick={closeModal}>
-                ×
-              </button>
+              <h3>{modal.mode === 'add' ? '➕ Nouvelle dépense' : '✏️ Modifier la dépense'}</h3>
+              <button className="modal-close" onClick={closeModal}>×</button>
             </div>
             <div className="modal-body">
-              <DepenseForm
-                formData={formData}
-                setFormData={setFormData}
-              />
+              {/* ✅ Fix Bug 3 : accounts passé en prop */}
+              <DepenseForm formData={formData} setFormData={setFormData} accounts={accounts} />
             </div>
             <div className="modal-footer">
-              <button className="btn-secondary" onClick={closeModal}>
-                Annuler
-              </button>
-              <button
-                className="btn-primary"
-                style={{ background: '#4299e1' }}
-                onClick={modal.mode === 'add' ? handleAdd : handleUpdate}
-              >
+              <button className="btn-secondary" onClick={closeModal}>Annuler</button>
+              <button className="btn-primary" style={{ background: '#4299e1' }}
+                onClick={modal.mode === 'add' ? handleAdd : handleUpdate}>
                 {modal.mode === 'add' ? 'Ajouter' : 'Modifier'}
               </button>
             </div>
@@ -705,24 +490,18 @@ function DepensesPage({ showNotif }) {
 
       {modal.isOpen && modal.mode === 'delete' && (
         <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content modal-small" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content modal-small" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
               <h3>⚠️ Confirmation</h3>
-              <button className="modal-close" onClick={closeModal}>
-                ×
-              </button>
+              <button className="modal-close" onClick={closeModal}>×</button>
             </div>
             <div className="modal-body">
               <p>Êtes-vous sûr de vouloir supprimer cette dépense ?</p>
               <p className="text-danger">Cette action est irréversible.</p>
             </div>
             <div className="modal-footer">
-              <button className="btn-secondary" onClick={closeModal}>
-                Annuler
-              </button>
-              <button className="btn-danger" onClick={handleDelete}>
-                Supprimer
-              </button>
+              <button className="btn-secondary" onClick={closeModal}>Annuler</button>
+              <button className="btn-danger" onClick={handleDelete}>Supprimer</button>
             </div>
           </div>
         </div>
@@ -731,4 +510,4 @@ function DepensesPage({ showNotif }) {
   )
 }
 
-export default DepensesPage;
+export default DepensesPage

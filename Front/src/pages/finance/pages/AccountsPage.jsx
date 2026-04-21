@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { accountService } from '../../../services/accountService'
 import {
@@ -6,10 +6,7 @@ import {
   mapAccountToUi,
   pickList,
 } from '../../../utils/frontendApiAdapters'
-import'./AccountsPage.css'
-
-
-
+import './AccountsPage.css'
 
 const COLORS = {
   success: '#48bb78', warning: '#ed8936', danger: '#f56565', muted: '#718096',
@@ -38,42 +35,6 @@ const StatusBadge = ({ status }) => {
   return <span className="status-badge" style={{ background: style.bg, color: style.color }}>{status}</span>
 }
 
-const NoResults = ({ onReset }) => (
-  <div className="no-results"><p>Aucun résultat</p><button className="btn-reset" onClick={onReset}>Réinitialiser</button></div>
-)
-
-const Pagination = ({ total, pagination, setPagination }) => {
-  const totalPages = Math.ceil(total / pagination.itemsPerPage)
-  const start = total > 0 ? (pagination.currentPage - 1) * pagination.itemsPerPage + 1 : 0
-  const end = Math.min(pagination.currentPage * pagination.itemsPerPage, total)
-  return (
-    <div className="pagination">
-      <span className="pagination-info">{total > 0 ? `${start}-${end} sur ${total}` : '0 élément'}</span>
-      <div className="pagination-controls">
-        <button className="pagination-btn" onClick={() => setPagination(p => ({ ...p, currentPage: Math.max(1, p.currentPage - 1) }))}
-          disabled={pagination.currentPage === 1}>←</button>
-        {[...Array(totalPages)].map((_, i) => {
-          const page = i + 1
-          const show = page === 1 || page === totalPages || (page >= pagination.currentPage - 2 && page <= pagination.currentPage + 2)
-          if (show) return (
-            <button key={page} className={`pagination-btn ${pagination.currentPage === page ? 'active' : ''}`}
-              onClick={() => setPagination(p => ({ ...p, currentPage: page }))}>{page}</button>
-          )
-          if (page === pagination.currentPage - 3 || page === pagination.currentPage + 3)
-            return <span key={page} className="pagination-dots">...</span>
-          return null
-        })}
-        <button className="pagination-btn" onClick={() => setPagination(p => ({ ...p, currentPage: Math.min(totalPages, p.currentPage + 1) }))}
-          disabled={pagination.currentPage === totalPages || total === 0}>→</button>
-      </div>
-      <select className="pagination-limit" value={pagination.itemsPerPage}
-        onChange={(e) => setPagination({ currentPage: 1, itemsPerPage: Number(e.target.value) })}>
-        {[10, 25, 50, 100].map(v => <option key={v} value={v}>{v} par page</option>)}
-      </select>
-    </div>
-  )
-}
-
 const AccountForm = ({ formData, setFormData }) => {
   const fd = formData
   const set = (field, value) => setFormData({ ...fd, [field]: value })
@@ -82,7 +43,8 @@ const AccountForm = ({ formData, setFormData }) => {
     <div className="form-row">
       <div className="form-group"><label>Type *</label><div value={fd.type} onChange={e => set('type', e.target.value)}>
         <option value="Banque">Banque</option>
-      </div></div>
+      </div>
+      </div>
       <div className="form-group">
         <label>Capital *</label>
         <input type="number" value={fd.balance} onChange={e => set('balance', e.target.value)} step="0.01" required />
@@ -98,9 +60,7 @@ const AccountForm = ({ formData, setFormData }) => {
       <div className="form-group"><label>Statut</label><select value={fd.status} onChange={e => set('status', e.target.value)}>
         <option value="actif">Actif</option><option value="inactif">Inactif</option>
       </select></div>
-      <div className="form-group">
-        
-      </div>
+      <div className="form-group"></div>
     </div>
   </>)
 }
@@ -110,8 +70,6 @@ function AccountsPage({ showNotif }) {
   const notify = (msg, type) => { if (typeof showNotif === 'function') showNotif(msg, type); else if (type === 'error') window.alert(msg) }
 
   const [accounts, setAccounts] = useState([])
-  const [filters, setFilters] = useState({ search: '', type: 'tous', status: 'tous' })
-  const [pagination, setPagination] = useState({ currentPage: 1, itemsPerPage: 10 })
   const [modal, setModal] = useState({ isOpen: false, mode: 'add', item: null })
   const [formData, setFormData] = useState({ ...EMPTY_ACCOUNT })
   const [loading, setLoading] = useState(true)
@@ -131,31 +89,9 @@ function AccountsPage({ showNotif }) {
 
   useEffect(() => { loadData() }, [])
 
-  const resetFilters = () => {
-    setFilters({ search: '', type: 'tous', status: 'tous' })
-    setPagination(p => ({ ...p, currentPage: 1 }))
-  }
-
-  const filteredData = useMemo(() => {
-    return accounts.filter(item => {
-      if (filters.search) {
-        const s = filters.search.toLowerCase()
-        if (![item.name, item.number].some(f => f?.toLowerCase().includes(s))) return false
-      }
-      if (filters.type !== 'tous' && item.type !== filters.type) return false
-      if (filters.status !== 'tous' && item.status !== filters.status) return false
-      return true
-    })
-  }, [accounts, filters])
-
-  const paginatedData = filteredData.slice(
-    (pagination.currentPage - 1) * pagination.itemsPerPage,
-    pagination.currentPage * pagination.itemsPerPage
-  )
-
   const openModal = (mode, item = null) => {
     if (item && mode === 'edit') {
-      setFormData({ ...item, balance: (item.capital ?? item.balance ?? 0).toString(),  })
+      setFormData({ ...item, balance: (item.capital ?? item.balance ?? 0).toString() })
     } else {
       setFormData({ ...EMPTY_ACCOUNT })
     }
@@ -207,12 +143,10 @@ function AccountsPage({ showNotif }) {
   return (
     <div className="accounts-content">
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
-        <button className="btn-primary" onClick={() => openModal('add')}>+ Nouveau compte</button>
       </div>
-     
 
       <div className="accounts-grid">
-        {paginatedData.map(a => (
+        {accounts.map(a => (
           <div key={a.id} className="account-card">
             <div className="account-card-header">
               <div className="account-icon" style={{ background: '#4299e115', color: '#4299e1' }}>
@@ -229,30 +163,29 @@ function AccountsPage({ showNotif }) {
               {a.iban && <div className="account-iban"><span>IBAN</span><small>{a.iban}</small></div>}
             </div>
             <div className="account-card-footer">
-<button 
-  className="btn-small" 
-  onClick={() => {
-    // Check el category mta3 el compte
-    if (a.name === 'Compte Revenu') {
-      // Houni redirect lel transactions mta3 ventes
-      navigate(`/finance/transactions`);
-    } else if (a.name === 'Compte Dépenses') {
-      // Houni redirect lel page mta3 depenses (achat)
-      navigate(`/finance/depenses?account=${encodeURIComponent(a.id)}`);
-    } else {
-      // Cas par défaut (banque, etc.)
-      navigate(`/finance/transactions?account=${encodeURIComponent(a.id)}`);
-    }
-  }}
->
-  Voir transactions
-</button>              <button className="btn-icon" onClick={() => openModal('edit', a)}>✏️</button>
+              <button
+                className="btn-small"
+                onClick={() => {
+                  if (a.name === 'Compte Revenu') {
+                    navigate(`/finance/transactions`)
+                  } else if (a.name === 'Compte Dépenses') {
+                    navigate(`/finance/depenses?account=${encodeURIComponent(a.id)}`)
+                  } else {
+                    navigate(`/finance/transactions?account=${encodeURIComponent(a.id)}`)
+                  }
+                }}
+              >
+                Voir transactions
+              </button>
+              <button className="btn-icon" onClick={() => openModal('edit', a)}>✏️</button>
             </div>
           </div>
         ))}
       </div>
-      {!filteredData.length && <NoResults onReset={resetFilters} />}
-      <Pagination total={filteredData.length} pagination={pagination} setPagination={setPagination} />
+
+      {!accounts.length && (
+        <div className="no-results"><p>Aucun compte trouvé</p></div>
+      )}
 
       {modal.isOpen && modal.mode !== 'delete' && (
         <div className="modal-overlay" onClick={closeModal}>
@@ -274,8 +207,6 @@ function AccountsPage({ showNotif }) {
           </div>
         </div>
       )}
-
-      
     </div>
   )
 }
