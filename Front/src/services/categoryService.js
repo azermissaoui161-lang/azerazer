@@ -20,7 +20,7 @@ const categoryService = {
   },
 
   /**
-   * Récupère une catégorie par ID
+   * njibou une catégorie par ID
    * @param {string} id - ID de la catégorie
    * @returns {Promise<Object>} Détails de la catégorie
    */
@@ -46,6 +46,8 @@ const categoryService = {
    * @param {string} categoryData.description - Description (optionnel)
    * @returns {Promise<Object>} Catégorie créée
    */
+
+  // création d'un catégorie
   create: async (categoryData) => {
     try {
       // Validation des données
@@ -57,11 +59,14 @@ const categoryService = {
       if (!categoryData.name) {
         throw new Error('Le nom de la catégorie est requis');
       }
+      // validation du type "string"
       if (typeof categoryData.name !== 'string') {
         throw new Error('Le nom de la catégorie doit être une chaîne de caractères');
       }
-      const trimmedName = categoryData.name.trim();
-      const trimmedCode = typeof categoryData.code === 'string' ? categoryData.code.trim() : '';
+      const trimmedName = categoryData.name.trim();    // ynahy l'espace m loul w m le5er w ynadhem ***********
+
+      const trimmedCode = typeof categoryData.code === 'string' ? categoryData.code.trim() : '';   // ynadhef men hajet e zeyda 'espace'
+
       if (trimmedName.length === 0) {
         throw new Error('Le nom de la catégorie ne peut pas être vide');
       }
@@ -82,12 +87,14 @@ const categoryService = {
         if (typeof categoryData.description !== 'string') {
           throw new Error('La description doit être une chaîne de caractères');
         }
+
+
         trimmedDescription = categoryData.description.trim();
         if (trimmedDescription.length > 200) {
           throw new Error('La description ne peut pas dépasser 200 caractères');
         }
       }
-
+// envoyer information
       const response = await api.post('/categories', {
         name: trimmedName,
         code: trimmedCode,
@@ -95,7 +102,7 @@ const categoryService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur create catégorie:', error);
+      console.error(' Erreur create catégorie:', error);
       throw error;
     }
   },
@@ -108,20 +115,20 @@ const categoryService = {
    */
   update: async (id, categoryData) => {
     try {
-      // Validation de l'ID
+      // lezem id ykoun mawjoud
       if (!id) {
-        throw new Error('ID de la catégorie requis');
+        throw new Error('ID de la catégorie requis'); // mafamech id manajmou namlou chay
       }
 
-      // Validation des données
+      // Validation des l'info
       if (!categoryData || typeof categoryData !== 'object') {
         throw new Error('Données de catégorie invalides');
       }
 
-      // Préparer les données mises à jour
-      const updatedData = {};
+      // njibou les données mises à jour
+      const updatedData = {};   // object jdid
 
-      // Validation du nom (si fourni)
+      // Validation du nom (ken mawjoud)
       if (categoryData.name !== undefined) {
         if (typeof categoryData.name !== 'string') {
           throw new Error('Le nom de la catégorie doit être une chaîne de caractères');
@@ -133,9 +140,9 @@ const categoryService = {
         if (trimmedName.length > 50) {
           throw new Error('Le nom de la catégorie ne peut pas dépasser 50 caractères');
         }
-        updatedData.name = trimmedName;
+        updatedData.name = trimmedName;  // ken mrigel namlou mise a jour
       }
-
+// nafes lahkeya ala code 
       if (categoryData.code !== undefined) {
         if (typeof categoryData.code !== 'string') {
           throw new Error('La clé unique doit être une chaîne de caractères');
@@ -149,7 +156,7 @@ const categoryService = {
         }
         updatedData.code = trimmedCode;
       }
-
+// nafes lahkeya ala description 
       // Validation de la description (si fournie)
       if (categoryData.description !== undefined) {
         if (typeof categoryData.description !== 'string') {
@@ -162,11 +169,11 @@ const categoryService = {
         updatedData.description = trimmedDescription;
       }
 
-      // Vérifier qu'au moins un champ est à mettre à jour
-      if (Object.keys(updatedData).length === 0) {
+      // yrakez ma champs ely ferghyn w yamelch update kk
+      if (Object.keys(updatedData).length === 0) {   
         throw new Error('Aucune donnée à mettre à jour');
       }
-
+// envoyer ll backend
       const response = await api.put(`/categories/${id}`, updatedData);
       return response.data;
     } catch (error) {
@@ -182,19 +189,21 @@ const categoryService = {
    */
   delete: async (id) => {
     try {
-      // Validation de l'ID
+      // vérification de l'ID
       if (!id) {
         throw new Error('ID de la catégorie requis');
       }
-
+// demande ll backend de supprimer
       const response = await api.delete(`/categories/${id}`);
       return response.data;
+
     } catch (error) {
       console.error(`❌ Erreur delete catégorie ${id}:`, error);
       throw error;
     }
   },
 
+  // yjib liste de produit par catégorie
   /**
    * Récupère les produits d'une catégorie
    * @param {string} id - ID de la catégorie
@@ -207,14 +216,23 @@ const categoryService = {
       if (!id) {
         throw new Error('ID de la catégorie requis');
       }
-
+// yatina erreur a consol
       const response = await api.get(`/categories/${id}/products`, { params });
       return response.data;
     } catch (error) {
       console.error(`❌ Erreur getProducts catégorie ${id}:`, error);
       throw error;
     }
-  }
+  },
+  getStats: async () => {
+    try {
+      const response = await api.get('/categories/stats');
+      return response.data;
+    } catch (error) {
+      console.error('❌ Erreur getStats:', error);
+      throw error;
+    }
+  },
 };
 
 export default categoryService;

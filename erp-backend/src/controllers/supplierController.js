@@ -154,7 +154,7 @@ exports.create = async (req, res) => {
     if (existingCode) {
       return res.status(400).json({ message: 'Un fournisseur avec cette clé unique existe déjà' });
     }
-
+// nv object de fournisseur
     const supplier = new Supplier({
       name: name.trim(),
       code: normalizedCode,
@@ -168,18 +168,22 @@ exports.create = async (req, res) => {
     });
 
     await supplier.save();
-
+// réponse le front avec data nv
     res.status(201).json(formatSupplier(supplier));
+
+//si fama erreur
   } catch (error) {
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({
+    if (error.name === 'ValidationError') {   // erreur jeya m mongo 
+      return res.status(400).json({   // message en général 
         message: 'Erreur de validation',
-        errors: Object.values(error.errors).map(e => e.message)
+        errors: Object.values(error.errors).map(e => e.message)   // message erreur avec les champs invalide
       });
     }
+    // 11000 raw fama code wela email yet3awed 
     if (error.code === 11000) {
       return res.status(400).json({ message: 'Un fournisseur avec cet email existe déjà' });
     }
+    // ken ghalta ouch f tekrar 
     handleError(error, res, 'Erreur lors de la création du fournisseur');
   }
 };

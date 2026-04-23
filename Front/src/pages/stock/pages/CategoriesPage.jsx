@@ -22,7 +22,13 @@ function CategoriesPage() {
   const [cat, setCat] = useState([])
   const [prod, setProd] = useState([])
   const [supp, setSupp] = useState([])
-
+//supprimer 
+const [modDelete, setModDelete] = useState(false)
+const [catToDelete, setCatToDelete] = useState(null)
+// message de succes 
+const [msg, setMsg] = useState(null)
+  // statistique 
+  const [stats, setStats] = useState(null);
   // Filters
   const [f, setF] = useState({ categorySearch: "" })
 
@@ -37,20 +43,26 @@ function CategoriesPage() {
   const [fe, setFe] = useState({})
 
   // Load data
-  const loadData = useCallback(async () => {
+ const loadData = useCallback(async () => {
     try {
-      const [categoryRes, productRes, supplierRes] = await Promise.all([
+      // قمنا بإضافة statsRes هنا ليتم تعيين نتائج categoryService.getStats() إليه
+      const [categoryRes, productRes, supplierRes, statsRes] = await Promise.all([
         categoryService.getAll({ limit: 200 }),
         productService.getAll({ limit: 200 }),
         supplierService.getAll({ limit: 200 }),
-      ])
-      setCat(pickList(categoryRes, ['categories', 'data']).map(mapCategoryToUi))
-      setProd(pickList(productRes, ['products', 'data']).map(mapProductToUi))
-      setSupp(pickList(supplierRes, ['suppliers', 'data']).map(mapSupplierToUi))
+        categoryService.getStats(),
+      ]);
+
+      setCat(pickList(categoryRes, ['categories', 'data']).map(mapCategoryToUi));
+      setProd(pickList(productRes, ['products', 'data']).map(mapProductToUi));
+      setSupp(pickList(supplierRes, ['suppliers', 'data']).map(mapSupplierToUi));
+      
+      // الآن statsRes معرفة ومتاحة هنا
+      setStats(statsRes); 
     } catch (error) {
-      console.error('CategoriesPage load error:', error)
+      console.error('CategoriesPage load error:', error);
     }
-  }, [])
+  }, []);
 
   useEffect(() => { loadData() }, [loadData])
 
@@ -84,38 +96,62 @@ function CategoriesPage() {
     setModCategory(true)
   }
 
-  // CRUD Remote
-  const hdlAddCatRemote = async () => {
-    const e = vCat(); if (Object.keys(e).length) return setFe(e)
+  // CRUD Remote //  ajouter catégorie
+  const hdlAddCatRemote = async () => {     // validation 
+    const e = vCat(); 
+    if (Object.keys(e).length) return setFe(e)    // condition 
     try {
-      await categoryService.create({ name: cf.name.trim(), code: cf.code.trim(), description: cf.description.trim() })
-      await loadData()
-      rCat(); setModCategory(false)
-    } catch (error) {
+      //créer catégorie
+      await categoryService.create(
+        { name: cf.name.trim(), 
+          code: cf.code.trim(),
+           description: cf.description.trim() })
+
+      await loadData()  //njbdou data m back end 
+      rCat(); // mise a jour ll liste
+      setModCategory(false) // ysaker el modl
+    } 
+    catch (error) {
       window.alert(extractApiErrorMessage(error, "Impossible d'ajouter la categorie"))
     }
   }
-
+// mise a jour
   const hdlUpdCatRemote = async () => {
-    const e = vCat(); if (Object.keys(e).length) return setFe(e)
+    const e = vCat(); 
+    if (Object.keys(e).length)
+       return setFe(e)
     try {
-      await categoryService.update(ec.id, { name: cf.name.trim(), code: cf.code.trim(), description: cf.description.trim() })
+      await categoryService.update(
+        ec.id, { name: cf.name.trim(),
+           code: cf.code.trim(),
+            description: cf.description.trim() })
       await loadData()
       rCat(); setModCategory(false)
     } catch (error) {
       window.alert(extractApiErrorMessage(error, "Impossible de modifier la categorie"))
     }
   }
+//supprimer
+const hdlDelCatRemote = async () => {
+  if (!catToDelete?.id) return
 
-  const hdlDelCatRemote = async (id) => {
-    if (!window.confirm("Supprimer cette categorie ?")) return
-    try {
-      await categoryService.delete(id)
-      await loadData()
-    } catch (error) {
-      window.alert(extractApiErrorMessage(error, "Impossible de supprimer la categorie"))
-    }
+  try {
+    await categoryService.delete(catToDelete.id)
+    await loadData()
+
+    setMsg("✅ Catégorie supprimée avec succès")
+
+    setModDelete(false)
+    setCatToDelete(null)
+
+    setTimeout(() => setMsg(null), 3000)
+
+  } catch (error) {
+    window.alert(
+      extractApiErrorMessage(error, "Impossible de supprimer la categorie")
+    )
   }
+}
 
   return (
     <div className="categories-tab">
@@ -123,6 +159,38 @@ function CategoriesPage() {
         <h2>📑 Catégories</h2>
         <button className="btn-primary" onClick={() => { rCat(); setModCategory(true) }}>+ Nouvelle</button>
       </header>
+      {stats && stats.global && (
+  <div className="stats-dashboard" style={{ 
+    display: 'grid', 
+    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+    gap: '1.5rem', 
+    marginBottom: '2rem' 
+  }}>
+    <div className="stat-card" style={{ 
+      background: '#ffffff', padding: '1.5rem', borderRadius: '12px', 
+      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', borderLeft: '4px solid #4a90e2' 
+    }}>
+      <p style={{ margin: '0', fontSize: '0.9rem', color: '#718096' }}>Total Catégories</p>
+      <h3 style={{ margin: '0.5rem 0 0', fontSize: '1.8rem', color: '#2d3748' }}>{stats.global.totalCategories}</h3>
+    </div>
+
+    <div className="stat-card" style={{ 
+      background: '#ffffff', padding: '1.5rem', borderRadius: '12px', 
+      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', borderLeft: '4px solid #48bb78' 
+    }}>
+      <p style={{ margin: '0', fontSize: '0.9rem', color: '#718096' }}>Total Produits</p>
+      <h3 style={{ margin: '0.5rem 0 0', fontSize: '1.8rem', color: '#2d3748' }}>{stats.global.totalProducts}</h3>
+    </div>
+
+    <div className="stat-card" style={{ 
+      background: '#ffffff', padding: '1.5rem', borderRadius: '12px', 
+      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', borderLeft: '4px solid #ecc94b' 
+    }}>
+      <p style={{ margin: '0', fontSize: '0.9rem', color: '#718096' }}>Catégories Vides</p>
+      <h3 style={{ margin: '0.5rem 0 0', fontSize: '1.8rem', color: '#2d3748' }}>{stats.global.emptyCategories}</h3>
+    </div>
+  </div>
+)}
 
       {/* Search bar */}
       <div className="categories-search-bar" style={{ marginBottom: "1.5rem" }}>
@@ -141,6 +209,18 @@ function CategoriesPage() {
         <div className="search-results-info">{fc.length} catégorie(s)</div>
       </div>
 
+
+
+
+
+{msg && (
+  <div className="message-success">
+    {msg}
+  </div>
+)}
+
+
+
       <div className="categories-grid">
         {fc.length
           ? fc.map(c => <article key={c.id} className="category-card">
@@ -158,7 +238,16 @@ function CategoriesPage() {
             </div>
             <div className="category-actions">
               <button className="btn-icon" onClick={() => hdlEditCat(c)}>✏️</button>
-              <button className="btn-icon" onClick={() => hdlDelCatRemote(c.id, c.name)}>🗑️</button>
+                 <button
+                    className="btn-icon"
+                   onClick={() => {
+                   setCatToDelete(c)
+                   setModDelete(true)
+                    }}
+>
+                     🗑️
+                  </button>
+
             </div>
           </article>)
           : <div className="no-data-message">Aucune catégorie trouvée</div>}
@@ -200,8 +289,27 @@ function CategoriesPage() {
           </div>
         </>}
       </Modal>
+      <Modal
+  isOpen={modDelete}
+  onClose={() => {
+    setModDelete(false)
+    setCatToDelete(null)
+  }}
+  title="⚠️ Confirmation"
+  onConfirm={hdlDelCatRemote}
+  confirmText="Supprimer"
+>
+  <p>
+    Voulez-vous vraiment supprimer la catégorie{" "}
+    <strong>{catToDelete?.name}</strong> ?
+  </p>
+</Modal>
+      
     </div>
+    
   )
+  
+  
 }
 
 export default CategoriesPage

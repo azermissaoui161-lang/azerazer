@@ -41,7 +41,7 @@ const supplierService = {
    */
   create: async (supplierData) => {
     try {
-      const response = await api.post('/suppliers', {
+      const response = await api.post('/suppliers', {  // envoyer demande dans le backend
         name: supplierData.name,
         code: supplierData.code,
         contact: supplierData.contact,
@@ -53,7 +53,7 @@ const supplierService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur create fournisseur:', error);
+      console.error(' Erreur create fournisseur:', error);
       throw error;
     }
   },

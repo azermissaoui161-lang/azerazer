@@ -101,13 +101,16 @@ function SuppliersPage() {
     setModSupplier(true)
   }
 
-  // CRUD Remote
+  // ajouter four
   const hdlAddSuppRemote = async () => {
-    const e = vSupp(); if (Object.keys(e).length) return setFe(e)
+    const e = vSupp(); // appel de le fonction et validation 
+    if (Object.keys(e).length) // if erreur yhsbou les erreur  et affiché
+       return setFe(e)
     try {
       await supplierService.create(sf)
       await loadData()
-      rSupp(); setModSupplier(false)
+      rSupp(); 
+      setModSupplier(false)
     } catch (error) {
       window.alert(extractApiErrorMessage(error, "Impossible d'ajouter le fournisseur"))
     }

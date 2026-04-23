@@ -11,7 +11,7 @@ const {
 } = require('../utils/mongoTransaction');
 
 /**
- * Formatter une catégorie pour le frontend
+ * Formatter une catégorie 
  */
 const formatCategory = (category) => ({
   id: category._id,
@@ -20,15 +20,15 @@ const formatCategory = (category) => ({
   description: category.description || '',
   productCount: category.productCount || 0
 });
-
+// sécurité de recherche
 const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
  * Gérer les erreurs de manière sécurisée
  */
 const handleError = (error, res, defaultMessage = 'Erreur serveur') => {
-  console.error(`❌ ${defaultMessage}:`, error);
-  
+  console.error(` ${defaultMessage}:`, error);
+  // server en developpement ou en utiliser en public
   const message = process.env.NODE_ENV === 'production' 
     ? defaultMessage 
     : error.message;
@@ -41,7 +41,7 @@ exports.getAll = async (req, res) => {
   try {
     const { page = 1, limit = 50, search } = req.query;
     
-    // Construire le filtre
+    // filter de recherche
     const filter = {};
     if (search) {
       filter.$or = [
@@ -189,7 +189,7 @@ exports.create = async (req, res) => {
 // ===== PUT /api/categories/:id =====
 exports.update = async (req, res) => {
   const session = await startOptionalSession();
-  
+  // ne5dhou id w fome de data
   try {
     const { id } = req.params;
     const { name, description, code } = req.body;
@@ -198,7 +198,7 @@ exports.update = async (req, res) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'ID catégorie invalide' });
     }
-
+// nejbdou m bd
     const category = await withOptionalSession(Category.findById(id), session);
     if (!category) {
       return res.status(404).json({ message: 'Catégorie non trouvée' });
@@ -206,8 +206,9 @@ exports.update = async (req, res) => {
     
     const oldName = category.name;
     
-    // Vérifier l'unicité du nouveau nom
+    // Vérifier l'unicité par le nouveau nom
     if (name && name !== oldName) {
+      // manajmouch namlou update ll cayégory mawjouda
       const existing = await withOptionalSession(Category.findOne({
         name: { $regex: new RegExp(`^${name}$`, 'i') },
         _id: { $ne: id }
@@ -217,7 +218,7 @@ exports.update = async (req, res) => {
         await abortOptionalTransaction(session);
         return res.status(400).json({ message: 'Une catégorie avec ce nom existe déjà' });
       }
-      
+      // ken mrigel
       category.name = name.trim();
       
       // Mettre à jour tous les produits avec cette catégorie
@@ -228,48 +229,51 @@ exports.update = async (req, res) => {
       );
     }
 
-    if (code !== undefined) {
-      const normalizedCode = typeof code === 'string' ? code.trim().toUpperCase() : '';
+    if (code !== undefined) // ken badhelna code , ken badhech net3adou
+       {// ylzem ykoun string w ynahy espace w y7awel l7rouf a l A
+      const normalizedCode = typeof code === 'string' ? code.trim().toUpperCase() : ''; 
+// yatina errer ken amalna espace khww wela ken amalna 123
       if (!normalizedCode) {
         await abortOptionalTransaction(session);
         return res.status(400).json({ message: 'La clé unique de la catégorie est requise' });
       }
-
+// namlou veérification ll code lezem ykoun unique
       if (normalizedCode !== (category.code || '')) {
-        const existingCode = await withOptionalSession(Category.findOne({
+        const existingCode = await withOptionalSession
+        (Category.findOne({  // recherche dans bd ala nafes code ff catégorie okhra
           code: { $regex: new RegExp(`^${escapeRegex(normalizedCode)}$`, 'i') },
-          _id: { $ne: id }
+          _id: { $ne: id } // ma barcha catégorie mouch ken l9dima
         }), session);
-
+// nal9aw wahda kif kif nwa9fou transaction w  namlou erreur
         if (existingCode) {
           await abortOptionalTransaction(session);
           return res.status(400).json({ message: 'Une catégorie avec cette clé unique existe déjà' });
         }
       }
-
+// yamel update
       category.code = normalizedCode;
     }
-    
+    // ken amalna descriptin mise a jour
     if (description !== undefined) {
-      category.description = description?.trim() || '';
+      category.description = description?.trim() || ''; // ynahy espace
     }
     
     category.updatedAt = Date.now();
-    await category.save(getSessionOptions(session));
+    await category.save(getSessionOptions(session)); // enregistré dans le bd
     
-    await commitOptionalTransaction(session);
+    await commitOptionalTransaction(session); // enregistré final
     
-    // Récupérer la catégorie mise à jour
+    // njibou la catégorie mise à jour
     const updatedCategory = await Category.findById(id).lean();
-    res.json(formatCategory(updatedCategory));
-    
+    res.json(formatCategory(updatedCategory)); // nraj3ou data ll front
+    // ken fama ghalta nraj3ou kol chay kifma ken
   } catch (error) {
     await abortOptionalTransaction(session);
-    
+    // ghalta jeya m mongo ex : +50
     if (error.name === 'ValidationError') {
       return res.status(400).json({ 
         message: 'Erreur de validation', 
-        errors: Object.values(error.errors).map(e => e.message)
+        errors: Object.values(error.errors).map(e => e.message) // yatina tout les erreur
       });
     }
     
@@ -287,12 +291,12 @@ exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Validation ID
+    // Vérification du id 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'ID catégorie invalide' });
     }
-
-    const category = await withOptionalSession(Category.findById(id), session);
+// njibou catégorie
+    const category = await withOptionalSession(Category.findById(id), session); 
     if (!category) {
       return res.status(404).json({ message: 'Catégorie non trouvée' });
     }
@@ -313,17 +317,14 @@ exports.delete = async (req, res) => {
     }
     
     // Vérifier si la catégorie est utilisée dans des produits archivés
-    const archivedProducts = await withOptionalSession(Product.countDocuments({
+    const archivedProducts = await withOptionalSession
+    (Product.countDocuments({  // nb produit dans le mongo de catégoie
       category: category.name,
       deletedAt: { $ne: null }
     }), session);
-    
-    if (archivedProducts > 0) {
-      console.log(`ℹ️ ${archivedProducts} produits archivés utilisent cette catégorie`);
-    }
-    
+    // supprimer dans mongo
     await category.deleteOne(getSessionOptions(session));
-    
+    // supprimer offciel
     await commitOptionalTransaction(session);
     
     res.json({ 
@@ -331,7 +332,7 @@ exports.delete = async (req, res) => {
       id: category._id,
       name: category.name
     });
-    
+    // ken fama erreur nraj3ou kol chay kifma ken 
   } catch (error) {
     await abortOptionalTransaction(session);
     handleError(error, res, 'Erreur lors de la suppression de la catégorie');
@@ -344,7 +345,7 @@ exports.delete = async (req, res) => {
 // ===== GET /api/categories/stats =====
 exports.getStats = async (req, res) => {
   try {
-    const stats = await Category.aggregate([
+    const stats = await Category.aggregate([     // nehsbou catégoie
       {
         $group: {
           _id: null,
