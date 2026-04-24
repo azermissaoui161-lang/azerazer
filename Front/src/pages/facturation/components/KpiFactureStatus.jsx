@@ -12,16 +12,6 @@ const KpiFactureStatus = ({ dataPaye, dataImpaye }) => {
   const paye   = dataPaye   || DEFAULT_PAYE;
   const impaye = dataImpaye || DEFAULT_IMPAYE;
 
-  const totalPaye   = paye.reduce((a, b) => a + b, 0);
-  const totalImpaye = impaye.reduce((a, b) => a + b, 0);
-
-  const trendPct = (arr) => {
-    const last = arr[arr.length - 1], prev = arr[arr.length - 2] || 1;
-    return Math.round(((last - prev) / prev) * 100);
-  };
-  const trendPaye   = trendPct(paye);
-  const trendImpaye = trendPct(impaye);
-
   useEffect(() => {
     const ctx = chartRef.current.getContext('2d');
     if (chartInstance.current) chartInstance.current.destroy();
@@ -93,24 +83,6 @@ const KpiFactureStatus = ({ dataPaye, dataImpaye }) => {
     return () => { chartInstance.current?.destroy(); };
   }, [dataPaye, dataImpaye]);
 
-  const Stat = ({ label, value, trend, color }) => (
-    <div style={{
-      background: 'rgba(148,163,184,0.05)',
-      border: '1px solid rgba(148,163,184,0.07)',
-      borderRadius: '10px', padding: '12px 14px',
-    }}>
-      <div style={{ fontSize: '10px', color: '#475569', textTransform: 'uppercase', letterSpacing: '.04em' }}>
-        {label}
-      </div>
-      <div style={{ fontSize: '20px', fontWeight: 700, color, lineHeight: 1, marginTop: '4px' }}>
-        {value}
-      </div>
-      <div style={{ fontSize: '10px', color, marginTop: '3px' }}>
-        {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}% vs mois préc.
-      </div>
-    </div>
-  );
-
   return (
     <div style={{
       background: 'linear-gradient(145deg, #0f172a, #1e293b)',
@@ -118,6 +90,7 @@ const KpiFactureStatus = ({ dataPaye, dataImpaye }) => {
       border: '1px solid rgba(148,163,184,0.1)',
       fontFamily: "'Inter', 'Segoe UI', sans-serif",
     }}>
+
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
         <div>
@@ -128,7 +101,8 @@ const KpiFactureStatus = ({ dataPaye, dataImpaye }) => {
             Janvier – Juin
           </p>
         </div>
-        {/* Pills légende */}
+
+        {/* Légende */}
         <div style={{ display: 'flex', gap: '8px' }}>
           {[['#34d399', 'Payées'], ['#f87171', 'Impayées']].map(([c, l]) => (
             <div key={l} style={{
@@ -145,16 +119,11 @@ const KpiFactureStatus = ({ dataPaye, dataImpaye }) => {
         </div>
       </div>
 
-      {/* Stat boxes */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '16px' }}>
-        <Stat label="Total payées"   value={totalPaye}   trend={trendPaye}   color="#34d399" />
-        <Stat label="Total impayées" value={totalImpaye} trend={trendImpaye} color="#f87171" />
-      </div>
-
-      {/* Chart */}
+      {/* Chart uniquement */}
       <div style={{ height: '180px', position: 'relative' }}>
         <canvas ref={chartRef} role="img" aria-label="Évolution factures payées et impayées" />
       </div>
+
     </div>
   );
 };

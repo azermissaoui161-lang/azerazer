@@ -66,7 +66,8 @@ const supplierService = {
    */
   update: async (id, supplierData) => {
     try {
-      const response = await api.put(`/suppliers/${id}`, {
+      const response = await api.put(`/suppliers/${id}`, {   //demande de mise a jour dans backend
+// nv liste
         name: supplierData.name,
         code: supplierData.code,
         contact: supplierData.contact,
@@ -76,10 +77,12 @@ const supplierService = {
         status: supplierData.status,
         rating: parseFloat(supplierData.rating)
       });
+      // supplier aprés le mise a jour
       return response.data;
-    } catch (error) {
-      console.error(`❌ Erreur update fournisseur ${id}:`, error);
-      throw error;
+      // si en a erreur
+    } catch (error) {  // nchedou el mochkla
+      console.error(` Erreur update fournisseur ${id}:`, error);
+      throw error; // envoyer ll alert win yamlou envoyer lll user
     }
   },
 
@@ -90,11 +93,11 @@ const supplierService = {
    */
   delete: async (id) => {
     try {
-      const response = await api.delete(`/suppliers/${id}`);
+      const response = await api.delete(`/suppliers/${id}`); // envoyer demande mn backend
       return response.data;
     } catch (error) {
       console.error(`❌ Erreur delete fournisseur ${id}:`, error);
-      throw error;
+      throw error; // envoyer erreur ll component , alert 
     }
   },
 

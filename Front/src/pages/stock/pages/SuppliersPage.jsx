@@ -117,24 +117,26 @@ function SuppliersPage() {
   }
 
   const hdlUpdSuppRemote = async () => {
-    const e = vSupp(); if (Object.keys(e).length) return setFe(e)
+    const e = vSupp(); if (Object.keys(e).length) return setFe(e) // vérifié le format et afficher le champs avec les nb des erreur
     try {
-      await supplierService.update(es.id, sf)
-      await loadData()
-      rSupp(); setModSupplier(false)
+      await supplierService.update(es.id, sf) // demande ll abck selon id
+      await loadData() //get nv data
+      rSupp(); setModSupplier(false) // férmé model // et sepprimer le info dans leformulaire
     } catch (error) {
       window.alert(extractApiErrorMessage(error, "Impossible de modifier le fournisseur"))
     }
   }
 
  const hdlDelSuppRemote = async () => {
+  //vérifié id
   if (!deleteModal.id) return
 
   try {
-    await supplierService.delete(deleteModal.id)
-    await loadData()
-    setDeleteModal({ isOpen: false, id: null })
+    await supplierService.delete(deleteModal.id) // demande ll back
+    await loadData() // nv data
+    setDeleteModal({ isOpen: false, id: null }) // férme le modl et supprimer id
   } catch (error) {
+    //ken fama erruer njibou message shih m backend
     window.alert(extractApiErrorMessage(error, "Impossible de supprimer le fournisseur"))
   }
 }

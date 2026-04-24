@@ -188,10 +188,10 @@ exports.create = async (req, res) => {
   }
 };
 
-// ===== PUT /api/suppliers/:id =====
+// mise a jour 
 exports.update = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params;  // selon id
 
     // Validation ID
     if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -205,34 +205,37 @@ exports.update = async (req, res) => {
 
     const { name, code, contact, email, phone, address, status, rating } = req.body;
 
-    // Vérifier l'unicité de l'email si changé
+    // check sur le mail
     if (email && email !== supplier.email) {
-      const existing = await Supplier.findOne({ 
-        email: email.toLowerCase().trim(),
-        _id: { $ne: id }
+      const existing = await Supplier.findOne({  //email existe déja ou non
+        email: email.toLowerCase().trim(),   // nadhfouh w narj3ou l7rouf sghyra
+        _id: { $ne: id }  // atiny ay supplier andou email hedha  mais much nafes el id hedha
       });
       if (existing) {
         return res.status(400).json({ message: 'Un fournisseur avec cet email existe déjà' });
       }
+      // mise a jour le mail
       supplier.email = email.toLowerCase().trim();
     }
-
+// ken user amal demand epour mise a jour ducode 
     if (code !== undefined) {
+      //nadhfou data
       const normalizedCode = typeof code === 'string' ? code.trim().toUpperCase() : '';
       if (!normalizedCode) {
         return res.status(400).json({ message: 'La clé unique du fournisseur est requise' });
       }
-
+//code jdid vs  code la9dim
       if (normalizedCode !== (supplier.code || '')) {
-        const existingCode = await Supplier.findOne({
-          code: { $regex: new RegExp(`^${escapeRegex(normalizedCode)}$`, 'i') },
-          _id: { $ne: id }
+        const existingCode = await Supplier.findOne({  // fama supplier ekher andou mem code 
+          code: { $regex: new RegExp(`^${escapeRegex(normalizedCode)}$`, 'i') }, // recherche sana A et a et + ou . ou ?
+          _id: { $ne: id } // nchoufou supplier ghyr ely ahna fih
         });
+        // ken mawjoud erreur
         if (existingCode) {
           return res.status(400).json({ message: 'Un fournisseur avec cette clé unique existe déjà' });
         }
       }
-
+//envoeyer info nv dans supplier
       supplier.code = normalizedCode;
     }
 
@@ -245,15 +248,17 @@ exports.update = async (req, res) => {
 
     supplier.updatedAt = Date.now();
     await supplier.save();
-
+//envoyer data ll front
     res.json(formatSupplier(supplier));
+    //fama erreur
   } catch (error) {
-    if (error.name === 'ValidationError') {
+    if (error.name === 'ValidationError') {    //ghalta m mongo
       return res.status(400).json({
         message: 'Erreur de validation',
-        errors: Object.values(error.errors).map(e => e.message)
+        errors: Object.values(error.errors).map(e => e.message)  // nraj3ou erreur l message wadha7
       });
     }
+    // ghalta okhra mn serveur ou bugs
     handleError(error, res, 'Erreur lors de la modification du fournisseur');
   }
 };
@@ -265,13 +270,13 @@ exports.delete = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Validation ID
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    // vérifié ID
+    if (!mongoose.Types.ObjectId.isValid(id)) { // ken ghalet namlou erreur
       return res.status(400).json({ message: 'ID fournisseur invalide' });
     }
-
+//recherche dans bd
     const supplier = await withOptionalSession(Supplier.findById(id), session);
-    if (!supplier) {
+    if (!supplier) {   //krn famech f bd namlou erreur
       return res.status(404).json({ message: 'Fournisseur non trouvé' });
     }
 
@@ -289,19 +294,19 @@ exports.delete = async (req, res) => {
       //   { supplierId: id },
       //   { $set: { supplierId: null } },
       //   { session }
-      // );
     }
-
+//supprimer ddans le bd
     await supplier.deleteOne(getSessionOptions(session));
+    //supprimé définitif
     await commitOptionalTransaction(session);
 
     res.json({
       message: 'Fournisseur supprimé avec succès',
       id: supplier._id,
-      name: supplier.name
+      name: supplier.name // le name de supplier a supprimer
     });
   } catch (error) {
-    await abortOptionalTransaction(session);
+    await abortOptionalTransaction(session);  // annuller le changement
     handleError(error, res, 'Erreur lors de la suppression du fournisseur');
   } finally {
     endOptionalSession(session);
@@ -311,7 +316,7 @@ exports.delete = async (req, res) => {
 // ===== GET /api/suppliers/stats =====
 exports.getStats = async (req, res) => {
   try {
-    const [totalSuppliers, activeSuppliers, totalProducts] = await Promise.all([
+    const [totalSuppliers, activeSuppliers, totalProductsAgg] = await Promise.all([
       Supplier.countDocuments(),
       Supplier.countDocuments({ status: 'actif' }),
       Product.aggregate([
@@ -336,13 +341,17 @@ exports.getStats = async (req, res) => {
       .limit(5)
       .lean();
 
+    // استخراج القيم بأمان
+    const totalProducts = totalProductsAgg[0]?.total || 0;
+    const avgRating = ratingStats[0]?.avgRating || 0;
+
     res.json({
       global: {
         totalSuppliers,
         activeSuppliers,
         inactiveSuppliers: totalSuppliers - activeSuppliers,
-        totalProducts: totalProducts[0]?.total || 0,
-        avgRating: ratingStats[0]?.avgRating || 0
+        totalProducts: totalProducts,
+        avgRating: Number(avgRating)
       },
       topSuppliers: topSuppliers.map(formatSupplier)
     });

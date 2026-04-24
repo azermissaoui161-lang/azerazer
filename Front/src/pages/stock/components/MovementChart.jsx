@@ -12,45 +12,28 @@ const MovementLineChart = ({ dataEntree, dataSortie }) => {
       chartInstance.current.destroy();
     }
 
-    const makeGradient = (color) => {
-      const g = ctx.createLinearGradient(0, 0, 0, 220);
-      g.addColorStop(0, color + '2e');
-      g.addColorStop(1, color + '03');
-      return g;
-    };
-
     chartInstance.current = new Chart(ctx, {
-      type: 'line',
+      type: 'bar',                          // ← changé
       data: {
         labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
         datasets: [
           {
             label: 'Entrées',
             data: dataEntree || [30, 45, 35, 60, 50, 70],
+            backgroundColor: 'rgba(52, 211, 153, 0.75)',
             borderColor: '#34d399',
-            backgroundColor: makeGradient('#34d399'),
-            fill: true,
-            tension: 0.4,
-            borderWidth: 2,
-            pointBackgroundColor: '#34d399',
-            pointBorderColor: '#0f172a',
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6,
+            borderWidth: 1,
+            borderRadius: 6,
+            borderSkipped: false,
           },
           {
             label: 'Sorties',
             data: dataSortie || [20, 35, 40, 30, 45, 55],
+            backgroundColor: 'rgba(248, 113, 113, 0.75)',
             borderColor: '#f87171',
-            backgroundColor: makeGradient('#f87171'),
-            fill: true,
-            tension: 0.4,
-            borderWidth: 2,
-            pointBackgroundColor: '#f87171',
-            pointBorderColor: '#0f172a',
-            pointBorderWidth: 2,
-            pointRadius: 4,
-            pointHoverRadius: 6,
+            borderWidth: 1,
+            borderRadius: 6,
+            borderSkipped: false,
           }
         ]
       },
@@ -91,9 +74,6 @@ const MovementLineChart = ({ dataEntree, dataSortie }) => {
     return () => { chartInstance.current?.destroy(); };
   }, [dataEntree, dataSortie]);
 
-  const entrees = dataEntree || [30, 45, 35, 60, 50, 70];
-  const sorties = dataSortie || [20, 35, 40, 30, 45, 55];
-
   return (
     <div style={{
       background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
@@ -117,7 +97,7 @@ const MovementLineChart = ({ dataEntree, dataSortie }) => {
         <div style={{ display: 'flex', gap: '14px' }}>
           {[['#34d399', 'Entrées'], ['#f87171', 'Sorties']].map(([color, label]) => (
             <span key={label} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#94a3b8' }}>
-              <span style={{ display: 'inline-block', width: '20px', height: '2px', background: color, borderRadius: '2px' }} />
+              <span style={{ display: 'inline-block', width: '12px', height: '12px', background: color, borderRadius: '3px' }} />
               {label}
             </span>
           ))}
@@ -126,7 +106,7 @@ const MovementLineChart = ({ dataEntree, dataSortie }) => {
 
       {/* Chart */}
       <div style={{ position: 'relative', height: '220px' }}>
-        <canvas ref={chartRef} role="img" aria-label="Graphique ligne évolution entrées et sorties de stock" />
+        <canvas ref={chartRef} role="img" aria-label="Graphique barres entrées et sorties de stock" />
       </div>
     </div>
   );

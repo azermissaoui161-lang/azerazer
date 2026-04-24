@@ -1,9 +1,13 @@
 ﻿import React from 'react';
-import KpiCommandeParMois    from './components/KpiCommandeParMois';
+import KpiCommandeParMois from './components/KpiCommandeParMois';
 import KpiTotalCommandeParClient from './components/KpiTotalCommandeParClient';
-import KpiFactureStatus      from './components/KpiFactureStatus';
+import KpiFactureStatus from './components/KpiFactureStatus';
+import KpiClientFidele from './components/KpiClientFidele';
+import KpiFacture from './components/KpiFacture'; // ✅ AJOUT
+
 import './DashboardFacturation.css';
 
+// ─── Dashboard ───────────────────────────────────────────────────────────────
 const DashboardFacturation = () => (
   <div className="df">
 
@@ -15,24 +19,34 @@ const DashboardFacturation = () => (
       <span className="df-badge">Trésorerie</span>
     </header>
 
+    {/* ── KPI GLOBAL (comme stock KpiPage) ── */}
+    <div className="card">
+      <KpiFacture />
+    </div>
+
+    {/* ── Graphiques ── */}
     <div className="df-grid">
 
-      {/* Évolution mensuelle — pleine largeur */}
       <div className="card">
         <KpiCommandeParMois />
       </div>
 
-      {/* Factures + Clients — 2 colonnes */}
       <div className="row-2">
         <div className="card">
           <KpiFactureStatus />
         </div>
+
         <div className="card">
           <KpiTotalCommandeParClient />
         </div>
       </div>
 
+      <div className="card">
+        <KpiClientFidele />
+      </div>
+
     </div>
+
   </div>
 );
 

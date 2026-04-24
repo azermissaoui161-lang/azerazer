@@ -24,10 +24,7 @@ const KpiTotalCommandeParClient = ({ data }) => {
   const chartRef      = useRef(null);
   const chartInstance = useRef(null);
 
-  const clients    = data || DEFAULT_DATA;
-  const totalCA    = clients.reduce((a, c) => a + c.total, 0);
-  const totalCmds  = clients.reduce((a, c) => a + c.count, 0);
-  const panierMoy  = Math.round(totalCA / totalCmds);
+  const clients = data || DEFAULT_DATA;
 
   useEffect(() => {
     const ctx = chartRef.current.getContext('2d');
@@ -84,29 +81,24 @@ const KpiTotalCommandeParClient = ({ data }) => {
     return () => { chartInstance.current?.destroy(); };
   }, [data]);
 
-  const s = { background: 'linear-gradient(145deg,#0f172a,#1e293b)', borderRadius: '16px', padding: '22px', border: '1px solid rgba(148,163,184,.1)', fontFamily: "'Inter','Segoe UI',sans-serif" };
-
-  const KbCard = ({ label, value, sub }) => (
-    <div style={{ background: 'rgba(148,163,184,.05)', border: '1px solid rgba(148,163,184,.07)', borderRadius: '10px', padding: '11px 13px' }}>
-      <div style={{ fontSize: '10px', color: '#475569', textTransform: 'uppercase', letterSpacing: '.04em' }}>{label}</div>
-      <div style={{ fontSize: '18px', fontWeight: 700, color: '#f1f5f9', marginTop: '3px', lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>{sub}</div>
-    </div>
-  );
+  const s = {
+    background: 'linear-gradient(145deg,#0f172a,#1e293b)',
+    borderRadius: '16px', padding: '22px',
+    border: '1px solid rgba(148,163,184,.1)',
+    fontFamily: "'Inter','Segoe UI',sans-serif",
+  };
 
   return (
     <div style={s}>
+
       {/* Header */}
       <div style={{ marginBottom: '18px' }}>
-        <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#e2e8f0', margin: 0 }}>Commandes par client</h3>
-        <p style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>Top {clients.length} clients — classement par CA</p>
-      </div>
-
-      {/* KPI boxes */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '18px' }}>
-        <KbCard label="Total CA"     value={totalCA.toLocaleString()}  sub="DT générés" />
-        <KbCard label="Commandes"    value={totalCmds}                  sub="au total" />
-        <KbCard label="Panier moy."  value={panierMoy.toLocaleString()} sub="DT / commande" />
+        <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#e2e8f0', margin: 0 }}>
+          Commandes par client
+        </h3>
+        <p style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>
+          Top {clients.length} clients — classement par CA
+        </p>
       </div>
 
       {/* Chart */}
@@ -122,7 +114,13 @@ const KpiTotalCommandeParClient = ({ data }) => {
         <thead>
           <tr style={{ borderBottom: '1px solid rgba(148,163,184,.08)' }}>
             {['#', 'Client', 'Commandes', 'Total (DT)'].map(h => (
-              <th key={h} style={{ padding: '8px 10px', color: '#475569', fontWeight: 500, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '.06em', textAlign: 'left' }}>{h}</th>
+              <th key={h} style={{
+                padding: '8px 10px', color: '#475569', fontWeight: 500,
+                fontSize: '10px', textTransform: 'uppercase',
+                letterSpacing: '.06em', textAlign: 'left',
+              }}>
+                {h}
+              </th>
             ))}
           </tr>
         </thead>
@@ -132,11 +130,22 @@ const KpiTotalCommandeParClient = ({ data }) => {
             return (
               <tr key={i} style={{ borderBottom: i < clients.length - 1 ? '1px solid rgba(148,163,184,.05)' : 'none' }}>
                 <td style={{ padding: '10px' }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '18px', height: '18px', borderRadius: '5px', background: rbg, color: rcol, fontSize: '10px', fontWeight: 600 }}>{i + 1}</span>
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                    width: '18px', height: '18px', borderRadius: '5px',
+                    background: rbg, color: rcol, fontSize: '10px', fontWeight: 600,
+                  }}>
+                    {i + 1}
+                  </span>
                 </td>
                 <td style={{ padding: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: AVATAR_BG[i], color: COLORS[i], display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 600, flexShrink: 0 }}>
+                    <div style={{
+                      width: '24px', height: '24px', borderRadius: '6px',
+                      background: AVATAR_BG[i], color: COLORS[i],
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '10px', fontWeight: 600, flexShrink: 0,
+                    }}>
                       {initials(c.name)}
                     </div>
                     <span style={{ color: '#e2e8f0', fontWeight: 500 }}>{c.name}</span>
@@ -149,6 +158,7 @@ const KpiTotalCommandeParClient = ({ data }) => {
           })}
         </tbody>
       </table>
+
     </div>
   );
 };
