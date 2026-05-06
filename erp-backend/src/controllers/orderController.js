@@ -455,7 +455,7 @@ const updateOrderStatus = async (req, res) => {
     await createNotification(
       req.user.id,
       'commande_validee',
-      '📦 Commande mise à jour',
+      ' Commande mise à jour',
       `La commande ${order.orderNumber} est maintenant ${status}`,
       { orderId: order._id, status }
     );

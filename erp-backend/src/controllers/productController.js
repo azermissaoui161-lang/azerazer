@@ -72,8 +72,7 @@ exports.getAll = async (req, res) => {
     } = req.query;
 
     // Construire le filtre
-    const filter = { isActive: true }; 
-
+const filter = { isActive: { $ne: false } };
     if (category) filter.category = category;
     if (status) filter.status = status;
     if (search) {
@@ -754,19 +753,29 @@ exports.updateCategory = async (req, res) => {
 // ===== GET /api/products/stats =====
 exports.getStats = async (req, res) => {
   try {
+    // Standardiser le filtre pour tout le controller
+    const activeFilter = { isActive: { $ne: false } };
+
     const [totalProducts, totalValue, lowStock, outOfStock] = await Promise.all([
-      Product.countDocuments({ deletedAt: null }),
+      // 1. Total des produits actifs
+      Product.countDocuments(activeFilter),
+
+      // 2. Valeur totale du stock (Produits actifs uniquement)
       Product.aggregate([
-        { $match: { deletedAt: null } },
+        { $match: activeFilter },
         { $group: { _id: null, total: { $sum: { $multiply: ['$price', '$stock'] } } } }
       ]),
+
+      // 3. Stock faible (Actifs uniquement)
       Product.countDocuments({ 
-        stock: { $gt: 0, $lt: 10 },
-        deletedAt: null 
+        ...activeFilter,
+        stock: { $gt: 0, $lt: 10 }
       }),
+
+      // 4. Rupture de stock (Actifs uniquement)
       Product.countDocuments({ 
-        stock: 0,
-        deletedAt: null 
+        ...activeFilter,
+        stock: 0
       })
     ]);
 

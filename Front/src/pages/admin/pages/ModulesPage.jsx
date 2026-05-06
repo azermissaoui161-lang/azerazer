@@ -136,10 +136,10 @@ function ModulesPage() {
 
         <div className="modules-bulk-actions">
           <button onClick={() => toggleAllModules(true)} className="modules-bulk-button">
-            ✅ Tout activer
+             Tout activer
           </button>
           <button onClick={() => toggleAllModules(false)} className="modules-bulk-button">
-            ❌ Tout désactiver
+             Tout désactiver
           </button>
         </div>
       </div>

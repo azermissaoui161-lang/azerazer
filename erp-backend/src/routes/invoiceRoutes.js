@@ -10,7 +10,7 @@ const {
   deleteInvoice,
   validateInvoice,
   markAsPaid,
-  downloadInvoicePDF,    // ← Changé: generatePDF → downloadInvoicePDF
+  downloadInvoicePDF,   
   getInvoiceStats,
   sendInvoiceEmail,
   searchInvoices,

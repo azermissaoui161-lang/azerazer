@@ -196,6 +196,7 @@ exports.changePassword = async (req, res) => {
       success: true, 
       message: 'Mot de passe mis à jour avec succès' 
     });
+    // ken fama error f try yjy lena w mba3ed ymchy ll consol w ll front 
   } catch (error) {
     res.status(500).json({ 
       success: false, 
@@ -217,7 +218,7 @@ exports.getPreferences = async (req, res) => {
         message: 'Utilisateur non trouvé' 
       });
     }
-    
+    // lena yraja3 ture or false
     const preferences = getUserPreferenceValue(user, module);
     
     res.json({
@@ -441,16 +442,16 @@ exports.createUser = async (req, res) => {
 // @route   PUT /api/users/:id
 exports.updateUser = async (req, res) => {
   try {
-    // Valider l'ID MongoDB
+    // vérification du id shih w le
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ 
         success: false, 
         message: 'ID utilisateur invalide' 
       });
     }
-    
+    // yjib mo3tayett mn front
     const { firstName, lastName, email, phone, department, role, isActive } = req.body;
-    
+    // vérification id fama f bd w le
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ 
@@ -459,9 +460,9 @@ exports.updateUser = async (req, res) => {
       });
     }
     
-    // Empêcher la modification de son propre rôle (sécurité)
-    if (user._id.toString() === req.user._id.toString() && role && role !== user.role) {
-      return res.status(400).json({ 
+    // manbadlouch e rôle (sécurité)
+    if (user._id.toString() === req.user._id.toString() && role && role !== user.role) { // ken b3adh role jdid mo5talef ala le5er
+      return res.status(400).json({  //raja3 error
         success: false, 
         message: 'Vous ne pouvez pas modifier votre propre rôle' 
       });
@@ -470,16 +471,16 @@ exports.updateUser = async (req, res) => {
     // Vérifier si l'email est déjà pris (si changement d'email)
     if (email && email !== user.email) {
       // Validation email
-      const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-      if (!emailRegex.test(email)) {
+      const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/; // chakel shih w le
+      if (!emailRegex.test(email)) { // yraja3 shih w le
         return res.status(400).json({ 
           success: false, 
           message: 'Format d\'email invalide' 
         });
       }
-      
+      // ken fama user ekher andou nafes el email
       const existingUser = await User.findOne({ email, _id: { $ne: user._id } });
-      if (existingUser) {
+      if (existingUser) { // ken mail déja existe yraja3 error
         return res.status(400).json({ 
           success: false, 
           message: 'Cet email est déjà utilisé' 
@@ -488,8 +489,8 @@ exports.updateUser = async (req, res) => {
     }
     
     // Mise à jour des champs
-    const modifications = [];
-    if (firstName && firstName !== user.firstName) {
+    const modifications = []; // enregistré les champs a modifier 
+    if (firstName && firstName !== user.firstName) { // si le nom a envoyer w mouch nafes nom
       user.firstName = firstName;
       modifications.push('prénom');
     }
@@ -501,6 +502,7 @@ exports.updateUser = async (req, res) => {
       user.email = email;
       modifications.push('email');
     }
+    // ken badhnaum feregh  ytbadel b haja ""
     if (phone !== undefined) {
       user.phone = phone;
       modifications.push('téléphone');
@@ -509,6 +511,7 @@ exports.updateUser = async (req, res) => {
       user.department = department;
       modifications.push('département');
     }
+    // tnajem tbadel role ta3 employé ama admin le
     if (role && role !== user.role) {
       user.role = role;
       modifications.push('rôle');
@@ -517,7 +520,7 @@ exports.updateUser = async (req, res) => {
       user.isActive = isActive;
       modifications.push('statut');
     }
-    
+    // yhseb lhajet ely tbadlet w ken famech y9olna raw 0
     if (modifications.length === 0) {
       return res.status(400).json({ 
         success: false, 
@@ -639,7 +642,7 @@ exports.toggleUserStatus = async (req, res) => {
       });
     }
     
-    // Empêcher la désactivation de soi-même
+    // ma tbadalech l7ala ta3 rouhek
     if (user._id.toString() === req.user._id.toString()) {
       return res.status(400).json({ 
         success: false, 
@@ -647,8 +650,8 @@ exports.toggleUserStatus = async (req, res) => {
       });
     }
     
-    user.isActive = !user.isActive;
-    user.updatedAt = Date.now();
+    user.isActive = !user.isActive;  // ken houwa active raw ywaly désactive
+    user.updatedAt = Date.now();  // mise a jour 
     await user.save();
     
     // Journaliser

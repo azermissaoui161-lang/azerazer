@@ -5,8 +5,8 @@ import { extractApiErrorMessage, mapUserToAdminAccount, pickList } from "../../.
 import "./AccountsPage.css"
 
 function AccountsPage() {
-  const [accounts, setAccounts] = useState([])
-  const [accountSearchTerm, setAccountSearchTerm] = useState("")
+  const [accounts, setAccounts] = useState([])  // enregistré les compte
+  const [accountSearchTerm, setAccountSearchTerm] = useState("")  // pour recherche
   const [errorMessage, setErrorMessage] = useState("")
 
   const filteredAccounts = accounts.filter(account =>
@@ -14,12 +14,16 @@ function AccountsPage() {
     account.lastName.toLowerCase().includes(accountSearchTerm.toLowerCase())
   )
 
+const [successMessage, setSuccessMessage] = useState("")
+
+
+//yhseb el compte
   const accountStats = {
     total: accounts.length,
-    actifs: accounts.filter(a => a.active).length,
+    actifs: accounts.filter(a => a.active).length,  // kenou désactive yhsbouch
     inactifs: accounts.filter(a => !a.active).length,
   }
-
+// yjibelna compte
   const loadAccounts = async () => {
     try {
       const usersResponse = await userService.getUsers({ limit: 200 })
@@ -28,11 +32,11 @@ function AccountsPage() {
       setErrorMessage(extractApiErrorMessage(error, "Impossible de charger les comptes"))
     }
   }
-
+// yjib cmpte k nod5ol ll page
   useEffect(() => {
     loadAccounts()
   }, [])
-
+// yatina icone f tab bech nzidou nfar9ou binethom  *************
   const getModuleIcon = (role) => {
     const icons = {
       'admin': '👑',
@@ -55,7 +59,7 @@ function AccountsPage() {
     }
     return colors[role] || '#a0aec0'
   }
-
+// nestamlouha bech no3ordhou role b tari9a mafhouma
   const getRoleLabel = (role) => {
     const labels = {
       'admin': 'Admin',
@@ -66,20 +70,31 @@ function AccountsPage() {
     }
     return labels[role] || role
   }
-
+//pour activé et desactivé
   const toggleAccountStatus = async (accountId) => {
     try {
-      await userService.toggleUserStatus(accountId)
+ const res = await userService.toggleUserStatus(accountId) // envoyer demande au back-end
       await loadAccounts()
-    } catch (error) {
-      setErrorMessage(extractApiErrorMessage(error, "Impossible de modifier le statut du compte"))
+       setSuccessMessage(
+      res.data.isActive
+        ? "Compte activé avec succès"
+        : "Compte désactivé avec succès"
+    )
+
+    setTimeout(() => {
+  setSuccessMessage("")
+  setErrorMessage("")
+}, 3000)
+    } catch (error) {// si erreur
+      setErrorMessage(extractApiErrorMessage(error, "Impossible de modifier le statut du compte"))  // pour message claire
     }
   }
-
+//activé groupe
   const toggleAllAccounts = async (activate) => {
-    const accountsToUpdate = accounts.filter(account => account.active !== activate)
-    if (!accountsToUpdate.length) return
+    const accountsToUpdate = accounts.filter(account => account.active !== activate)  // filter les account de status désactivé
+    if (!accountsToUpdate.length) return  // ken famech yo5roj
     try {
+      // tanfith  kolhom mb3adhhom
       await Promise.all(accountsToUpdate.map(account => userService.toggleUserStatus(account.id)))
       await loadAccounts()
     } catch (error) {
@@ -91,12 +106,19 @@ function AccountsPage() {
     <div className="accounts-page-container">
       <h1 className="accounts-page-title">Consulter les comptes</h1>
 
-      {errorMessage && (
-        <div className="accounts-error-message">
-          {errorMessage}
-        </div>
-      )}
+     {(errorMessage || successMessage) && (
+  <div
+    className={
+      errorMessage
+        ? "accounts-alert accounts-alert-error"
+        : "accounts-alert accounts-alert-success"
+    }
+  >
+    {errorMessage || successMessage}
+  </div>
+)}
 
+  {/* statistique */}
       <div className="accounts-stats-container">
         <div className="accounts-stat-card">
           <span className="accounts-stat-card-value">{accountStats.total}</span>
@@ -133,13 +155,13 @@ function AccountsPage() {
             onClick={() => toggleAllAccounts(true)}
             className="accounts-bulk-button accounts-bulk-button-green"
           >
-            ✅ Tout activer
+             Tout activer
           </button>
           <button
             onClick={() => toggleAllAccounts(false)}
             className="accounts-bulk-button accounts-bulk-button-red"
           >
-            ❌ Tout désactiver
+             Tout désactiver
           </button>
         </div>
       </div>
@@ -163,17 +185,20 @@ function AccountsPage() {
             {filteredAccounts.length > 0 ? (
               filteredAccounts.map(account => (
                 <tr
-                  key={account.id}
-                  className={`accounts-table-row ${!account.active ? 'accounts-table-row-inactive' : ''}`}
+                  key={account.id}  //selon id de account
+                  className={`accounts-table-row ${!account.active ? 'accounts-table-row-inactive' : ''}`}  // ken active mrigel ken inactive ywaly ramedy chwaya
                 >
-                  <td className="accounts-table-cell accounts-id-cell">
+              
+                  <td className="accounts-table-cell accounts-id-cell">   
                     {account.id}
                   </td>
+                
                   <td className="accounts-table-cell">
                     <span className={`accounts-status-badge ${account.active ? 'accounts-status-badge-active' : 'accounts-status-badge-inactive'}`}>
                       {account.active ? 'Actif' : 'Inactif'}
                     </span>
                   </td>
+                    {/* Avatar  */}
                   <td className="accounts-table-cell">
                     <div className="accounts-user-info">
                       <div 
@@ -184,11 +209,14 @@ function AccountsPage() {
                       >
                         {account.firstName.charAt(0).toUpperCase()}
                       </div>
-                      <span className="accounts-user-name">
+
+                       <span className="accounts-user-name">
                         {account.firstName} {account.lastName}
                       </span>
                     </div>
                   </td>
+
+
                   <td className="accounts-table-cell">
                     <span className="accounts-email">{account.email}</span>
                   </td>

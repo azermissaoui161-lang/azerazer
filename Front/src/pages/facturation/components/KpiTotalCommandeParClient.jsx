@@ -49,9 +49,12 @@ const KpiTotalCommandeParClient = ({ data }) => {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: '#1e293b', titleColor: '#94a3b8',
-            bodyColor: '#f1f5f9', borderColor: '#334155',
-            borderWidth: 1, padding: 10,
+            backgroundColor: '#1e293b',
+            titleColor: '#94a3b8',
+            bodyColor: '#f1f5f9',
+            borderColor: '#334155',
+            borderWidth: 1,
+            padding: 10,
             callbacks: {
               title: (items) => [clients[items[0].dataIndex].name],
               label: (item) => `  ${item.parsed.y.toLocaleString()} DT`,
@@ -68,7 +71,9 @@ const KpiTotalCommandeParClient = ({ data }) => {
             beginAtZero: true,
             grid: { color: 'rgba(148,163,184,0.07)', borderDash: [4, 4] },
             ticks: {
-              color: '#64748b', font: { size: 11 }, padding: 6,
+              color: '#64748b',
+              font: { size: 11 },
+              padding: 6,
               callback: v => v >= 1000 ? v / 1000 + 'k' : v,
             },
             border: { display: false },
@@ -81,9 +86,58 @@ const KpiTotalCommandeParClient = ({ data }) => {
     return () => { chartInstance.current?.destroy(); };
   }, [data]);
 
+  // =========================
+  // EXPORT FUNCTIONS
+  // =========================
+  const downloadPNG = () => {
+    const chart = chartInstance.current;
+    if (!chart) return;
+
+    const url = chart.toBase64Image();
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'chart-client.png';
+    link.click();
+  };
+
+  const downloadSVG = () => {
+    const canvas = chartRef.current;
+    const imgData = canvas.toDataURL("image/png");
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
+        <image href="${imgData}" width="100%" height="100%" />
+      </svg>
+    `;
+
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'chart-client.svg';
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  // =========================
+  // STYLES
+  // =========================
+  const btnStyle = {
+    background: '#1e293b',
+    color: '#e2e8f0',
+    border: '1px solid rgba(148,163,184,.2)',
+    padding: '6px 10px',
+    borderRadius: '6px',
+    fontSize: '11px',
+    cursor: 'pointer',
+  };
+
   const s = {
     background: 'linear-gradient(145deg,#0f172a,#1e293b)',
-    borderRadius: '16px', padding: '22px',
+    borderRadius: '16px',
+    padding: '22px',
     border: '1px solid rgba(148,163,184,.1)',
     fontFamily: "'Inter','Segoe UI',sans-serif",
   };
@@ -91,19 +145,26 @@ const KpiTotalCommandeParClient = ({ data }) => {
   return (
     <div style={s}>
 
-      {/* Header */}
-      <div style={{ marginBottom: '18px' }}>
-        <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#e2e8f0', margin: 0 }}>
-          Commandes par client
-        </h3>
-        <p style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>
-          Top {clients.length} clients — classement par CA
-        </p>
+      {/* Header + Buttons */}
+      <div style={{ marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#e2e8f0', margin: 0 }}>
+            Commandes par client
+          </h3>
+          <p style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>
+            Top {clients.length} clients — classement par CA
+          </p>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={downloadPNG} style={btnStyle}>PNG</button>
+          <button onClick={downloadSVG} style={btnStyle}>SVG</button>
+        </div>
       </div>
 
       {/* Chart */}
       <div style={{ height: '200px', position: 'relative', marginBottom: '18px' }}>
-        <canvas ref={chartRef} role="img" aria-label="Total commandes par client" />
+        <canvas ref={chartRef} />
       </div>
 
       {/* Divider */}
@@ -115,9 +176,13 @@ const KpiTotalCommandeParClient = ({ data }) => {
           <tr style={{ borderBottom: '1px solid rgba(148,163,184,.08)' }}>
             {['#', 'Client', 'Commandes', 'Total (DT)'].map(h => (
               <th key={h} style={{
-                padding: '8px 10px', color: '#475569', fontWeight: 500,
-                fontSize: '10px', textTransform: 'uppercase',
-                letterSpacing: '.06em', textAlign: 'left',
+                padding: '8px 10px',
+                color: '#475569',
+                fontWeight: 500,
+                fontSize: '10px',
+                textTransform: 'uppercase',
+                letterSpacing: '.06em',
+                textAlign: 'left',
               }}>
                 {h}
               </th>
@@ -128,31 +193,51 @@ const KpiTotalCommandeParClient = ({ data }) => {
           {clients.map((c, i) => {
             const [rbg, rcol] = RANK_STYLE[i] || ['rgba(148,163,184,.07)', '#64748b'];
             return (
-              <tr key={i} style={{ borderBottom: i < clients.length - 1 ? '1px solid rgba(148,163,184,.05)' : 'none' }}>
+              <tr key={i}>
                 <td style={{ padding: '10px' }}>
                   <span style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    width: '18px', height: '18px', borderRadius: '5px',
-                    background: rbg, color: rcol, fontSize: '10px', fontWeight: 600,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '18px',
+                    height: '18px',
+                    borderRadius: '5px',
+                    background: rbg,
+                    color: rcol,
+                    fontSize: '10px',
+                    fontWeight: 600,
                   }}>
                     {i + 1}
                   </span>
                 </td>
+
                 <td style={{ padding: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <div style={{
-                      width: '24px', height: '24px', borderRadius: '6px',
-                      background: AVATAR_BG[i], color: COLORS[i],
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '10px', fontWeight: 600, flexShrink: 0,
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '6px',
+                      background: AVATAR_BG[i],
+                      color: COLORS[i],
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '10px',
+                      fontWeight: 600,
                     }}>
                       {initials(c.name)}
                     </div>
-                    <span style={{ color: '#e2e8f0', fontWeight: 500 }}>{c.name}</span>
+                    <span style={{ color: '#e2e8f0' }}>{c.name}</span>
                   </div>
                 </td>
-                <td style={{ padding: '10px', color: '#60a5fa', fontWeight: 600 }}>{c.count}</td>
-                <td style={{ padding: '10px', color: '#34d399', fontWeight: 600 }}>{c.total.toLocaleString()} DT</td>
+
+                <td style={{ padding: '10px', color: '#60a5fa', fontWeight: 600 }}>
+                  {c.count}
+                </td>
+
+                <td style={{ padding: '10px', color: '#34d399', fontWeight: 600 }}>
+                  {c.total.toLocaleString()} DT
+                </td>
               </tr>
             );
           })}

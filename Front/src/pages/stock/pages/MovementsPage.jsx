@@ -16,40 +16,45 @@ import FormField from '../../../components/common/FormField'
 const MV = { IN: "entrée", OUT: "sortie" }
 
 function MovementsPage() {
-  // Data
+  // --- Data States ---
   const [mov, setMov] = useState([])
   const [prod, setProd] = useState([])
   const [supp, setSupp] = useState([])
-
-
   
+  // 1. Stats State
+  const [stats, setStats] = useState({
+    global: { totalEntries: 0, totalExits: 0, totalMovements: 0, uniqueProducts: 0 },
+    topProducts: []
+  });
 
-  // Filters
+  // --- UI States ---
   const [f, setF] = useState({ movement: "all", date: "", searchProduct: "", startDate: "", endDate: "" })
   const [sdp, setSdp] = useState(false)
-
-  // Modal / form
   const [mod, setMod] = useState(false)
   const [mf, setMf] = useState({ productId: "", product: "", type: MV.IN, quantity: "", date: new Date().toISOString().split('T')[0], note: "" })
   const [fe, setFe] = useState({})
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null })
 
-
-  // supprimer 
-  const [deleteModal, setDeleteModal] = useState({
-  isOpen: false,
-  id: null
-})
-  // Load data
+  // --- Load Data (Corrected with Stats) ---
   const loadData = useCallback(async () => {
     try {
-      const [movementRes, productRes, supplierRes] = await Promise.all([
+      const [movementRes, productRes, supplierRes, statsRes] = await Promise.all([
         stockMovementService.getAll({ limit: 200 }),
         productService.getAll({ limit: 200 }),
         supplierService.getAll({ limit: 200 }),
+        stockMovementService.getStats() // Jib el stats mel backend
       ])
+
       setMov(pickList(movementRes, ['movements', 'data']).map(mapMovementToUi))
       setProd(pickList(productRes, ['products', 'data']).map(mapProductToUi))
       setSupp(pickList(supplierRes, ['suppliers', 'data']).map(mapSupplierToUi))
+      
+      if (statsRes) {
+        setStats({
+          global: statsRes.global,
+          topProducts: statsRes.topProducts
+        });
+      }
     } catch (error) {
       console.error('MovementsPage load error:', error)
     }
@@ -57,7 +62,7 @@ function MovementsPage() {
 
   useEffect(() => { loadData() }, [loadData])
 
-  // Filtered movements
+  // --- Filters Logic ---
   const fm = useMemo(() => mov.filter(m =>
     (f.movement === 'all' || m.type === f.movement) &&
     (!f.date || m.date === f.date) &&
@@ -69,11 +74,11 @@ function MovementsPage() {
   const updateFilter = (k, v) => setF(prev => ({ ...prev, [k]: v }))
   const clearFilters = useCallback(() => setF({ movement: "all", date: "", searchProduct: "", startDate: "", endDate: "" }), [])
 
-  // Validation
+  // --- Form Handlers ---
   const vMv = useCallback(() => {
     const e = {}
     if (!mf.productId) e.productId = "Produit requis"
-    if (!mf.quantity || parseInt(mf.quantity) <= 0) e.quantity = "Quantité >0"
+    if (!mf.quantity || parseInt(mf.quantity) <= 0) e.quantity = "Quantité > 0"
     if (mf.type === MV.OUT && mf.productId) {
       const p = prod.find(p => String(p.id) === String(mf.productId))
       if (p && parseInt(mf.quantity) > p.stock) e.quantity = `Stock insuffisant (${p.stock})`
@@ -81,20 +86,17 @@ function MovementsPage() {
     return e
   }, [mf, prod])
 
-  // Reset
   const rMv = useCallback(() => {
     setMf({ productId: "", product: "", type: MV.IN, quantity: "", date: new Date().toISOString().split('T')[0], note: "" })
     setFe({})
   }, [])
 
-  // Product change handler
   const hdlProdChange = useCallback(e => {
     const id = e.target.value
     const p = prod.find(p => String(p.id) === String(id))
     if (p) setMf(prev => ({ ...prev, productId: id, product: p.name }))
   }, [prod])
 
-  // CRUD Remote
   const hdlAddMvRemote = async () => {
     const e = vMv(); if (Object.keys(e).length) return setFe(e)
     try {
@@ -108,18 +110,16 @@ function MovementsPage() {
   }
 
   const hdlDelMvRemote = async () => {
-  try {
-    await stockMovementService.delete(deleteModal.id)
-    await loadData()
-    setDeleteModal({ isOpen: false, id: null })
-  } catch (error) {
-    window.alert(extractApiErrorMessage(error, "Impossible de supprimer le mouvement"))
+    try {
+      await stockMovementService.delete(deleteModal.id)
+      await loadData()
+      setDeleteModal({ isOpen: false, id: null })
+    } catch (error) {
+      window.alert(extractApiErrorMessage(error, "Impossible de supprimer le mouvement"))
+    }
   }
-}
 
- 
   return (
-    
     <div className="movements-tab">
       <header className="tab-header">
         <h2>🔄 Mouvements</h2>
@@ -129,16 +129,43 @@ function MovementsPage() {
         </div>
       </header>
 
+      {/* Stats Dashboard */}
+      <div className="stats-container">
+        <div className="stat-card">
+          <span>Mouvements Total</span>
+          <strong>{stats.global.totalMovements}</strong>
+        </div>
+        <div className="stat-card success">
+          <span>Total Entrées (Qté)</span>
+          <strong>{stats.global.totalEntries}</strong>
+        </div>
+        <div className="stat-card warning">
+          <span>Total Sorties (Qté)</span>
+          <strong>{stats.global.totalExits}</strong>
+        </div>
+        <div className="stat-card info">
+          <span>Produits Impactés</span>
+          <strong>{stats.global.uniqueProducts}</strong>
+        </div>
+      </div>
+
+      {/* Search & Filters */}
       <div className="movements-search-bar">
         <div className="search-row">
-          <FormField label="Rechercher" id="search-mvmt"><input type="text" placeholder="Produit..." value={f.searchProduct} onChange={e => updateFilter('searchProduct', e.target.value)} className="search-input" /></FormField>
-          <FormField label="Date" id="search-date"><input type="date" value={f.date} onChange={e => updateFilter('date', e.target.value)} className="search-input" /></FormField>
+          <FormField label="Rechercher" id="search-mvmt">
+            <input type="text" placeholder="Produit..." value={f.searchProduct} onChange={e => updateFilter('searchProduct', e.target.value)} className="search-input" />
+          </FormField>
+          <FormField label="Date" id="search-date">
+            <input type="date" value={f.date} onChange={e => updateFilter('date', e.target.value)} className="search-input" />
+          </FormField>
           <button className="btn-toggle-date" onClick={() => setSdp(!sdp)}>{sdp ? "Masquer" : "Afficher"} plage</button>
         </div>
-        {sdp && <div className="date-range-picker">
-          <FormField label="Début" id="start"><input type="date" value={f.startDate} onChange={e => updateFilter('startDate', e.target.value)} className="search-input" /></FormField>
-          <FormField label="Fin" id="end"><input type="date" value={f.endDate} onChange={e => updateFilter('endDate', e.target.value)} className="search-input" /></FormField>
-        </div>}
+        {sdp && (
+          <div className="date-range-picker">
+            <FormField label="Début" id="start"><input type="date" value={f.startDate} onChange={e => updateFilter('startDate', e.target.value)} className="search-input" /></FormField>
+            <FormField label="Fin" id="end"><input type="date" value={f.endDate} onChange={e => updateFilter('endDate', e.target.value)} className="search-input" /></FormField>
+          </div>
+        )}
       </div>
 
       <div className="movements-filters">
@@ -146,33 +173,53 @@ function MovementsPage() {
           { value: 'all', label: 'Tous', count: fm.length },
           { value: MV.IN, label: 'Entrées', count: fm.filter(m => m.type === MV.IN).length },
           { value: MV.OUT, label: 'Sorties', count: fm.filter(m => m.type === MV.OUT).length }
-        ].map(fil => <button key={fil.value} className={`filter-btn ${f.movement === fil.value ? 'active' : ''}`} onClick={() => updateFilter('movement', fil.value)}>{fil.label} ({fil.count})</button>)}
+        ].map(fil => (
+          <button key={fil.value} className={`filter-btn ${f.movement === fil.value ? 'active' : ''}`} onClick={() => updateFilter('movement', fil.value)}>
+            {fil.label} ({fil.count})
+          </button>
+        ))}
       </div>
 
+      {/* Movements Table */}
       <div className="movements-table-container">
         <table className="movements-table">
-          <thead><tr><th>ID</th><th>Date</th><th>Produit</th><th>Fournisseur</th><th>Type</th><th>Qté</th><th>Note</th><th>Utilisateur</th><th>Actions</th></tr></thead>
-          <tbody>{fm.length ? fm.map(m => {
-            const product = prod.find(p => p.id === m.productId)
-            const supplier = product ? supp.find(s => s.id === product.supplierId) : null
-            return <tr key={m.id}>
-              <td style={{ fontSize: '0.75rem', color: '#718096', fontFamily: 'monospace' }}>{m.id}</td>
-              <td><time dateTime={m.date}>{new Date(m.date).toLocaleDateString('fr-FR')}</time></td>
-              <td className="product-name">{m.product}</td>
-              <td>{supplier?.name || '-'}</td>
-              <td><span className={`movement-type ${m.type}`} style={{ background: m.type === MV.IN ? "#c6f6d5" : "#fed7d7", color: m.type === MV.IN ? "#22543d" : "#742a2a" }}>{m.type === MV.IN ? "⬆️ Entrée" : "⬇️ Sortie"}</span></td>
-              <td className={m.type === MV.IN ? "text-success" : "text-danger"}><strong>{m.quantity}</strong></td>
-              <td className="movement-note">{m.note || "-"}</td>
-              <td>{m.user}</td>
-              <td><button className="btn-icon" onClick={() => setDeleteModal({ isOpen: true, id: m.id })}>🗑️</button></td>
-            </tr>
-          }) : <tr><td colSpan="9" className="no-data-row"><div className="no-data-message">Aucun mouvement</div></td></tr>}</tbody>
+          <thead>
+            <tr><th>ID</th><th>Date</th><th>Produit</th><th>Fournisseur</th><th>Type</th><th>Qté</th><th>Note</th><th>Utilisateur</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            {fm.length ? fm.map(m => {
+              const product = prod.find(p => p.id === m.productId)
+              const supplier = product ? supp.find(s => s.id === product.supplierId) : null
+              return (
+                <tr key={m.id}>
+                  <td style={{ fontSize: '0.75rem', color: '#718096', fontFamily: 'monospace' }}>{m.id}</td>
+                  <td><time dateTime={m.date}>{new Date(m.date).toLocaleDateString('fr-FR')}</time></td>
+                  <td className="product-name">{m.product}</td>
+                  <td>{supplier?.name || '-'}</td>
+                  <td>
+                    <span className={`movement-type ${m.type}`} style={{ background: m.type === MV.IN ? "#c6f6d5" : "#fed7d7", color: m.type === MV.IN ? "#22543d" : "#742a2a" }}>
+                      {m.type === MV.IN ? "⬆️ Entrée" : "⬇️ Sortie"}
+                    </span>
+                  </td>
+                  <td className={m.type === MV.IN ? "text-success" : "text-danger"}><strong>{m.quantity}</strong></td>
+                  <td className="movement-note">{m.note || "-"}</td>
+                  <td>{m.user}</td>
+                  <td><button className="btn-icon" onClick={() => setDeleteModal({ isOpen: true, id: m.id })}>🗑️</button></td>
+                </tr>
+              )
+            }) : <tr><td colSpan="9" className="no-data-row"><div className="no-data-message">Aucun mouvement</div></td></tr>}
+          </tbody>
         </table>
       </div>
 
-      {/* Movement Modal */}
+      {/* Modals */}
       <Modal isOpen={mod} onClose={() => { setMod(false); rMv() }} title="➕ Nouveau mouvement" onConfirm={hdlAddMvRemote} confirmText="Ajouter">
-        <FormField label="Produit" id="mvmt-prod" error={fe.productId}><select value={mf.productId} onChange={hdlProdChange}><option value="">Sélectionner</option>{prod.map(p => <option key={p.id} value={p.id}>{p.name} ({p.stock}) - {supp.find(s => s.id === p.supplierId)?.name}</option>)}</select></FormField>
+        <FormField label="Produit" id="mvmt-prod" error={fe.productId}>
+          <select value={mf.productId} onChange={hdlProdChange}>
+            <option value="">Sélectionner</option>
+            {prod.map(p => <option key={p.id} value={p.id}>{p.name} ({p.stock}) - {supp.find(s => s.id === p.supplierId)?.name}</option>)}
+          </select>
+        </FormField>
         <div className="form-row">
           <FormField label="Type" id="mvmt-type"><select value={mf.type} onChange={e => setMf({ ...mf, type: e.target.value })}><option value={MV.IN}>⬆️ Entrée</option><option value={MV.OUT}>⬇️ Sortie</option></select></FormField>
           <FormField label="Quantité" id="mvmt-qty" error={fe.quantity}><input type="number" min="1" value={mf.quantity} onChange={e => setMf({ ...mf, quantity: e.target.value })} /></FormField>
@@ -183,35 +230,24 @@ function MovementsPage() {
       </Modal>
 
       {deleteModal.isOpen && (
-  <div className="modal-overlay" onClick={() => setDeleteModal({ isOpen: false, id: null })}>
-    <div className="modal-content modal-small" onClick={e => e.stopPropagation()}>
-      
-      <div className="modal-header">
-        <h3>⚠️ Confirmation</h3>
-        <button className="modal-close" onClick={() => setDeleteModal({ isOpen: false, id: null })}>×</button>
-      </div>
-
-      <div className="modal-body">
-        <p>Êtes-vous sûr de vouloir supprimer ce mouvement ?</p>
-        <p className="text-danger">Cette action est irréversible.</p>
-      </div>
-
-      <div className="modal-footer">
-        <button className="btn-secondary" onClick={() => setDeleteModal({ isOpen: false, id: null })}>
-          Annuler
-        </button>
-        <button className="btn-danger" onClick={hdlDelMvRemote}>
-          Supprimer
-        </button>
-      </div>
-
+        <div className="modal-overlay" onClick={() => setDeleteModal({ isOpen: false, id: null })}>
+          <div className="modal-content modal-small" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>⚠️ Confirmation</h3>
+              <button className="modal-close" onClick={() => setDeleteModal({ isOpen: false, id: null })}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Êtes-vous sûr de vouloir supprimer ce mouvement ?</p>
+              <p className="text-danger">Cette action est irréversible.</p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn-secondary" onClick={() => setDeleteModal({ isOpen: false, id: null })}>Annuler</button>
+              <button className="btn-danger" onClick={hdlDelMvRemote}>Supprimer</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-)}
-    </div>
-
-    
   )
 }
-
 export default MovementsPage

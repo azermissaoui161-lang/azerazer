@@ -140,7 +140,7 @@ const getCustomerById = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
+// mise a jour 
 const updateCustomer = async (req, res) => {
   try {
     const customer = await Customer.findById(req.params.id);
@@ -189,7 +189,7 @@ const updateCustomer = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
+// supprimer client
 const deleteCustomer = async (req, res) => {
   try {
     const customer = await Customer.findById(req.params.id);
@@ -200,7 +200,7 @@ const deleteCustomer = async (req, res) => {
         message: 'Client non trouvé' 
       });
     }
-
+     // nb de fact de la client
     const invoiceCount = await Invoice.countDocuments({ 
       customer: req.params.id 
     });
@@ -234,7 +234,7 @@ const deleteCustomer = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
+// mise a jour du statut statut
 const toggleCustomerStatus = async (req, res) => {
   try {
     const customer = await Customer.findById(req.params.id);
@@ -258,7 +258,7 @@ const toggleCustomerStatus = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
+//statistique 
 const getCustomerStats = async (req, res) => {
   try {
     const total = await Customer.countDocuments();

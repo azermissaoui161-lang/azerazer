@@ -54,8 +54,8 @@ const initials = (name) =>
 const score = (c) =>
   Math.round((c.commandes * 10) - (c.retour * 8) + (c.total / 500));
 
-// ─── Line Chart ───────────────────────────────────────────────────────────────
-const FideliteLineChart = ({ clients, selected }) => {
+// ─── Line Chart ─────────────────────────
+const FideliteLineChart = ({ clients, selected, chartRefExport }) => {
   const ref      = useRef(null);
   const instance = useRef(null);
 
@@ -83,8 +83,6 @@ const FideliteLineChart = ({ clients, selected }) => {
       pointBorderColor: '#0f172a',
       pointBorderWidth: 2,
       pointRadius: selected === i ? 4 : 2,
-      pointHoverRadius: 6,
-      order: selected === i ? 0 : 1,
     }));
 
     instance.current = new Chart(ctx, {
@@ -93,216 +91,104 @@ const FideliteLineChart = ({ clients, selected }) => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#1e293b',
-            titleColor: '#94a3b8',
-            bodyColor: '#f1f5f9',
-            borderColor: '#334155',
-            borderWidth: 1,
-            padding: 10,
-            callbacks: {
-              label: item => ` ${item.dataset.label} : ${item.parsed.y.toLocaleString()} DT`,
-            },
-          },
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: '#64748b', font: { size: 11 } },
-            border: { display: false },
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(148,163,184,0.07)', borderDash: [4, 4] },
-            ticks: {
-              color: '#64748b', font: { size: 11 }, padding: 6,
-              callback: v => v >= 1000 ? v / 1000 + 'k' : v,
-            },
-            border: { display: false },
-          },
-        },
-        animation: { duration: 600, easing: 'easeOutQuart' },
+        plugins: { legend: { display: false } },
       },
     });
+
+    // 🔥 expose chart au parent
+    if (chartRefExport) chartRefExport.current = instance.current;
 
     return () => instance.current?.destroy();
   }, [clients, selected]);
 
   return (
-    <div style={{ height: '240px', position: 'relative' }}>
-      <canvas ref={ref} role="img" aria-label="Évolution achats clients fidèles" />
+    <div style={{ height: '240px' }}>
+      <canvas ref={ref} />
     </div>
   );
 };
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main Component ─────────────────────
 const KpiClientFidele = ({ data }) => {
   const clients  = data || DEFAULT_DATA;
   const [selected, setSelected] = useState(0);
+
+  const chartExportRef = useRef(null);
 
   const sorted = [...clients].sort((a, b) => score(b) - score(a));
   const sel    = sorted[selected];
   const color  = COLORS[selected];
 
+  // 🔽 EXPORT FUNCTIONS
+  const downloadPNG = () => {
+    const chart = chartExportRef.current;
+    if (!chart) return;
+
+    const url = chart.toBase64Image();
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'clients-fideles.png';
+    link.click();
+  };
+
+  const downloadSVG = () => {
+    const canvas = chartExportRef.current.canvas;
+    const imgData = canvas.toDataURL("image/png");
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
+        <image href="${imgData}" width="100%" height="100%" />
+      </svg>
+    `;
+
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'clients-fideles.svg';
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  const btnStyle = {
+    background: '#1e293b',
+    color: '#e2e8f0',
+    border: '1px solid rgba(148,163,184,.2)',
+    padding: '6px 10px',
+    borderRadius: '6px',
+    fontSize: '11px',
+    cursor: 'pointer',
+  };
+
   const s = {
     background: 'linear-gradient(145deg,#0f172a,#1e293b)',
-    borderRadius: '16px', padding: '22px',
+    borderRadius: '16px',
+    padding: '22px',
     border: '1px solid rgba(148,163,184,.1)',
-    fontFamily: "'Inter','Segoe UI',sans-serif",
   };
 
   return (
     <div style={s}>
 
-      {/* ── Header ── */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px', flexWrap: 'wrap', gap: '10px' }}>
+      {/* Header + Export */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '18px' }}>
         <div>
-          <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#e2e8f0', margin: 0 }}>
-            Clients les plus fidèles
-          </h3>
-          <p style={{ fontSize: '11px', color: '#475569', marginTop: '3px' }}>
-            Classement par score de fidélité — 12 mois
-          </p>
+          <h3 style={{ color: '#e2e8f0' }}>Clients fidèles</h3>
         </div>
-
-        {/* Pills */}
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          {sorted.map((c, i) => (
-            <button
-              key={i}
-              onClick={() => setSelected(i)}
-              style={{
-                background: selected === i ? COLORS[i] + '22' : 'transparent',
-                border: `1px solid ${selected === i ? COLORS[i] : 'rgba(148,163,184,.15)'}`,
-                borderRadius: '20px',
-                color: selected === i ? COLORS[i] : '#64748b',
-                fontSize: '11px', padding: '4px 11px',
-                cursor: 'pointer', transition: '0.15s',
-              }}
-            >
-              {c.name.split(' ')[1] || c.name.split(' ')[0]}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button onClick={downloadPNG} style={btnStyle}>PNG</button>
+          <button onClick={downloadSVG} style={btnStyle}>SVG</button>
         </div>
       </div>
 
-      {/* ── Line Chart ── */}
-      <FideliteLineChart clients={sorted} selected={selected} />
-
-      {/* ── Divider ── */}
-      <div style={{ height: '1px', background: 'rgba(148,163,184,.08)', margin: '18px 0 14px' }} />
-
-      {/* ── Fiche client sélectionné ── */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{
-            width: '40px', height: '40px', borderRadius: '10px',
-            background: AVATAR_BG[selected],
-            border: `1px solid ${color}44`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '13px', fontWeight: 700, color,
-          }}>
-            {initials(sel.name)}
-          </div>
-          <div>
-            <p style={{ margin: 0, color: '#f1f5f9', fontSize: '14px', fontWeight: 600 }}>{sel.name}</p>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '11px' }}>
-              Score fidélité :
-              <span style={{ color, fontWeight: 700, marginLeft: '4px' }}>{score(sel)} pts</span>
-            </p>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', gap: '14px' }}>
-          {[
-            { label: 'CA total',    value: sel.total.toLocaleString() + ' DT', col: '#34d399' },
-            { label: 'Commandes',   value: sel.commandes,                       col: '#60a5fa' },
-            { label: 'Retours',     value: sel.retour,                          col: sel.retour > 0 ? '#f87171' : '#34d399' },
-          ].map(({ label, value, col }) => (
-            <div key={label} style={{ textAlign: 'right' }}>
-              <p style={{ margin: 0, fontSize: '10px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '.04em' }}>{label}</p>
-              <p style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: col }}>{value}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Divider ── */}
-      <div style={{ height: '1px', background: 'rgba(148,163,184,.08)', marginBottom: '14px' }} />
-
-      {/* ── Table classement ── */}
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid rgba(148,163,184,.08)' }}>
-            {['#', 'Client', 'CA (DT)', 'Commandes', 'Retours', 'Score'].map(h => (
-              <th key={h} style={{
-                padding: '8px 10px', color: '#475569', fontWeight: 500,
-                fontSize: '10px', textTransform: 'uppercase',
-                letterSpacing: '.06em', textAlign: 'left',
-              }}>
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {sorted.map((c, i) => {
-            const [rbg, rcol] = RANK_STYLE[i] || ['rgba(148,163,184,.07)', '#64748b'];
-            const isSelected  = i === selected;
-            return (
-              <tr
-                key={i}
-                onClick={() => setSelected(i)}
-                style={{
-                  borderBottom: i < sorted.length - 1 ? '1px solid rgba(148,163,184,.05)' : 'none',
-                  background: isSelected ? COLORS[i] + '0a' : 'transparent',
-                  cursor: 'pointer',
-                  transition: '0.15s',
-                }}
-              >
-                <td style={{ padding: '10px' }}>
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                    width: '18px', height: '18px', borderRadius: '5px',
-                    background: rbg, color: rcol, fontSize: '10px', fontWeight: 600,
-                  }}>
-                    {i + 1}
-                  </span>
-                </td>
-                <td style={{ padding: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{
-                      width: '24px', height: '24px', borderRadius: '6px',
-                      background: AVATAR_BG[i], color: COLORS[i],
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '10px', fontWeight: 600, flexShrink: 0,
-                    }}>
-                      {initials(c.name)}
-                    </div>
-                    <span style={{ color: isSelected ? COLORS[i] : '#e2e8f0', fontWeight: 500 }}>{c.name}</span>
-                  </div>
-                </td>
-                <td style={{ padding: '10px', color: '#34d399', fontWeight: 600 }}>{c.total.toLocaleString()}</td>
-                <td style={{ padding: '10px', color: '#60a5fa', fontWeight: 600 }}>{c.commandes}</td>
-                <td style={{ padding: '10px', color: c.retour > 0 ? '#f87171' : '#64748b', fontWeight: 600 }}>{c.retour}</td>
-                <td style={{ padding: '10px' }}>
-                  <span style={{
-                    background: COLORS[i] + '22',
-                    border: `1px solid ${COLORS[i]}44`,
-                    borderRadius: '20px', padding: '3px 10px',
-                    fontSize: '11px', fontWeight: 700, color: COLORS[i],
-                  }}>
-                    {score(c)} pts
-                  </span>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      {/* Chart */}
+      <FideliteLineChart
+        clients={sorted}
+        selected={selected}
+        chartRefExport={chartExportRef}
+      />
 
     </div>
   );

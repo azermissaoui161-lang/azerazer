@@ -26,6 +26,8 @@ const dashboardFactureRoutes = require('./routes/dashboardFactureRoutes');
 const dashboardStockRoutes = require('./routes/dashboardStockRoutes');
 const dashboardFinanceRoutes = require('./routes/dashboardFinanceRoutes');
 const depensesRoutes = require('./routes/depensesRoutes');
+const archiveRoutes = require('./routes/archiveRoutes');
+
 // CrÃ©er l'application
 const app = express();
 
@@ -131,6 +133,7 @@ app.use('/api/depenses', depensesRoutes);
 app.use('/api/dashboard/facture', dashboardFactureRoutes);
 app.use('/api/dashboard/stock', dashboardStockRoutes);
 app.use('/api/dashboard/finance', dashboardFinanceRoutes);
+app.use('/api/archive', archiveRoutes);
 
 // ============================================
 // 7. Routes de test

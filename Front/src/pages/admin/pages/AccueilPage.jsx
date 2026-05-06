@@ -90,7 +90,7 @@ function AccueilPage() {
       <div className="accueil-main-header">
         <div>
           <h1 className="accueil-welcome-title">
-            Bonjour, <span className="accueil-welcome-name">{userName}</span> 👋
+            Bonjour, <span className="accueil-welcome-name">{userName}</span> 
           </h1>
           {activeModulesCount < allModules.length && (
             <p className="accueil-filter-indicator">

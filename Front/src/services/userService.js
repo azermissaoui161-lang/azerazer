@@ -339,12 +339,13 @@ const userService = {
    */
   toggleUserStatus: async (id) => {
     try {
-      if (!id) throw new Error('ID utilisateur requis');
+      if (!id) throw new Error('ID utilisateur requis');// ken famech id yatina erreur
+// demande de modifier          (partie) 
       const response = await api.patch(`/users/${id}/toggle`);
-      return response.data;
+      return response.data;  //  retourn juste ely hachtna bih
     } catch (error) {
-      console.error('❌ Erreur toggleUserStatus:', error);
-      throw error;
+      console.error(' Erreur toggleUserStatus:', error);
+      throw error;   // yab3eth el error ll component (ely ynedy el fonction) bech nrawha f front
     }
   },
 

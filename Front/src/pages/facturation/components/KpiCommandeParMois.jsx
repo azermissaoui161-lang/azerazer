@@ -79,6 +79,54 @@ const KpiCommandeParMois = ({ dataCommandes }) => {
     return () => { chartInstance.current?.destroy(); };
   }, [dataCommandes]);
 
+  // =========================
+  // EXPORT FUNCTIONS
+  // =========================
+  const downloadPNG = () => {
+    const chart = chartInstance.current;
+    if (!chart) return;
+
+    const url = chart.toBase64Image();
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'commandes-mois.png';
+    link.click();
+  };
+
+  const downloadSVG = () => {
+    const canvas = chartRef.current;
+    const imgData = canvas.toDataURL("image/png");
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
+        <image href="${imgData}" width="100%" height="100%" />
+      </svg>
+    `;
+
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'commandes-mois.svg';
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  // =========================
+  // STYLE BUTTON
+  // =========================
+  const btnStyle = {
+    background: '#1e293b',
+    color: '#e2e8f0',
+    border: '1px solid rgba(148,163,184,.2)',
+    padding: '6px 10px',
+    borderRadius: '6px',
+    fontSize: '11px',
+    cursor: 'pointer',
+  };
+
   return (
     <div style={{
       background: 'linear-gradient(145deg, #0f172a, #1e293b)',
@@ -87,8 +135,14 @@ const KpiCommandeParMois = ({ dataCommandes }) => {
       border: '1px solid rgba(148,163,184,0.1)',
       fontFamily: "'Inter', 'Segoe UI', sans-serif",
     }}>
-      {/* Header avec stat en ligne */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '18px' }}>
+
+      {/* Header + boutons */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '18px'
+      }}>
         <div>
           <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#e2e8f0', margin: 0 }}>
             Commandes par mois
@@ -97,25 +151,36 @@ const KpiCommandeParMois = ({ dataCommandes }) => {
             Janvier – Juillet
           </p>
         </div>
+
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '26px', fontWeight: 700, color: '#f1f5f9', lineHeight: 1 }}>
+          <div style={{ fontSize: '26px', fontWeight: 700, color: '#f1f5f9' }}>
             {total}
           </div>
-          <div style={{ fontSize: '11px', color: trend >= 0 ? '#34d399' : '#f87171', marginTop: '3px' }}>
+
+          <div style={{
+            fontSize: '11px',
+            color: trend >= 0 ? '#34d399' : '#f87171',
+            marginTop: '3px'
+          }}>
             {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
-            <span style={{ color: '#475569', marginLeft: '4px' }}>vs mois préc.</span>
+            <span style={{ color: '#475569', marginLeft: '4px' }}>
+              vs mois préc.
+            </span>
+          </div>
+
+          {/* BOUTONS EXPORT */}
+          <div style={{ display: 'flex', gap: '6px', marginTop: '8px', justifyContent: 'flex-end' }}>
+            <button onClick={downloadPNG} style={btnStyle}>PNG</button>
+            <button onClick={downloadSVG} style={btnStyle}>SVG</button>
           </div>
         </div>
       </div>
 
       {/* Chart */}
       <div style={{ height: '180px', position: 'relative' }}>
-        <canvas
-          ref={chartRef}
-          role="img"
-          aria-label="Graphique commandes mensuelles"
-        />
+        <canvas ref={chartRef} />
       </div>
+
     </div>
   );
 };
