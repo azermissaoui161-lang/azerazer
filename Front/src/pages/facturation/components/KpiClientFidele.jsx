@@ -45,7 +45,6 @@ const FideliteLineChart = ({ clients, selected, chartRefExport }) => {
       pointBorderColor: '#0f172a',
       pointBorderWidth: 2,
       pointRadius: selected === i ? 5 : 3,
-      pointHoverRadius: 7,
     }));
 
     instance.current = new Chart(ctx, {
@@ -60,17 +59,14 @@ const FideliteLineChart = ({ clients, selected, chartRefExport }) => {
             backgroundColor: '#0f172a',
             titleColor: '#fff',
             bodyColor: '#cbd5e1',
-            borderColor: '#334155',
-            borderWidth: 1,
-            padding: 10,
             callbacks: {
               label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} DT`,
             }
           }
         },
         scales: {
-          x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.08)' } },
-          y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.08)' } }
+          x: { ticks: { color: '#94a3b8' } },
+          y: { ticks: { color: '#94a3b8' } }
         }
       }
     });
@@ -93,18 +89,14 @@ const KpiClientFidele = ({ data }) => {
 
   const sorted = [...clients].sort((a,b)=>score(b)-score(a));
 
-  /* ================= EXPORT PNG (html2canvas) ================= */
+  /* ================= EXPORT PNG ================= */
   const downloadPNG = async () => {
-    if (!containerRef.current) return;
-
     const canvas = await html2canvas(containerRef.current, {
       backgroundColor: null,
-      scale: 2,
-      useCORS: true,
+      scale: 2
     });
 
     const url = canvas.toDataURL('image/png');
-
     const a = document.createElement('a');
     a.href = url;
     a.download = 'clients-fideles.png';
@@ -118,7 +110,7 @@ const KpiClientFidele = ({ data }) => {
 
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
-        <image href="${img}" width="100%" height="100%" />
+        <image href="${img}" width="100%" height="100%"/>
       </svg>
     `;
 
@@ -161,13 +153,55 @@ const KpiClientFidele = ({ data }) => {
         </div>
       </div>
 
-      {/* CHART */}
-      <FideliteLineChart
-        clients={sorted}
-        selected={selected}
-        chartRefExport={chartRef}
-      />
+      {/* MAIN */}
+      <div style={{ display:'flex', gap:20 }}>
 
+        {/* CHART */}
+        <div style={{ flex:2 }}>
+          <FideliteLineChart
+            clients={sorted}
+            selected={selected}
+            chartRefExport={chartRef}
+          />
+        </div>
+
+        {/* SIDEBAR CLIENTS */}
+        <div style={{
+          flex:1,
+          background:'rgba(15,23,42,0.6)',
+          border:'1px solid rgba(148,163,184,.1)',
+          borderRadius:12,
+          padding:12,
+          maxHeight:260,
+          overflowY:'auto'
+        }}>
+          <h4 style={{ marginBottom:10 }}>Top Clients</h4>
+
+          {sorted.map((c, i) => (
+            <div
+              key={i}
+              onClick={() => setSelected(i)}
+              style={{
+                padding:10,
+                marginBottom:8,
+                borderRadius:8,
+                cursor:'pointer',
+                background: selected === i ? COLORS[i] + '33' : 'transparent',
+                border: selected === i ? `1px solid ${COLORS[i]}` : '1px solid transparent'
+              }}
+            >
+              <div style={{ fontWeight:600 }}>{c.name}</div>
+              <div style={{ fontSize:12, opacity:0.8 }}>
+                💰 {c.total} DT
+              </div>
+              <div style={{ fontSize:11, opacity:0.6 }}>
+                📦 {c.commandes} commandes | 🔁 {c.retour} retours
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </div>
     </div>
   );
 };
