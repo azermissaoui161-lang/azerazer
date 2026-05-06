@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import userService from '../../../services/userService'
 import { extractApiErrorMessage } from '../../../utils/frontendApiAdapters'
-
+import'./SettingsPage'
 const INITIAL_SETTINGS = {
   firstName: '', lastName: '', email: '', phone: '', department: '', role: '',
   currentPassword: '', newPassword: '', confirmPassword: ''

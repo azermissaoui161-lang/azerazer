@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clientService } from '../../../services/clientService'
+import'./Clientspage.css'
 import {
   buildCustomerPayload,
   extractApiErrorMessage,

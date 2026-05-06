@@ -1,5 +1,9 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import ArchiveService from '../../../services/ArchiveService'
+
+import './ArchivePage.css'
+
+
 // 🛠 utils
 const utils = {
   formatCurrency: a =>

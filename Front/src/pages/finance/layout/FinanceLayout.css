@@ -1,5 +1,3 @@
-/* FinanceLayout.css */
-
 /* ===== VARIABLES ===== */
 :root {
   --primary: #4299e1;
@@ -15,24 +13,9 @@
   --bg-light: #f7fafc;
   --bg-white: #fff;
   --shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.1);
   --radius: 8px;
-  --radius-sm: 6px;
-  --radius-lg: 12px;
   --sidebar-width: 280px;
   --sidebar-collapsed-width: 70px;
-}
-
-/* ===== RESET & BASE ===== */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: var(--text);
 }
 
 /* ===== LOADING ===== */
@@ -61,7 +44,7 @@ body {
   }
 }
 
-/* ===== LAYOUT PRINCIPAL ===== */
+/* ===== LAYOUT ===== */
 .finance-container {
   display: flex;
   height: 100vh;
@@ -81,7 +64,6 @@ body {
   top: 0;
   left: 0;
   bottom: 0;
-  z-index: 100;
   transition: width 0.2s ease;
   overflow-x: hidden;
 }
@@ -90,13 +72,13 @@ body {
   width: var(--sidebar-collapsed-width);
 }
 
-/* Sidebar Header */
+/* header */
 .sidebar-header {
   padding: 24px 20px;
-  border-bottom: 1px solid var(--border);
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
 }
 
 .logo-container {
@@ -108,42 +90,30 @@ body {
 .logo-container h1 {
   font-size: 20px;
   font-weight: 700;
-  margin: 0;
   background: linear-gradient(135deg, var(--warning), var(--warning-dark));
   -webkit-background-clip: text;
-  background-clip: text;
   color: transparent;
 }
 
 .logo-container p {
   font-size: 12px;
   color: var(--text-muted);
-  margin: 0;
 }
 
 .sidebar-toggle {
-  background: none;
   border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text-muted);
+  background: none;
   cursor: pointer;
-  font-size: 14px;
   padding: 4px 8px;
-  transition: all 0.2s;
+  border-radius: 4px;
 }
 
-.sidebar-toggle:hover {
-  background: var(--bg-light);
-  color: var(--text);
-  transform: scale(1.05);
-}
-
-/* User Profile */
+/* user */
 .user-profile {
   padding: 20px;
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
   border-bottom: 1px solid var(--border);
 }
 
@@ -155,68 +125,43 @@ body {
   align-items: center;
   justify-content: center;
   color: white;
-  font-size: 20px;
   font-weight: 600;
-  transition: transform 0.2s;
-}
-
-.avatar:hover {
-  transform: scale(1.05);
 }
 
 .user-info {
-  flex: 1;
   overflow: hidden;
 }
 
 .user-name {
   font-weight: 600;
-  margin-bottom: 4px;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .user-email {
   font-size: 12px;
   color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .user-department {
-  font-size: 0.7rem;
+  font-size: 11px;
   color: var(--warning);
-  margin-top: 2px;
-  font-weight: 500;
 }
 
-/* Sidebar Menu */
+/* menu */
 .sidebar-menu {
   flex: 1;
   padding: 16px 12px;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
 }
 
 .menu-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   margin-bottom: 12px;
-  padding: 0 4px;
 }
 
 .menu-header p {
   font-size: 11px;
   font-weight: 700;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 0;
 }
 
 .router-button {
@@ -225,15 +170,7 @@ body {
   border: none;
   border-radius: 5px;
   padding: 5px 10px;
-  margin-left: 10px;
-  cursor: pointer;
   font-size: 12px;
-  transition: all 0.2s;
-}
-
-.router-button:hover {
-  background: #5a67d8;
-  transform: translateY(-1px);
 }
 
 .menu-items {
@@ -244,20 +181,12 @@ body {
 
 .menu-item {
   display: flex;
-  align-items: center;
   gap: 12px;
   padding: 10px 14px;
   border-radius: var(--radius);
   color: var(--text-light);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  width: 100%;
-  text-align: left;
   text-decoration: none;
-  background: transparent;
-  border: none;
+  transition: 0.2s;
 }
 
 .menu-item:hover {
@@ -268,104 +197,51 @@ body {
 .menu-item.active {
   background: linear-gradient(135deg, var(--warning), var(--warning-dark));
   color: #fff;
-  box-shadow: 0 2px 8px rgba(237, 137, 54, 0.3);
 }
 
 .menu-icon {
   font-size: 18px;
-  line-height: 1;
 }
 
-/* Sidebar Footer */
+/* footer */
 .sidebar-footer {
   padding: 20px;
   border-top: 1px solid var(--border);
 }
 
 .logout-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
   width: 100%;
   padding: 10px 16px;
   background: var(--danger);
   color: #fff;
   border: none;
   border-radius: var(--radius);
-  font-size: 14px;
-  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
-.logout-button:hover {
-  filter: brightness(0.9);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-hover);
-}
-
-/* Mode collapsed */
-.finance-sidebar.collapsed .logo-container div {
-  display: none;
-}
-
-.finance-sidebar.collapsed .sidebar-header {
-  justify-content: center;
-}
-
-.finance-sidebar.collapsed .menu-item span:last-child {
-  display: none;
-}
-
-.finance-sidebar.collapsed .menu-item {
-  justify-content: center;
-  padding: 10px;
-}
-
-.finance-sidebar.collapsed .menu-header p {
-  display: none;
-}
-
-.finance-sidebar.collapsed .router-button {
-  display: none;
-}
-
-.finance-sidebar.collapsed .logout-button span {
-  display: none;
-}
-
-.finance-sidebar.collapsed .logout-button {
-  justify-content: center;
-}
-
-/* ===== MAIN CONTENT ===== */
+/* ===== MAIN ===== */
 .finance-main {
   flex: 1;
   margin-left: var(--sidebar-width);
-  overflow-y: auto;
   background: var(--bg-light);
-  transition: margin-left 0.2s ease;
+  overflow-y: auto;
 }
 
 .finance-sidebar.collapsed ~ .finance-main {
   margin-left: var(--sidebar-collapsed-width);
 }
 
-/* Main Header */
+/* header */
 .main-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   margin-bottom: 24px;
-  padding: 0 4px;
+  padding: 10px;
 }
 
 .page-title {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #2d3748;
-  margin-bottom: 4px;
 }
 
 .page-subtitle {
@@ -377,220 +253,13 @@ body {
   padding: 10px 16px;
   background: var(--bg-white);
   border-radius: var(--radius);
-  font-size: 14px;
-  color: var(--text-light);
   border: 1px solid var(--border);
-  display: inline-block;
 }
 
-/* Tab Content */
+/* content */
 .tab-content {
   background: #fff;
-  border-radius: var(--radius-lg);
   padding: 24px;
+  border-radius: 12px;
   box-shadow: var(--shadow);
-  border: 1px solid var(--border);
-  min-width: 0;
-}
-
-/* ===== NOTIFICATION ===== */
-.notification {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 16px 24px;
-  border-radius: var(--radius);
-  color: #fff;
-  font-weight: 500;
-  z-index: 9999;
-  animation: slideIn 0.3s ease;
-  box-shadow: var(--shadow-hover);
-}
-
-.notification-success {
-  background: #48bb78;
-  color: #fff;
-}
-
-.notification-error {
-  background: #f56565;
-  color: #fff;
-}
-
-.notification-info {
-  background: #4299e1;
-  color: #fff;
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* ===== SCROLLBAR ===== */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg-light);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-light);
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 992px) {
-  .finance-main {
-    padding: 20px;
-  }
-  
-  .tab-content {
-    padding: 20px;
-  }
-}
-
-@media (max-width: 768px) {
-  .finance-container {
-    flex-direction: column;
-  }
-  
-  .finance-sidebar {
-    position: relative;
-    width: 100%;
-    height: auto;
-  }
-  
-  .finance-sidebar.collapsed {
-    width: 100%;
-  }
-  
-  .finance-main {
-    margin-left: 0 !important;
-  }
-  
-  .main-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
-  }
-  
-  .header-actions {
-    width: 100%;
-  }
-  
-  .header-actions time {
-    display: block;
-    text-align: center;
-  }
-  
-  .tab-content {
-    padding: 16px;
-  }
-  
-  .page-title {
-    font-size: 1.3rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .finance-main {
-    padding: 16px;
-  }
-  
-  .tab-content {
-    padding: 12px;
-    border-radius: var(--radius);
-  }
-  
-  .page-title {
-    font-size: 1.2rem;
-  }
-  
-  .page-subtitle {
-    font-size: 12px;
-  }
-  
-  .header-actions time {
-    font-size: 12px;
-    padding: 8px 12px;
-  }
-  
-  .sidebar-header {
-    padding: 16px;
-  }
-  
-  .user-profile {
-    padding: 16px;
-  }
-  
-  .avatar {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
-  }
-  
-  .user-name {
-    font-size: 14px;
-  }
-  
-  .user-email {
-    font-size: 10px;
-  }
-  
-  .menu-item {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-  
-  .menu-icon {
-    font-size: 16px;
-  }
-  
-  .logout-button {
-    padding: 8px 12px;
-    font-size: 13px;
-  }
-}
-
-/* ===== MODE SOMBRE (Optionnel) ===== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-light: #0f172a;
-    --bg-white: #1e293b;
-    --text: #f1f5f9;
-    --text-light: #cbd5e1;
-    --text-muted: #94a3b8;
-    --border: #334155;
-  }
-  
-  .tab-content {
-    background: #1e293b;
-  }
-  
-  .header-actions time {
-    background: #1e293b;
-  }
-  
-  .menu-item:hover {
-    background: #334155;
-  }
-  
-  .menu-item.active {
-    background: linear-gradient(135deg, var(--warning), var(--warning-dark));
-  }
 }

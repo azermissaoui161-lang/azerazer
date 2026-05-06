@@ -1,6 +1,7 @@
 // src/pages/facturation/pages/InvoicesPage.jsx
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import { invoiceService } from '../../../services/invoiceService'
+import'./InvoicesPage.css'
 import {
   extractApiErrorMessage,
   mapInvoiceToUi,

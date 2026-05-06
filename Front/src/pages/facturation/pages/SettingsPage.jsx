@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from 'react'
 import userService from '../../../services/userService'
 import { getUserEmail, getUserRole } from '../../../utils/auth'
 import { extractApiErrorMessage } from '../../../utils/frontendApiAdapters'
+import'./SettingsPage.css'
 
 export default function SettingsPage() {
   const [userSettings, setUserSettings] = useState({

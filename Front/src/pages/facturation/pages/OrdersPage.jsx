@@ -5,6 +5,7 @@ import { orderService } from '../../../services/orderService'
 import { clientService } from '../../../services/clientService'
 import { invoiceService } from '../../../services/invoiceService'
 import productService from '../../../services/productService'
+import'./OrdersPage.css'
 import {
   buildCustomerPayload,
   extractApiErrorMessage,
