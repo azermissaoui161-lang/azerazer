@@ -1,15 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
+import html2canvas from 'html2canvas';
 
 const LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'];
 const DEFAULT_PAYE   = [20, 35, 25, 45, 40, 55];
 const DEFAULT_IMPAYE = [10, 15, 20, 10, 25, 15];
 
 const KpiFactureStatus = ({ dataPaye, dataImpaye }) => {
-  const chartRef      = useRef(null);
+  const chartRef = useRef(null);
   const chartInstance = useRef(null);
+  const containerRef = useRef(null);
 
-  const paye   = dataPaye   || DEFAULT_PAYE;
+  const paye = dataPaye || DEFAULT_PAYE;
   const impaye = dataImpaye || DEFAULT_IMPAYE;
 
   useEffect(() => {
@@ -33,66 +35,117 @@ const KpiFactureStatus = ({ dataPaye, dataImpaye }) => {
             data: paye,
             borderColor: '#34d399',
             backgroundColor: mkGradient('#34d399'),
-            fill: true, tension: 0.4, borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
             pointBackgroundColor: '#34d399',
-            pointBorderColor: '#0f172a', pointBorderWidth: 2,
-            pointRadius: 4, pointHoverRadius: 6,
+            pointBorderColor: '#0f172a',
+            pointBorderWidth: 2,
+            pointRadius: 4,
           },
           {
             label: 'Impayées',
             data: impaye,
             borderColor: '#f87171',
             backgroundColor: mkGradient('#f87171'),
-            fill: true, tension: 0.4, borderWidth: 2,
+            fill: true,
+            tension: 0.4,
+            borderWidth: 2,
             pointBackgroundColor: '#f87171',
-            pointBorderColor: '#0f172a', pointBorderWidth: 2,
-            pointRadius: 4, pointHoverRadius: 6,
+            pointBorderColor: '#0f172a',
+            pointBorderWidth: 2,
+            pointRadius: 4,
           }
         ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: { mode: 'index', intersect: false },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#1e293b', titleColor: '#94a3b8',
-            bodyColor: '#f1f5f9', borderColor: '#334155',
-            borderWidth: 1, padding: 10,
-            mode: 'index', intersect: false,
-          }
-        },
-        scales: {
-          x: {
-            grid: { display: false },
-            ticks: { color: '#64748b', font: { size: 11 } },
-            border: { display: false },
-          },
-          y: {
-            beginAtZero: true,
-            grid: { color: 'rgba(148,163,184,0.07)', borderDash: [4, 4] },
-            ticks: { color: '#64748b', font: { size: 11 }, padding: 6 },
-            border: { display: false },
-          }
-        },
-        animation: { duration: 700, easing: 'easeOutQuart' }
+        plugins: { legend: { display: false } },
       }
     });
 
-    return () => { chartInstance.current?.destroy(); };
-  }, [dataPaye, dataImpaye]);
+    return () => chartInstance.current?.destroy();
+  }, [paye, impaye]);
+
+  /* ================= PNG EXPORT ================= */
+  const downloadPNG = async () => {
+    if (!containerRef.current) return;
+
+    const canvas = await html2canvas(containerRef.current, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+    });
+
+    const url = canvas.toDataURL('image/png');
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'factures.png';
+    link.click();
+  };
+
+  /* ================= SVG (FIX STABLE) ================= */
+  const downloadSVG = () => {
+    const canvas = chartRef.current;
+    if (!canvas) return;
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="${canvas.width}"
+           height="${canvas.height}"
+           viewBox="0 0 ${canvas.width} ${canvas.height}">
+        <image href="${imgData}"
+               x="0"
+               y="0"
+               width="${canvas.width}"
+               height="${canvas.height}" />
+      </svg>
+    `;
+
+    const blob = new Blob([svg], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'factures.svg';
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  const btnStyle = {
+    background: '#1e293b',
+    color: '#e2e8f0',
+    border: '1px solid rgba(148,163,184,.2)',
+    padding: '6px 10px',
+    borderRadius: '6px',
+    fontSize: '11px',
+    cursor: 'pointer',
+  };
 
   return (
-    <div style={{
-      background: 'linear-gradient(145deg, #0f172a, #1e293b)',
-      borderRadius: '16px', padding: '22px',
-      border: '1px solid rgba(148,163,184,0.1)',
-      fontFamily: "'Inter', 'Segoe UI', sans-serif",
-    }}>
+    <div
+      ref={containerRef}
+      style={{
+        background: 'linear-gradient(145deg, #0f172a, #1e293b)',
+        borderRadius: '16px',
+        padding: '22px',
+        border: '1px solid rgba(148,163,184,0.1)',
+        fontFamily: "'Inter', 'Segoe UI', sans-serif",
+      }}
+    >
 
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+      {/* HEADER */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '14px'
+      }}>
         <div>
           <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#e2e8f0', margin: 0 }}>
             Statut des factures
@@ -102,26 +155,15 @@ const KpiFactureStatus = ({ dataPaye, dataImpaye }) => {
           </p>
         </div>
 
-        {/* Légende */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {[['#34d399', 'Payées'], ['#f87171', 'Impayées']].map(([c, l]) => (
-            <div key={l} style={{
-              display: 'flex', alignItems: 'center', gap: '5px',
-              background: 'rgba(148,163,184,.07)',
-              border: '1px solid rgba(148,163,184,.1)',
-              borderRadius: '20px', padding: '4px 10px',
-              fontSize: '10px', color: '#94a3b8',
-            }}>
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: c }} />
-              {l}
-            </div>
-          ))}
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={downloadPNG} style={btnStyle}>PNG</button>
+          <button onClick={downloadSVG} style={btnStyle}>SVG</button>
         </div>
       </div>
 
-      {/* Chart uniquement */}
+      {/* CHART */}
       <div style={{ height: '180px', position: 'relative' }}>
-        <canvas ref={chartRef} role="img" aria-label="Évolution factures payées et impayées" />
+        <canvas ref={chartRef} />
       </div>
 
     </div>

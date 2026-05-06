@@ -1,11 +1,19 @@
 import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
+import html2canvas from 'html2canvas';
 
 const MovementLineChart = ({ dataEntree, dataSortie }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
+  const containerRef = useRef(null);
 
+  const dataE = dataEntree || [30, 45, 35, 60, 50, 70];
+  const dataS = dataSortie || [20, 35, 40, 30, 45, 55];
+
+  // ─── INIT CHART ─────────────────────────────
   useEffect(() => {
+    if (!chartRef.current) return;
+
     const ctx = chartRef.current.getContext('2d');
 
     if (chartInstance.current) {
@@ -13,13 +21,13 @@ const MovementLineChart = ({ dataEntree, dataSortie }) => {
     }
 
     chartInstance.current = new Chart(ctx, {
-      type: 'bar',                          // ← changé
+      type: 'bar',
       data: {
         labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
         datasets: [
           {
             label: 'Entrées',
-            data: dataEntree || [30, 45, 35, 60, 50, 70],
+            data: dataE,
             backgroundColor: 'rgba(52, 211, 153, 0.75)',
             borderColor: '#34d399',
             borderWidth: 1,
@@ -28,7 +36,7 @@ const MovementLineChart = ({ dataEntree, dataSortie }) => {
           },
           {
             label: 'Sorties',
-            data: dataSortie || [20, 35, 40, 30, 45, 55],
+            data: dataS,
             backgroundColor: 'rgba(248, 113, 113, 0.75)',
             borderColor: '#f87171',
             borderWidth: 1,
@@ -50,8 +58,6 @@ const MovementLineChart = ({ dataEntree, dataSortie }) => {
             borderColor: '#334155',
             borderWidth: 1,
             padding: 10,
-            mode: 'index',
-            intersect: false,
           }
         },
         scales: {
@@ -71,45 +77,133 @@ const MovementLineChart = ({ dataEntree, dataSortie }) => {
       }
     });
 
-    return () => { chartInstance.current?.destroy(); };
+    return () => {
+      chartInstance.current?.destroy();
+    };
   }, [dataEntree, dataSortie]);
 
+  // ─── EXPORT PNG (html2canvas FULL CARD) ─────────────────────────────
+  const downloadPNG = async () => {
+    if (!containerRef.current) return;
+
+    const canvas = await html2canvas(containerRef.current, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+    });
+
+    const url = canvas.toDataURL('image/png');
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'mouvements-stock.png';
+    link.click();
+  };
+
+  // ─── EXPORT SVG (image wrapper) ─────────────────────────────
+  const downloadSVG = () => {
+    const canvas = chartRef.current;
+    if (!canvas) return;
+
+    const imgData = canvas.toDataURL("image/png");
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="${canvas.width}"
+           height="${canvas.height}">
+        <image href="${imgData}" width="100%" height="100%" />
+      </svg>
+    `;
+
+    const blob = new Blob([svg], { type: "image/svg+xml" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'mouvements-stock.svg';
+    link.click();
+
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div style={{
-      background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
-      borderRadius: '16px',
-      padding: '24px',
-      border: '1px solid rgba(148,163,184,0.12)',
-      fontFamily: "'Inter', 'Segoe UI', sans-serif",
-    }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+    <div
+      ref={containerRef}
+      style={{
+        background: 'linear-gradient(145deg, #0b1220, #111c33)',
+        borderRadius: '18px',
+        padding: '22px',
+        color: '#fff',
+        fontFamily: 'Inter, sans-serif',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+        border: '1px solid rgba(255,255,255,0.05)',
+      }}
+    >
+
+      {/* HEADER */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h3 style={{ margin: 0, color: '#f1f5f9', fontSize: '15px', fontWeight: 600 }}>
-            Tendance des mouvements
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
+            Mouvements de stock
           </h3>
-          <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '12px' }}>
-            Janvier – Juin
+          <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>
+            Analyse Entrées vs Sorties
           </p>
         </div>
 
-        {/* Légende custom */}
-        <div style={{ display: 'flex', gap: '14px' }}>
-          {[['#34d399', 'Entrées'], ['#f87171', 'Sorties']].map(([color, label]) => (
-            <span key={label} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#94a3b8' }}>
-              <span style={{ display: 'inline-block', width: '12px', height: '12px', background: color, borderRadius: '3px' }} />
-              {label}
-            </span>
-          ))}
+        {/* BUTTONS */}
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={downloadPNG} style={btnStyle('#22c55e')}>
+            PNG
+          </button>
+          <button onClick={downloadSVG} style={btnStyle('#3b82f6')}>
+            SVG
+          </button>
         </div>
       </div>
 
-      {/* Chart */}
-      <div style={{ position: 'relative', height: '220px' }}>
-        <canvas ref={chartRef} role="img" aria-label="Graphique barres entrées et sorties de stock" />
+      {/* LEGEND */}
+      <div style={{ display: 'flex', gap: '14px', marginTop: '12px' }}>
+        {[
+          ['#34d399', 'Entrées'],
+          ['#f87171', 'Sorties']
+        ].map(([color, label]) => (
+          <span key={label} style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '11px',
+            color: '#94a3b8'
+          }}>
+            <span style={{
+              width: '10px',
+              height: '10px',
+              background: color,
+              borderRadius: '3px'
+            }} />
+            {label}
+          </span>
+        ))}
       </div>
+
+      {/* CHART */}
+      <div style={{ position: 'relative', height: '220px', marginTop: '12px' }}>
+        <canvas ref={chartRef} />
+      </div>
+
     </div>
   );
 };
+
+const btnStyle = (color) => ({
+  background: color,
+  border: 'none',
+  padding: '6px 12px',
+  borderRadius: '8px',
+  color: '#fff',
+  cursor: 'pointer',
+  fontSize: '12px',
+  fontWeight: 600,
+});
 
 export default MovementLineChart;

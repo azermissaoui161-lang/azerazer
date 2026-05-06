@@ -1,5 +1,4 @@
 ﻿import React, { useRef } from 'react';
-import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
 import KpiFinance from './components/KpiFinance';
@@ -29,57 +28,17 @@ const recettesMensuelles = [
 const DashboardFinancier = () => {
   const dashboardRef = useRef(null);
 
-  // Export PDF
-  const exportToPDF = async () => {
-    if (!dashboardRef.current) return;
-    
-    const element = dashboardRef.current;
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      backgroundColor: '#ffffff',
-      logging: false,
-      useCORS: true
-    });
-    
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-    
-    const imgWidth = 210;
-    const pageHeight = 295;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
-    let position = 0;
-    
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-    
-    while (heightLeft >= 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-    
-    pdf.save(`dashboard-financier-${new Date().toISOString().split('T')[0]}.pdf`);
-  };
-
   return (
     <div className="db" ref={dashboardRef}>
       
-      {/* HEADER WITH ACTIONS */}
+      {/* HEADER (NO BUTTON) */}
       <header className="db-header">
         <div>
           <h1>📊 Tableau de bord financier</h1>
-          <p>Suivi des recettes et dépenses - Mise à jour {new Date().toLocaleDateString('fr-TN')}</p>
-        </div>
-        <div className="header-actions">
-          <button className="btn-pdf" onClick={exportToPDF}>
-            📄 Télécharger PDF
-          </button>
+          <p>
+            Suivi des recettes et dépenses - Mise à jour{" "}
+            {new Date().toLocaleDateString('fr-TN')}
+          </p>
         </div>
       </header>
 
@@ -127,12 +86,7 @@ const DashboardFinancier = () => {
         </div>
 
       </div>
-      
-      {/* FOOTER for PDF */}
-      <div className="pdf-footer" style={{ display: 'none' }}>
-        <p>Généré le {new Date().toLocaleString('fr-TN')} - Dashboard Financier</p>
-      </div>
-      
+
     </div>
   );
 };

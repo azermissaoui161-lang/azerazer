@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
+import html2canvas from 'html2canvas';
 
 const COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f59e0b'];
 const LABELS = ['Produit A', 'Produit B', 'Produit C', 'Autres'];
@@ -7,9 +8,49 @@ const LABELS = ['Produit A', 'Produit B', 'Produit C', 'Autres'];
 const TopProduitsChart = ({ dataVentes }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
+  const containerRef = useRef(null);
+
+  const [selectedIndex, setSelectedIndex] = useState(null);
 
   const data = dataVentes || [300, 50, 100, 80];
   const total = data.reduce((a, b) => a + b, 0);
+
+  // ─── EXPORT PNG ─────────────────────────────
+  const downloadPNG = async () => {
+    const canvas = await html2canvas(containerRef.current, {
+      backgroundColor: '#0b1220',
+      scale: 2
+    });
+
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = 'top-produits.png';
+    link.click();
+  };
+
+  // ─── EXPORT SVG ─────────────────────────────
+  const downloadSVG = async () => {
+    const canvas = await html2canvas(containerRef.current, {
+      backgroundColor: '#0b1220',
+      scale: 2
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
+        <image href="${imgData}" width="100%" height="100%"/>
+      </svg>
+    `;
+
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'top-produits.svg';
+    link.click();
+  };
 
   useEffect(() => {
     const ctx = chartRef.current.getContext('2d');
@@ -20,91 +61,160 @@ const TopProduitsChart = ({ dataVentes }) => {
       type: 'doughnut',
       data: {
         labels: LABELS,
-        datasets: [{
-          data,
-          backgroundColor: COLORS.map(c => c + 'dd'),
-          borderColor: '#0f172a',
-          borderWidth: 3,
-          hoverOffset: 6,
-          hoverBorderColor: COLORS,
-        }]
+        datasets: [
+          {
+            data,
+            backgroundColor: COLORS,
+            borderColor: '#0b1220',
+            borderWidth: 3,
+            hoverOffset: 10,
+          },
+        ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         cutout: '72%',
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            backgroundColor: '#1e293b',
-            titleColor: '#94a3b8',
-            bodyColor: '#f1f5f9',
-            borderColor: '#334155',
-            borderWidth: 1,
-            padding: 10,
-            callbacks: {
-              label: ctx =>
-                `  ${ctx.parsed} unités (${Math.round(ctx.parsed / total * 100)}%)`
-            }
+        onClick: (e, elements) => {
+          if (elements.length > 0) {
+            setSelectedIndex(elements[0].index);
           }
         },
-        animation: { duration: 700, easing: 'easeOutQuart' }
-      }
+        plugins: {
+          legend: { display: false },
+        },
+      },
     });
 
-    return () => { chartInstance.current?.destroy(); };
+    return () => chartInstance.current?.destroy();
   }, [dataVentes]);
 
   return (
-    <div style={{
-      background: 'linear-gradient(145deg, #0f172a 0%, #1e293b 100%)',
-      borderRadius: '16px',
-      padding: '24px',
-      border: '1px solid rgba(148,163,184,0.12)',
-      fontFamily: "'Inter', 'Segoe UI', sans-serif",
-    }}>
-      {/* Header */}
-      <div style={{ marginBottom: '20px' }}>
-        <h3 style={{ margin: 0, color: '#f1f5f9', fontSize: '15px', fontWeight: 600 }}>
-          Top produits
-        </h3>
-        <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '12px' }}>
-          Répartition des ventes
-        </p>
-      </div>
+    <div
+      ref={containerRef}
+      style={{
+        background: 'linear-gradient(145deg, #0b1220, #111c33)',
+        borderRadius: '18px',
+        padding: '22px',
+        color: '#fff',
+        fontFamily: 'Inter, sans-serif',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+        border: '1px solid rgba(255,255,255,0.05)',
+      }}
+    >
+      {/* HEADER */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
+            Top produits
+          </h3>
+          <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>
+            Répartition des ventes
+          </p>
+        </div>
 
-      {/* Donut + stat central */}
-      <div style={{ position: 'relative', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <canvas ref={chartRef} role="img" aria-label="Graphique donut répartition des ventes par produit" />
-        <div style={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none' }}>
-          <div style={{ fontSize: '22px', fontWeight: 600, color: '#f1f5f9', lineHeight: 1 }}>
-            {total}
-          </div>
-          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '3px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-            unités
-          </div>
+        {/* BUTTONS */}
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={downloadPNG} style={btnStyle('#22c55e')}>
+            PNG
+          </button>
+          <button onClick={downloadSVG} style={btnStyle('#3b82f6')}>
+            SVG
+          </button>
         </div>
       </div>
 
-      {/* Légende avec mini barres */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '20px', borderTop: '1px solid rgba(148,163,184,0.1)', paddingTop: '16px' }}>
+      {/* CHART */}
+      <div style={{ height: '220px', marginTop: '15px' }}>
+        <canvas ref={chartRef} />
+      </div>
+
+      {/* LEGEND */}
+      <div style={{ marginTop: '20px' }}>
         {LABELS.map((label, i) => {
-          const pct = Math.round(data[i] / total * 100);
+          const percent = Math.round((data[i] / total) * 100);
+
           return (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: COLORS[i], flexShrink: 0 }} />
-              <span style={{ fontSize: '12px', color: '#94a3b8', flex: 1 }}>{label}</span>
-              <span style={{ fontSize: '12px', fontWeight: 500, color: '#cbd5e1' }}>{data[i]}</span>
-              <div style={{ width: '80px', height: '4px', background: 'rgba(148,163,184,0.1)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${pct}%`, background: COLORS[i], borderRadius: '4px' }} />
-              </div>
-              <span style={{ fontSize: '11px', color: '#64748b', minWidth: '28px', textAlign: 'right' }}>{pct}%</span>
+            <div
+              key={label}
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                padding: '6px 10px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                background:
+                  selectedIndex === i ? 'rgba(255,255,255,0.06)' : 'transparent',
+              }}
+              onClick={() => setSelectedIndex(i)}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: COLORS[i],
+                    display: 'inline-block',
+                  }}
+                />
+                {label}
+              </span>
+
+              <span style={{ color: '#cbd5e1' }}>
+                {data[i]} ({percent}%)
+              </span>
             </div>
           );
         })}
       </div>
+
+      {/* DETAIL CARD */}
+      {selectedIndex !== null && (
+        <div
+          style={{
+            marginTop: 18,
+            padding: 12,
+            borderRadius: 12,
+            background: 'rgba(255,255,255,0.05)',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}
+        >
+          <h4 style={{ margin: '0 0 10px 0' }}>Détail produit</h4>
+
+          <table style={{ width: '100%', fontSize: 13 }}>
+            <tbody>
+              <tr>
+                <td style={{ color: '#94a3b8' }}>Produit</td>
+                <td>{LABELS[selectedIndex]}</td>
+              </tr>
+              <tr>
+                <td style={{ color: '#94a3b8' }}>Quantité</td>
+                <td>{data[selectedIndex]}</td>
+              </tr>
+              <tr>
+                <td style={{ color: '#94a3b8' }}>%</td>
+                <td>{Math.round((data[selectedIndex] / total) * 100)}%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
+
+// ─── BUTTON STYLE HELPER ─────────────────────────────
+const btnStyle = (color) => ({
+  background: color,
+  border: 'none',
+  padding: '6px 12px',
+  borderRadius: '8px',
+  color: '#fff',
+  cursor: 'pointer',
+  fontSize: '12px',
+  fontWeight: 600,
+  transition: '0.2s',
+});
 
 export default TopProduitsChart;

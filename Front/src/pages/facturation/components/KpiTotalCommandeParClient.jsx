@@ -1,28 +1,25 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
+import html2canvas from 'html2canvas';
 
 const DEFAULT_DATA = [
-  { name: 'Client Ahmed',    total: 4500, count: 12 },
-  { name: 'Société Alpha',   total: 3200, count: 8  },
-  { name: 'Client Moncef',   total: 2800, count: 5  },
-  { name: 'Magasin Central', total: 2100, count: 9  },
-  { name: 'Client Sonia',    total: 1500, count: 4  },
+  { name: 'Client Ahmed', total: 4500, count: 12 },
+  { name: 'Société Alpha', total: 3200, count: 8 },
+  { name: 'Client Moncef', total: 2800, count: 5 },
+  { name: 'Magasin Central', total: 2100, count: 9 },
+  { name: 'Client Sonia', total: 1500, count: 4 },
 ];
 
-const COLORS     = ['#60a5fa', '#34d399', '#a78bfa', '#f59e0b', '#f87171'];
-const AVATAR_BG  = ['rgba(96,165,250,.15)', 'rgba(52,211,153,.15)', 'rgba(167,139,250,.15)', 'rgba(245,158,11,.15)', 'rgba(248,113,113,.15)'];
-const RANK_STYLE = [
-  ['rgba(245,158,11,.15)', '#f59e0b'],
-  ['rgba(148,163,184,.1)', '#94a3b8'],
-  ['rgba(180,138,100,.1)', '#b48a64'],
-];
-
-const initials = (name) =>
-  name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+const COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f59e0b', '#f87171'];
 
 const KpiTotalCommandeParClient = ({ data }) => {
-  const chartRef      = useRef(null);
+  const chartRef = useRef(null);
   const chartInstance = useRef(null);
+
+  const containerRef = useRef(null);
+
+  const [selectedIndex, setSelectedIndex] = useState(null);
+  const rowRefs = useRef([]);
 
   const clients = data || DEFAULT_DATA;
 
@@ -46,6 +43,19 @@ const KpiTotalCommandeParClient = ({ data }) => {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+
+        onClick: (event, elements) => {
+          if (!elements.length) return;
+
+          const index = elements[0].index;
+          setSelectedIndex(index);
+
+          rowRefs.current[index]?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+          });
+        },
+
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -61,6 +71,7 @@ const KpiTotalCommandeParClient = ({ data }) => {
             }
           }
         },
+
         scales: {
           x: {
             grid: { display: false },
@@ -73,39 +84,53 @@ const KpiTotalCommandeParClient = ({ data }) => {
             ticks: {
               color: '#64748b',
               font: { size: 11 },
-              padding: 6,
               callback: v => v >= 1000 ? v / 1000 + 'k' : v,
             },
             border: { display: false },
           }
         },
+
         animation: { duration: 700, easing: 'easeOutQuart' }
       }
     });
 
-    return () => { chartInstance.current?.destroy(); };
+    return () => chartInstance.current?.destroy();
   }, [data]);
 
-  // =========================
-  // EXPORT FUNCTIONS
-  // =========================
-  const downloadPNG = () => {
-    const chart = chartInstance.current;
-    if (!chart) return;
+  /* ================= EXPORT PNG ================= */
+  const downloadPNG = async () => {
+    if (!containerRef.current) return;
 
-    const url = chart.toBase64Image();
+    const canvas = await html2canvas(containerRef.current, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+    });
+
+    const url = canvas.toDataURL('image/png');
+
     const link = document.createElement('a');
     link.href = url;
     link.download = 'chart-client.png';
     link.click();
   };
 
-  const downloadSVG = () => {
-    const canvas = chartRef.current;
-    const imgData = canvas.toDataURL("image/png");
+  /* ================= EXPORT SVG ================= */
+  const downloadSVG = async () => {
+    if (!containerRef.current) return;
+
+    const canvas = await html2canvas(containerRef.current, {
+      backgroundColor: null,
+      scale: 2,
+      useCORS: true,
+    });
+
+    const imgData = canvas.toDataURL('image/png');
 
     const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
+      <svg xmlns="http://www.w3.org/2000/svg"
+           width="${canvas.width}"
+           height="${canvas.height}">
         <image href="${imgData}" width="100%" height="100%" />
       </svg>
     `;
@@ -121,9 +146,6 @@ const KpiTotalCommandeParClient = ({ data }) => {
     URL.revokeObjectURL(url);
   };
 
-  // =========================
-  // STYLES
-  // =========================
   const btnStyle = {
     background: '#1e293b',
     color: '#e2e8f0',
@@ -134,107 +156,52 @@ const KpiTotalCommandeParClient = ({ data }) => {
     cursor: 'pointer',
   };
 
-  const s = {
-    background: 'linear-gradient(145deg,#0f172a,#1e293b)',
-    borderRadius: '16px',
-    padding: '22px',
-    border: '1px solid rgba(148,163,184,.1)',
-    fontFamily: "'Inter','Segoe UI',sans-serif",
-  };
-
   return (
-    <div style={s}>
+    <div
+      ref={containerRef}
+      style={{
+        background: 'linear-gradient(145deg,#0f172a,#1e293b)',
+        borderRadius: '16px',
+        padding: '22px',
+        border: '1px solid rgba(148,163,184,.1)',
+      }}
+    >
 
-      {/* Header + Buttons */}
-      <div style={{ marginBottom: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h3 style={{ fontSize: '13px', fontWeight: 600, color: '#e2e8f0', margin: 0 }}>
-            Commandes par client
-          </h3>
-          <p style={{ fontSize: '11px', color: '#475569', marginTop: '2px' }}>
-            Top {clients.length} clients — classement par CA
-          </p>
-        </div>
+      {/* HEADER */}
+      <div style={{ marginBottom: '18px', display: 'flex', justifyContent: 'space-between' }}>
+        <h3 style={{ color: '#e2e8f0' }}>Commandes par client</h3>
 
+        {/* BUTTONS (only change here) */}
         <div style={{ display: 'flex', gap: '8px' }}>
           <button onClick={downloadPNG} style={btnStyle}>PNG</button>
           <button onClick={downloadSVG} style={btnStyle}>SVG</button>
         </div>
       </div>
 
-      {/* Chart */}
-      <div style={{ height: '200px', position: 'relative', marginBottom: '18px' }}>
+      {/* CHART */}
+      <div style={{ height: '200px', marginBottom: '18px' }}>
         <canvas ref={chartRef} />
       </div>
 
-      {/* Divider */}
-      <div style={{ height: '1px', background: 'rgba(148,163,184,.08)', marginBottom: '14px' }} />
-
-      {/* Table */}
+      {/* TABLE */}
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid rgba(148,163,184,.08)' }}>
-            {['#', 'Client', 'Commandes', 'Total (DT)'].map(h => (
-              <th key={h} style={{
-                padding: '8px 10px',
-                color: '#475569',
-                fontWeight: 500,
-                fontSize: '10px',
-                textTransform: 'uppercase',
-                letterSpacing: '.06em',
-                textAlign: 'left',
-              }}>
-                {h}
-              </th>
-            ))}
-          </tr>
-        </thead>
         <tbody>
           {clients.map((c, i) => {
-            const [rbg, rcol] = RANK_STYLE[i] || ['rgba(148,163,184,.07)', '#64748b'];
+            const isActive = selectedIndex === i;
+
             return (
-              <tr key={i}>
-                <td style={{ padding: '10px' }}>
-                  <span style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '5px',
-                    background: rbg,
-                    color: rcol,
-                    fontSize: '10px',
-                    fontWeight: 600,
-                  }}>
-                    {i + 1}
-                  </span>
-                </td>
-
-                <td style={{ padding: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <div style={{
-                      width: '24px',
-                      height: '24px',
-                      borderRadius: '6px',
-                      background: AVATAR_BG[i],
-                      color: COLORS[i],
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '10px',
-                      fontWeight: 600,
-                    }}>
-                      {initials(c.name)}
-                    </div>
-                    <span style={{ color: '#e2e8f0' }}>{c.name}</span>
-                  </div>
-                </td>
-
-                <td style={{ padding: '10px', color: '#60a5fa', fontWeight: 600 }}>
-                  {c.count}
-                </td>
-
+              <tr
+                key={i}
+                ref={(el) => (rowRefs.current[i] = el)}
+                style={{
+                  transition: '0.2s',
+                  background: isActive ? 'rgba(96,165,250,.08)' : 'transparent',
+                  borderLeft: isActive ? '3px solid #60a5fa' : '3px solid transparent',
+                }}
+              >
+                <td style={{ padding: '10px', color: '#e2e8f0' }}>{i + 1}</td>
+                <td style={{ padding: '10px', color: '#e2e8f0' }}>{c.name}</td>
+                <td style={{ padding: '10px', color: '#60a5fa', fontWeight: 600 }}>{c.count}</td>
                 <td style={{ padding: '10px', color: '#34d399', fontWeight: 600 }}>
                   {c.total.toLocaleString()} DT
                 </td>
