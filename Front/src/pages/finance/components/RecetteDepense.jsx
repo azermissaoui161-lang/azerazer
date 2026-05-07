@@ -2,17 +2,22 @@ import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 import html2canvas from 'html2canvas';
 
-const DEFAULT_VALUES = [12000, 19000, 15000, 25000, 22000, 30000, 45000, 42000];
-const LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août'];
+const LABELS       = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'];
+const DEF_RECETTES = [5000, 7000, 6000, 9000, 8000, 10000];
+const DEF_DEPENSES = [3000, 4000, 5500, 6000, 7000, 8500];
+const DEF_NET      = [2000, 3000, 500, 3000, 1000, 1500];
 
-const KpiRecetteEvolution = ({ dataRecette }) => {
+const RecetteDepense = ({ dataRecettes, dataDepenses, dataNet }) => {
 
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const containerRef = useRef(null);
 
-  const values = dataRecette || DEFAULT_VALUES;
+  const recettes = dataRecettes || DEF_RECETTES;
+  const depenses = dataDepenses || DEF_DEPENSES;
+  const net      = dataNet      || DEF_NET;
 
+  /* ================= CHART ================= */
   useEffect(() => {
     const ctx = chartRef.current.getContext('2d');
 
@@ -20,27 +25,41 @@ const KpiRecetteEvolution = ({ dataRecette }) => {
       chartInstance.current.destroy();
     }
 
-    const green = '#10b981';
-
-    const gradient = ctx.createLinearGradient(0, 0, 0, 250);
-    gradient.addColorStop(0, 'rgba(16,185,129,0.25)');
-    gradient.addColorStop(1, 'rgba(16,185,129,0)');
-
     chartInstance.current = new Chart(ctx, {
-      type: 'line',
       data: {
         labels: LABELS,
         datasets: [
           {
+            type: 'bar',
             label: 'Recettes',
-            data: values,
-            borderColor: green,
-            backgroundColor: gradient,
-            fill: true,
+            data: recettes,
+            backgroundColor: 'rgba(29,158,117,0.25)',
+            borderColor: '#1D9E75',
+            borderWidth: 1.5,
+            borderRadius: 6,
+            order: 2,
+          },
+          {
+            type: 'bar',
+            label: 'Dépenses',
+            data: depenses,
+            backgroundColor: 'rgba(216,90,48,0.25)',
+            borderColor: '#D85A30',
+            borderWidth: 1.5,
+            borderRadius: 6,
+            order: 2,
+          },
+          {
+            type: 'line',
+            label: 'Net',
+            data: net,
+            borderColor: '#378ADD',
+            backgroundColor: 'rgba(55,138,221,0.08)',
             tension: 0.4,
+            fill: true,
             borderWidth: 2.5,
             pointRadius: 4,
-            pointHoverRadius: 6,
+            order: 1,
           },
         ],
       },
@@ -55,18 +74,11 @@ const KpiRecetteEvolution = ({ dataRecette }) => {
         },
 
         plugins: {
-          legend: { display: false },
-
-          tooltip: {
-            backgroundColor: '#fff',
-            titleColor: '#111',
-            bodyColor: '#111',
-            borderColor: 'rgba(0,0,0,0.08)',
-            borderWidth: 1,
-            padding: 10,
-            callbacks: {
-              label: (ctx) =>
-                `${ctx.parsed.y.toLocaleString('fr-TN')} DT`,
+          legend: {
+            position: 'top',
+            labels: {
+              usePointStyle: true,
+              boxWidth: 8,
             },
           },
         },
@@ -74,18 +86,14 @@ const KpiRecetteEvolution = ({ dataRecette }) => {
         scales: {
           x: {
             grid: { display: false },
-            border: { display: false },
             ticks: { color: '#94a3b8' },
           },
-
           y: {
-            beginAtZero: false,
-            grid: { color: 'rgba(0,0,0,0.06)' },
-            border: { display: false },
+            beginAtZero: true,
+            grid: { color: 'rgba(0,0,0,0.05)' },
             ticks: {
               color: '#94a3b8',
-              callback: (v) =>
-                v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v,
+              callback: (v) => (v >= 1000 ? `${v / 1000}k` : v),
             },
           },
         },
@@ -93,67 +101,48 @@ const KpiRecetteEvolution = ({ dataRecette }) => {
     });
 
     return () => chartInstance.current?.destroy();
-  }, [values]);
+  }, [recettes, depenses, net]);
 
-  // =========================
-  // PNG EXPORT (html2canvas)
-  // =========================
+  /* ================= PNG EXPORT ================= */
   const downloadPNG = async () => {
     if (!containerRef.current) return;
 
     const canvas = await html2canvas(containerRef.current, {
-      backgroundColor: '#ffffff',
+      backgroundColor: '#fff',
       scale: 2,
       useCORS: true,
     });
 
     const url = canvas.toDataURL('image/png');
 
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'recette-evolution.png';
-    link.click();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'recette-depense.png';
+    a.click();
   };
 
-  // =========================
-  // SVG EXPORT (FIXED 100%)
-  // =========================
-  const downloadSVG = async () => {
-    if (!containerRef.current) return;
+  /* ================= SVG EXPORT (FIXED SAFE) ================= */
+  const downloadSVG = () => {
+    const canvas = chartRef.current;
+    if (!canvas) return;
 
-    const canvas = await html2canvas(containerRef.current, {
-      backgroundColor: '#ffffff',
-      scale: 2,
-      useCORS: true,
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-
-    const width = canvas.width;
-    const height = canvas.height;
+    const img = canvas.toDataURL('image/png');
 
     const svg = `
       <svg xmlns="http://www.w3.org/2000/svg"
-           width="${width}"
-           height="${height}"
-           viewBox="0 0 ${width} ${height}">
-        <image 
-          href="${imgData}" 
-          x="0" 
-          y="0" 
-          width="${width}" 
-          height="${height}" 
-        />
+           width="${canvas.width}"
+           height="${canvas.height}">
+        <image href="${img}" width="100%" height="100%" />
       </svg>
     `;
 
-    const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
 
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'recette-evolution.svg';
-    link.click();
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'recette-depense.svg';
+    a.click();
 
     URL.revokeObjectURL(url);
   };
@@ -188,13 +177,14 @@ const KpiRecetteEvolution = ({ dataRecette }) => {
       }}>
         <div>
           <p style={{ fontSize: 13, fontWeight: 600, color: '#334155' }}>
-            Évolution des recettes
+            Recettes vs Dépenses
           </p>
           <p style={{ fontSize: 12, color: '#94a3b8' }}>
-            Analyse mensuelle
+            Analyse mensuelle financière
           </p>
         </div>
 
+        {/* BUTTONS */}
         <div style={{ display: 'flex', gap: 6 }}>
           <button onClick={downloadPNG} style={btnStyle}>PNG</button>
           <button onClick={downloadSVG} style={btnStyle}>SVG</button>
@@ -210,4 +200,4 @@ const KpiRecetteEvolution = ({ dataRecette }) => {
   );
 };
 
-export default KpiRecetteEvolution;
+export default RecetteDepense;

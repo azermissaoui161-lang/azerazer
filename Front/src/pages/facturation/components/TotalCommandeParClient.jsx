@@ -12,7 +12,7 @@ const DEFAULT_DATA = [
 
 const COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f59e0b', '#f87171'];
 
-const KpiTotalCommandeParClient = ({ data }) => {
+const TotalCommandeParClient = ({ data }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
@@ -215,4 +215,4 @@ const KpiTotalCommandeParClient = ({ data }) => {
   );
 };
 
-export default KpiTotalCommandeParClient;
+export default TotalCommandeParClient;

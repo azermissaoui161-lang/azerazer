@@ -5,7 +5,7 @@ import html2canvas from 'html2canvas';
 const LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil'];
 const DEFAULT_DATA = [12, 19, 15, 25, 22, 30, 45];
 
-const KpiCommandeParMois = ({ dataCommandes }) => {
+const CommandeParMois = ({ dataCommandes }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const containerRef = useRef(null);
@@ -191,4 +191,4 @@ const KpiCommandeParMois = ({ dataCommandes }) => {
   );
 };
 
-export default KpiCommandeParMois;
+export default CommandeParMois;

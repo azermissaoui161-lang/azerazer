@@ -6,7 +6,7 @@ const LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'];
 const DEFAULT_PAYE   = [20, 35, 25, 45, 40, 55];
 const DEFAULT_IMPAYE = [10, 15, 20, 10, 25, 15];
 
-const KpiFactureStatus = ({ dataPaye, dataImpaye }) => {
+const FactureStatus = ({ dataPaye, dataImpaye }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const containerRef = useRef(null);
@@ -170,4 +170,4 @@ const KpiFactureStatus = ({ dataPaye, dataImpaye }) => {
   );
 };
 
-export default KpiFactureStatus;
+export default FactureStatus;

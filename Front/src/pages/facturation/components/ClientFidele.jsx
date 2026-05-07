@@ -80,7 +80,7 @@ const FideliteLineChart = ({ clients, selected, chartRefExport }) => {
 };
 
 /* ================= MAIN ================= */
-const KpiClientFidele = ({ data }) => {
+const ClientFidele = ({ data }) => {
   const clients = data || DEFAULT_DATA;
   const [selected, setSelected] = useState(0);
 
@@ -217,4 +217,4 @@ const btn = {
   cursor:'pointer'
 };
 
-export default KpiClientFidele;
+export default ClientFidele;

@@ -1,8 +1,8 @@
 ﻿import React from 'react';
-import KpiCommandeParMois from './components/KpiCommandeParMois';
-import KpiTotalCommandeParClient from './components/KpiTotalCommandeParClient';
-import KpiFactureStatus from './components/KpiFactureStatus';
-import KpiClientFidele from './components/KpiClientFidele';
+import CommandeParMois from './components/CommandeParMois';
+import TotalCommandeParClient from './components/TotalCommandeParClient';
+import FactureStatus from './components/FactureStatus';
+import ClientFidele from './components/ClientFidele';
 import KpiFacture from './components/KpiFacture'; // ✅ AJOUT
 
 import './DashboardFacturation.css';
@@ -28,21 +28,21 @@ const DashboardFacturation = () => (
     <div className="df-grid">
 
       <div className="card">
-        <KpiCommandeParMois />
+        <CommandeParMois />
       </div>
 
       <div className="row-2">
         <div className="card">
-          <KpiFactureStatus />
+          <FactureStatus />
         </div>
 
         <div className="card">
-          <KpiTotalCommandeParClient />
+          <TotalCommandeParClient />
         </div>
       </div>
 
       <div className="card">
-        <KpiClientFidele />
+        <ClientFidele />
       </div>
 
     </div>

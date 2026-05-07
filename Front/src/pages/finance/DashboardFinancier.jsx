@@ -2,8 +2,8 @@
 import html2canvas from 'html2canvas';
 
 import KpiFinance from './components/KpiFinance';
-import KpiEvolutionRecettes from './components/KpiEvolutionRecettes';
-import KpiRecetteDepense from './components/KpiRecetteDepense';
+import EvolutionRecettes from './components/EvolutionRecettes';
+import RecetteDepense from './components/RecetteDepense';
 import TypeDepenses from './components/TypeDepenses';
 
 import './DashboardFinancier.css';
@@ -58,7 +58,7 @@ const DashboardFinancier = () => {
             📈 Évolution des recettes
           </div>
           <div className="chart-container">
-            <KpiEvolutionRecettes data={recettesMensuelles} />
+            <EvolutionRecettes data={recettesMensuelles} />
           </div>
         </div>
 
@@ -68,7 +68,7 @@ const DashboardFinancier = () => {
             ⚖️ Recettes vs Dépenses
           </div>
           <div className="chart-container">
-            <KpiRecetteDepense
+            <RecetteDepense
               recette={FINANCE_KPI.chiffreAffaire}
               depense={FINANCE_KPI.depenses}
             />
