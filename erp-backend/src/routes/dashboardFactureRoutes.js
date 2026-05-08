@@ -14,5 +14,5 @@ router.use(authorize('admin_facture', 'admin_principal'));
 // Routes
 router.get('/', getFactureDashboard);
 router.get('/stats', getInvoiceStats);
-
+router.get('/kpi-facture', getKpiFacture);
 module.exports = router;

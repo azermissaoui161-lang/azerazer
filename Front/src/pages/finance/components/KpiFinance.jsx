@@ -1,18 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
-const FINANCE_KPI = {
-  chiffreAffaire: 75000,
-  depensesTotal: 42000,
-  transactionsTotal: 128,
-};
+export const KpiCard = ({
+  label,
+  value,
+  accent,
+  note,
+  trend,
+  trendUp
+}) => (
 
-export const KpiCard = ({ label, value, accent, note, trend, trendUp }) => (
   <div className="ds-kpi-card" style={{ "--accent": accent }}>
-    <span className="ds-kpi-label">{label}</span>
+
+    <span className="ds-kpi-label">
+      {label}
+    </span>
 
     <div className="ds-kpi-bottom">
+
       <span className="ds-kpi-value">
-        {value.toLocaleString("fr-FR")}
+        {Number(value || 0).toLocaleString("fr-FR")}
       </span>
 
       {trend && (
@@ -20,49 +26,89 @@ export const KpiCard = ({ label, value, accent, note, trend, trendUp }) => (
           {trendUp ? "▲" : "▼"} {trend}
         </span>
       )}
+
     </div>
 
-    {note && <span className="ds-kpi-note">{note}</span>}
+    {note && (
+      <span className="ds-kpi-note">
+        {note}
+      </span>
+    )}
+
   </div>
 );
 
-const FinanceKpiPage = () => (
-  <div className="kpi-page">
+const FinanceKpiPage = () => {
 
-    <div className="ds-kpi-row">
+  const [financeKpi, setFinanceKpi] = useState({
+    chiffreAffaire: 0,
+    depensesTotal: 0,
+    transactionsTotal: 0,
+  });
 
-      {/* ── KPI 1 : Chiffre d'affaires ── */}
-      <KpiCard
-        label="Chiffre d'affaires"
-        value={FINANCE_KPI.chiffreAffaire}
-        accent="#10b981"
-        note="revenu total"
-        trend="+12%"
-        trendUp={true}
-      />
+  useEffect(() => {
 
-      {/* ── KPI 2 : Dépenses ── */}
-      <KpiCard
-        label="Dépenses Totales"
-        value={FINANCE_KPI.depensesTotal}
-        accent="#f43f5e"
-        note="charges globales"
-        trend="+5%"
-        trendUp={false}
-      />
+    const fetchKpis = async () => {
+      try {
 
-      {/* ── KPI 3 : Transactions ── */}
-      <KpiCard
-        label="Transactions"
-        value={FINANCE_KPI.transactionsTotal}
-        accent="#6366f1"
-        note="opérations effectuées"
-        trend="+8%"
-        trendUp={true}
-      />
+        const res = await fetch(
+          'http://localhost:5000/api/dashboard/finance/kpi-finance',
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem('token')}`
+            }
+          }
+        );
+
+        const data = await res.json();
+
+        setFinanceKpi(data);
+
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchKpis();
+
+  }, []);
+
+  return (
+    <div className="kpi-page">
+
+      <div className="ds-kpi-row">
+
+        <KpiCard
+          label="Chiffre d'affaires"
+          value={financeKpi.chiffreAffaire}
+          accent="#10b981"
+          note="revenu total"
+          trend="+12%"
+          trendUp={true}
+        />
+
+        <KpiCard
+          label="Dépenses Totales"
+          value={financeKpi.depensesTotal}
+          accent="#f43f5e"
+          note="charges globales"
+          trend="+5%"
+          trendUp={false}
+        />
+
+        <KpiCard
+          label="Transactions"
+          value={financeKpi.transactionsTotal}
+          accent="#6366f1"
+          note="opérations effectuées"
+          trend="+8%"
+          trendUp={true}
+        />
+
+      </div>
 
     </div>
-  </div>
-);
+  );
+};
 
 export default FinanceKpiPage;
