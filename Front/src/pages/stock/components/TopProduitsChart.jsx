@@ -2,17 +2,18 @@ import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
 import html2canvas from 'html2canvas';
 
-const COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f59e0b'];
+const COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f59e0b', '#f87171', '#22d3ee', '#fb7185', '#84cc16'];
 const LABELS = ['Produit A', 'Produit B', 'Produit C', 'Autres'];
 
-const TopProduitsChart = ({ dataVentes }) => {
+const TopProduitsChart = ({ labels, dataVentes }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const containerRef = useRef(null);
 
   const [selectedIndex, setSelectedIndex] = useState(null);
 
-  const data = dataVentes || [300, 50, 100, 80];
+  const chartLabels = Array.isArray(labels) && labels.length ? labels : LABELS;
+  const data = Array.isArray(dataVentes) && dataVentes.length ? dataVentes : [300, 50, 100, 80];
   const total = data.reduce((a, b) => a + b, 0);
 
   // ─── EXPORT PNG ─────────────────────────────
@@ -60,11 +61,11 @@ const TopProduitsChart = ({ dataVentes }) => {
     chartInstance.current = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: LABELS,
+        labels: chartLabels,
         datasets: [
           {
             data,
-            backgroundColor: COLORS,
+            backgroundColor: chartLabels.map((_, index) => COLORS[index % COLORS.length]),
             borderColor: '#0b1220',
             borderWidth: 3,
             hoverOffset: 10,
@@ -87,7 +88,7 @@ const TopProduitsChart = ({ dataVentes }) => {
     });
 
     return () => chartInstance.current?.destroy();
-  }, [dataVentes]);
+  }, [chartLabels, data]);
 
   return (
     <div
@@ -131,8 +132,8 @@ const TopProduitsChart = ({ dataVentes }) => {
 
       {/* LEGEND */}
       <div style={{ marginTop: '20px' }}>
-        {LABELS.map((label, i) => {
-          const percent = Math.round((data[i] / total) * 100);
+        {chartLabels.map((label, i) => {
+          const percent = total ? Math.round(((data[i] || 0) / total) * 100) : 0;
 
           return (
             <div
@@ -162,7 +163,7 @@ const TopProduitsChart = ({ dataVentes }) => {
               </span>
 
               <span style={{ color: '#cbd5e1' }}>
-                {data[i]} ({percent}%)
+                {data[i] || 0} ({percent}%)
               </span>
             </div>
           );
@@ -186,7 +187,7 @@ const TopProduitsChart = ({ dataVentes }) => {
             <tbody>
               <tr>
                 <td style={{ color: '#94a3b8' }}>Produit</td>
-                <td>{LABELS[selectedIndex]}</td>
+                <td>{chartLabels[selectedIndex]}</td>
               </tr>
               <tr>
                 <td style={{ color: '#94a3b8' }}>Quantité</td>
@@ -194,7 +195,7 @@ const TopProduitsChart = ({ dataVentes }) => {
               </tr>
               <tr>
                 <td style={{ color: '#94a3b8' }}>%</td>
-                <td>{Math.round((data[selectedIndex] / total) * 100)}%</td>
+                <td>{total ? Math.round(((data[selectedIndex] || 0) / total) * 100) : 0}%</td>
               </tr>
             </tbody>
           </table>

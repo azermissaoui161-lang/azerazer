@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import userService from '../../../services/userService'
+import { depensesService } from '../../../services/depensesService'
 import { extractApiErrorMessage } from '../../../utils/frontendApiAdapters'
-import'./SettingsPage'
+import './SettingsPage.css'
 const INITIAL_SETTINGS = {
   firstName: '', lastName: '', email: '', phone: '', department: '', role: '',
   currentPassword: '', newPassword: '', confirmPassword: ''
@@ -12,6 +13,14 @@ function SettingsPage({ showNotif }) {
   const [settingsMessage, setSettingsMessage] = useState({ type: '', text: '' })
   const [updating, setUpdating] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [limitSettings, setLimitSettings] = useState({
+    enabled: false,
+    maxMonthlyAmount: '',
+    warningThresholdPercent: 80,
+    currentMonthTotal: 0,
+    percent: 0,
+    month: '',
+  })
 
   const loadProfile = async () => {
     try {
@@ -29,6 +38,16 @@ function SettingsPage({ showNotif }) {
         newPassword: '',
         confirmPassword: '',
       }))
+      const limitsResponse = await depensesService.getSettings()
+      const limits = limitsResponse?.data || limitsResponse
+      setLimitSettings({
+        enabled: Boolean(limits?.enabled),
+        maxMonthlyAmount: limits?.maxMonthlyAmount || '',
+        warningThresholdPercent: limits?.warningThresholdPercent || 80,
+        currentMonthTotal: limits?.currentMonthTotal || 0,
+        percent: limits?.percent || 0,
+        month: limits?.month || '',
+      })
     } catch (error) {
       setSettingsMessage({ type: 'error', text: extractApiErrorMessage(error, 'Impossible de charger le profil') })
     } finally {
@@ -39,6 +58,47 @@ function SettingsPage({ showNotif }) {
   useEffect(() => { loadProfile() }, [])
 
   const handleSettingsChange = (e) => setUserSettings({ ...userSettings, [e.target.name]: e.target.value })
+  const handleLimitChange = (e) => {
+    const { name, type, checked, value } = e.target
+    setLimitSettings(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }))
+  }
+
+  const handleSaveLimitSettings = async () => {
+    const maxMonthlyAmount = Number(limitSettings.maxMonthlyAmount) || 0
+    const warningThresholdPercent = Number(limitSettings.warningThresholdPercent) || 80
+
+    if (limitSettings.enabled && maxMonthlyAmount <= 0) {
+      setSettingsMessage({ type: 'error', text: 'La limite mensuelle doit etre superieure a 0' })
+      return
+    }
+
+    if (warningThresholdPercent < 1 || warningThresholdPercent > 100) {
+      setSettingsMessage({ type: 'error', text: 'Le seuil notification doit etre entre 1 et 100%' })
+      return
+    }
+
+    setUpdating(true)
+    setSettingsMessage({ type: 'info', text: 'Mise a jour de la limite...' })
+    try {
+      const response = await depensesService.updateSettings({
+        enabled: Boolean(limitSettings.enabled),
+        maxMonthlyAmount,
+        warningThresholdPercent,
+      })
+      const saved = response?.data || response
+      setLimitSettings(prev => ({
+        ...prev,
+        ...saved,
+        maxMonthlyAmount: saved.maxMonthlyAmount || '',
+        warningThresholdPercent: saved.warningThresholdPercent || warningThresholdPercent,
+      }))
+      setSettingsMessage({ type: 'success', text: 'Limite depenses mise a jour' })
+    } catch (error) {
+      setSettingsMessage({ type: 'error', text: extractApiErrorMessage(error, 'Impossible de mettre a jour la limite') })
+    } finally {
+      setUpdating(false)
+    }
+  }
 
   const handleSaveSettings = async () => {
     if (!userSettings.firstName || !userSettings.lastName || !userSettings.email) {
@@ -98,6 +158,35 @@ function SettingsPage({ showNotif }) {
             <div className="settings-group"><label>Département</label><input type="text" name="department" value={userSettings.department} onChange={handleSettingsChange} /></div>
             <div className="settings-group"><label>Rôle</label><input type="text" value={userSettings.role} disabled style={{ backgroundColor: '#f7fafc', cursor: 'not-allowed' }} /><small>Le rôle ne peut pas être modifié</small></div>
           </div>
+        </div>
+        <div className="settings-section">
+          <h3>Limite mensuelle des depenses</h3>
+          <div className="settings-row">
+            <div className="settings-group">
+              <label>Activer le plafond</label>
+              <label className="settings-toggle">
+                <input type="checkbox" name="enabled" checked={Boolean(limitSettings.enabled)} onChange={handleLimitChange} />
+                <span>Bloquer les depenses au-dessus du plafond</span>
+              </label>
+            </div>
+            <div className="settings-group">
+              <label>Plafond mensuel</label>
+              <input type="number" min="0" step="0.01" name="maxMonthlyAmount" value={limitSettings.maxMonthlyAmount} onChange={handleLimitChange} />
+            </div>
+          </div>
+          <div className="settings-row">
+            <div className="settings-group">
+              <label>Notification admin a partir de (%)</label>
+              <input type="number" min="1" max="100" name="warningThresholdPercent" value={limitSettings.warningThresholdPercent} onChange={handleLimitChange} />
+            </div>
+            <div className="settings-group">
+              <label>Consommation du mois</label>
+              <input type="text" value={`${Number(limitSettings.currentMonthTotal || 0).toFixed(2)} / ${Number(limitSettings.maxMonthlyAmount || 0).toFixed(2)} (${Number(limitSettings.percent || 0).toFixed(1)}%)`} disabled readOnly />
+            </div>
+          </div>
+          <button className="btn-primary" onClick={handleSaveLimitSettings} disabled={updating} style={{ background: '#4299e1' }}>
+            Enregistrer la limite depenses
+          </button>
         </div>
         <div className="settings-section">
           <h3>Changer le mot de passe</h3>

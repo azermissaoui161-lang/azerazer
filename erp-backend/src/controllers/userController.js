@@ -6,6 +6,27 @@ const {
   getUserPreferenceValue,
   setUserPreferenceValue,
 } = require('../utils/moduleAccess');
+const { sendAccountCredentialsEmail } = require('../services/emailService');
+
+const ROLE_DEPARTMENT = {
+  admin_principal: 'administration',
+  admin_facture: 'facturation',
+  admin_stock: 'stock',
+  admin_finance: 'finance',
+  employe: 'administration',
+};
+
+const ALLOWED_ROLES = Object.keys(ROLE_DEPARTMENT);
+
+const normalizeUserPayload = ({ email, role, department }) => {
+  const normalizedRole = ALLOWED_ROLES.includes(role) ? role : 'employe';
+
+  return {
+    email: String(email || '').trim().toLowerCase(),
+    role: normalizedRole,
+    department: department || ROLE_DEPARTMENT[normalizedRole],
+  };
+};
 
 const buildProfilePayload = async (user) => {
   const moduleAccess = await getGlobalModuleAccess();
@@ -360,6 +381,7 @@ exports.getUserById = async (req, res) => {
 exports.createUser = async (req, res) => {
   try {
     const { firstName, lastName, email, password, phone, department, role } = req.body;
+    const normalized = normalizeUserPayload({ email, role, department });
     
     // Validation des champs requis
     if (!firstName || !lastName || !email || !password) {
@@ -371,10 +393,17 @@ exports.createUser = async (req, res) => {
     
     // Validation email
     const emailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(normalized.email)) {
       return res.status(400).json({ 
         success: false, 
         message: 'Format d\'email invalide' 
+      });
+    }
+
+    if (role && !ALLOWED_ROLES.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: `Role invalide. Roles autorises: ${ALLOWED_ROLES.join(', ')}`
       });
     }
     
@@ -387,7 +416,7 @@ exports.createUser = async (req, res) => {
     }
     
     // Vérifier si l'email existe déjà
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: normalized.email });
     if (existingUser) {
       return res.status(400).json({ 
         success: false, 
@@ -397,15 +426,20 @@ exports.createUser = async (req, res) => {
     
     // Créer l'utilisateur
     const user = await User.create({
-      firstName,
-      lastName,
-      email,
+      firstName: String(firstName).trim(),
+      lastName: String(lastName).trim(),
+      email: normalized.email,
       password,
       phone: phone || '',
-      department: department || '',
-      role: role || 'user',
+      department: normalized.department,
+      role: normalized.role,
       isActive: true,
       createdAt: Date.now()
+    });
+
+    const emailDelivery = await sendAccountCredentialsEmail({
+      user,
+      plainPassword: password,
     });
     
     // Journaliser
@@ -420,6 +454,8 @@ exports.createUser = async (req, res) => {
     
     res.status(201).json({
       success: true,
+      emailSent: emailDelivery.sent,
+      emailDelivery,
       message: 'Utilisateur créé avec succès',
       data: {
         id: user._id,
@@ -718,6 +754,11 @@ exports.resetUserPassword = async (req, res) => {
     user.password = newPassword;
     user.updatedAt = Date.now();
     await user.save();
+
+    const emailDelivery = await sendAccountCredentialsEmail({
+      user,
+      plainPassword: newPassword,
+    });
     
     // Journaliser
     await AuditLog.create({
@@ -731,6 +772,8 @@ exports.resetUserPassword = async (req, res) => {
     
     res.json({
       success: true,
+      emailSent: emailDelivery.sent,
+      emailDelivery,
       message: 'Mot de passe réinitialisé avec succès'
     });
   } catch (error) {

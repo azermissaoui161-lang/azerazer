@@ -1,7 +1,116 @@
 const Depenses = require('../models/depenses');
 const Account = require('../models/Account');
+const DepenseSettings = require('../models/DepenseSettings');
+const User = require('../models/User');
+const { createNotification } = require('./notificationController');
 const mongoose = require('mongoose');
 const json2csv = require('json2csv').Parser;
+
+const toNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
+
+const getMonthRange = (value = new Date()) => {
+  const date = value ? new Date(value) : new Date();
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+
+  return {
+    start: new Date(safeDate.getFullYear(), safeDate.getMonth(), 1),
+    end: new Date(safeDate.getFullYear(), safeDate.getMonth() + 1, 1),
+    key: `${safeDate.getFullYear()}-${String(safeDate.getMonth() + 1).padStart(2, '0')}`,
+  };
+};
+
+const getMonthlyDepenseTotal = async ({ date, excludeId } = {}) => {
+  const { start, end } = getMonthRange(date);
+  const query = {
+    date: {
+      $gte: start.toISOString().split('T')[0],
+      $lt: end.toISOString().split('T')[0],
+    },
+  };
+
+  if (excludeId) {
+    query._id = { $ne: excludeId };
+  }
+
+  const result = await Depenses.aggregate([
+    { $match: query },
+    { $group: { _id: null, total: { $sum: '$amount' } } },
+  ]);
+
+  return result[0]?.total || 0;
+};
+
+const buildDepenseUsage = async ({ amount = 0, date, excludeId } = {}) => {
+  const settings = await DepenseSettings.getGlobal();
+  const currentTotal = await getMonthlyDepenseTotal({ date, excludeId });
+  const projectedTotal = currentTotal + Math.abs(toNumber(amount));
+  const maxMonthlyAmount = toNumber(settings.maxMonthlyAmount);
+  const warningThresholdPercent = toNumber(settings.warningThresholdPercent, 80);
+  const enabled = Boolean(settings.enabled && maxMonthlyAmount > 0);
+  const percent = enabled ? Math.round((projectedTotal / maxMonthlyAmount) * 10000) / 100 : 0;
+
+  return {
+    settings,
+    enabled,
+    currentTotal,
+    projectedTotal,
+    maxMonthlyAmount,
+    warningThresholdPercent,
+    percent,
+    monthKey: getMonthRange(date).key,
+  };
+};
+
+const notifyDepenseLimitAdmins = async (usage, priority = 'haute') => {
+  if (!usage.enabled) return;
+
+  const admins = await User.find({
+    role: { $in: ['admin_principal', 'admin_finance'] },
+    isActive: true,
+  }).select('_id');
+
+  await Promise.all(admins.map((admin) => createNotification(
+    admin._id,
+    usage.projectedTotal > usage.maxMonthlyAmount ? 'depense_limit_exceeded' : 'depense_limit_warning',
+    'Limite depenses',
+    `Les depenses du mois ${usage.monthKey} sont a ${usage.percent}% du plafond (${usage.projectedTotal.toFixed(2)} / ${usage.maxMonthlyAmount.toFixed(2)}).`,
+    {
+      dedupeKey: `depense-limit-${usage.monthKey}`,
+      month: usage.monthKey,
+      currentTotal: usage.projectedTotal,
+      maxMonthlyAmount: usage.maxMonthlyAmount,
+      percent: usage.percent,
+    },
+    priority
+  )));
+};
+
+const enforceDepenseLimit = async ({ amount, date, excludeId } = {}) => {
+  const usage = await buildDepenseUsage({ amount, date, excludeId });
+
+  if (!usage.enabled) {
+    return usage;
+  }
+
+  if (usage.projectedTotal > usage.maxMonthlyAmount) {
+    await notifyDepenseLimitAdmins(usage, 'urgente');
+    const error = new Error(
+      `Plafond depenses depasse: ${usage.projectedTotal.toFixed(2)} / ${usage.maxMonthlyAmount.toFixed(2)}`
+    );
+    error.statusCode = 400;
+    error.usage = usage;
+    throw error;
+  }
+
+  if (usage.percent >= usage.warningThresholdPercent) {
+    await notifyDepenseLimitAdmins(usage, 'haute');
+  }
+
+  return usage;
+};
 
 
 // @desc    Récupérer toutes les dépenses (avec filtre par utilisateur si non-admin)
@@ -103,6 +212,75 @@ exports.getDepenseById = async (req, res) => {
 // @desc    Créer une nouvelle dépense
 // @route   POST /api/depenses
 // @access  Private (Finance uniquement)
+exports.getDepenseSettings = async (req, res) => {
+  try {
+    const settings = await DepenseSettings.getGlobal();
+    const usage = await buildDepenseUsage({ date: new Date() });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        maxMonthlyAmount: usage.maxMonthlyAmount,
+        warningThresholdPercent: usage.warningThresholdPercent,
+        enabled: usage.enabled,
+        currentMonthTotal: usage.currentTotal,
+        projectedTotal: usage.currentTotal,
+        percent: usage.enabled
+          ? Math.round((usage.currentTotal / usage.maxMonthlyAmount) * 10000) / 100
+          : 0,
+        month: usage.monthKey,
+        updatedAt: settings.updatedAt,
+        updatedBy: settings.updatedBy,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la recuperation des parametres depenses',
+      error: error.message,
+    });
+  }
+};
+
+exports.updateDepenseSettings = async (req, res) => {
+  try {
+    const settings = await DepenseSettings.getGlobal();
+    const maxMonthlyAmount = Math.max(0, toNumber(req.body.maxMonthlyAmount));
+    const warningThresholdPercent = Math.min(100, Math.max(1, toNumber(req.body.warningThresholdPercent, 80)));
+
+    settings.maxMonthlyAmount = maxMonthlyAmount;
+    settings.warningThresholdPercent = warningThresholdPercent;
+    settings.enabled = req.body.enabled !== undefined ? Boolean(req.body.enabled) : maxMonthlyAmount > 0;
+    settings.updatedBy = req.user._id;
+    await settings.save();
+
+    const usage = await buildDepenseUsage({ date: new Date() });
+
+    if (usage.enabled && usage.percent >= usage.warningThresholdPercent) {
+      await notifyDepenseLimitAdmins(usage, 'haute');
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Parametres depenses mis a jour',
+      data: {
+        maxMonthlyAmount: usage.maxMonthlyAmount,
+        warningThresholdPercent: usage.warningThresholdPercent,
+        enabled: usage.enabled,
+        currentMonthTotal: usage.currentTotal,
+        percent: usage.percent,
+        month: usage.monthKey,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la mise a jour des parametres depenses',
+      error: error.message,
+    });
+  }
+};
+
 exports.createDepense = async (req, res) => {
   try {
     const depenseData = {
@@ -116,12 +294,28 @@ exports.createDepense = async (req, res) => {
       }
     };
 
+    const budgetUsage = await enforceDepenseLimit({
+      amount: depenseData.amount,
+      date: depenseData.date,
+    });
+
+    let paymentAccount = null;
+    if (depenseData.status === 'payÃ©' && depenseData.account) {
+      paymentAccount = await Account.findById(depenseData.account);
+      if (paymentAccount && paymentAccount.balance < depenseData.amount) {
+        return res.status(400).json({
+          success: false,
+          message: 'Solde insuffisant: Vous avez atteint votre capital disponible.',
+        });
+      }
+    }
+
     const depense = await Depenses.create(depenseData);
 
     // --- LOGIQUE BALANCE JDIID ---
     // Ken el dépense jet "payé" mel lowel, na9as mel compte
     if (depense.status === 'payé' && req.body.account) {
-      const account = await Account.findById(req.body.account);
+      const account = paymentAccount || await Account.findById(req.body.account);
       if (account) {
         await account.credit(depense.amount); // méthode credit mte3ek (balance -= amount)
       }
@@ -135,10 +329,25 @@ exports.createDepense = async (req, res) => {
         ...depense.toObject(),
         id: depense._id,
         amount: -Math.abs(depense.amount)
+      },
+      budget: {
+        maxMonthlyAmount: budgetUsage.maxMonthlyAmount,
+        currentMonthTotal: budgetUsage.projectedTotal,
+        percent: budgetUsage.percent,
+        warningThresholdPercent: budgetUsage.warningThresholdPercent,
+        enabled: budgetUsage.enabled,
       }
     });
   } catch (error) {
     console.error('Erreur createDepense:', error);
+
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        budget: error.usage,
+      });
+    }
     
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
@@ -146,6 +355,13 @@ exports.createDepense = async (req, res) => {
         success: false,
         message: 'Erreur de validation',
         errors: messages
+      });
+    }
+
+    if (error.message && error.message.includes('Solde insuffisant')) {
+      return res.status(400).json({
+        success: false,
+        message: error.message,
       });
     }
     
@@ -182,7 +398,9 @@ exports.updateDepense = async (req, res) => {
     
     const updateData = {
       ...req.body,
-      amount: Math.abs(parseFloat(req.body.amount) || 0),
+      amount: req.body.amount !== undefined
+        ? Math.abs(parseFloat(req.body.amount) || 0)
+        : existingDepense.amount,
       updatedAt: Date.now(),
       updatedBy: {
         userId: req.user._id,
@@ -191,6 +409,12 @@ exports.updateDepense = async (req, res) => {
         updatedAt: new Date()
       }
     };
+
+    const budgetUsage = await enforceDepenseLimit({
+      amount: updateData.amount,
+      date: updateData.date || existingDepense.date,
+      excludeId: existingDepense._id,
+    });
     
     const depense = await Depenses.findByIdAndUpdate(
       id,
@@ -205,10 +429,25 @@ exports.updateDepense = async (req, res) => {
         ...depense.toObject(),
         id: depense._id,
         amount: -Math.abs(depense.amount)
+      },
+      budget: {
+        maxMonthlyAmount: budgetUsage.maxMonthlyAmount,
+        currentMonthTotal: budgetUsage.projectedTotal,
+        percent: budgetUsage.percent,
+        warningThresholdPercent: budgetUsage.warningThresholdPercent,
+        enabled: budgetUsage.enabled,
       }
     });
   } catch (error) {
     console.error('Erreur updateDepense:', error);
+
+    if (error.statusCode) {
+      return res.status(error.statusCode).json({
+        success: false,
+        message: error.message,
+        budget: error.usage,
+      });
+    }
     
     if (error.name === 'ValidationError') {
       const messages = Object.values(error.errors).map(err => err.message);
@@ -406,6 +645,10 @@ exports.markAsPaid = async (req, res) => {
 
     res.status(200).json({ success: true, data: depense });
   } catch (error) {
+    if (error.message && error.message.includes('Solde insuffisant')) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
+
     res.status(500).json({ success: false, error: error.message });
   }
 };

@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React from 'react';
+
+const formatNumber = (value) => Number(value || 0).toLocaleString('fr-FR');
 
 export const KpiCard = ({
   label,
@@ -6,107 +8,68 @@ export const KpiCard = ({
   accent,
   note,
   trend,
-  trendUp
+  trendUp,
 }) => (
-
-  <div className="ds-kpi-card" style={{ "--accent": accent }}>
-
-    <span className="ds-kpi-label">
-      {label}
-    </span>
+  <div className="ds-kpi-card" style={{ '--accent': accent }}>
+    <span className="ds-kpi-label">{label}</span>
 
     <div className="ds-kpi-bottom">
-
-      <span className="ds-kpi-value">
-        {Number(value || 0).toLocaleString("fr-FR")}
-      </span>
+      <span className="ds-kpi-value">{formatNumber(value)}</span>
 
       {trend && (
-        <span className={`ds-kpi-trend ${trendUp ? "up" : "down"}`}>
-          {trendUp ? "▲" : "▼"} {trend}
+        <span className={`ds-kpi-trend ${trendUp ? 'up' : 'down'}`}>
+          {trendUp ? '+' : '-'} {trend}
         </span>
       )}
-
     </div>
 
-    {note && (
-      <span className="ds-kpi-note">
-        {note}
-      </span>
-    )}
-
+    {note && <span className="ds-kpi-note">{note}</span>}
   </div>
 );
 
-const FinanceKpiPage = () => {
-
-  const [financeKpi, setFinanceKpi] = useState({
-    chiffreAffaire: 0,
-    depensesTotal: 0,
-    transactionsTotal: 0,
-  });
-
-  useEffect(() => {
-
-    const fetchKpis = async () => {
-      try {
-
-        const res = await fetch(
-          'http://localhost:5000/api/dashboard/finance/kpi-finance',
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`
-            }
-          }
-        );
-
-        const data = await res.json();
-
-        setFinanceKpi(data);
-
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchKpis();
-
-  }, []);
+const FinanceKpiPage = ({ kpi = {} }) => {
+  const beneficeNet = Number(kpi.beneficeNet || 0);
 
   return (
     <div className="kpi-page">
-
       <div className="ds-kpi-row">
-
         <KpiCard
           label="Chiffre d'affaires"
-          value={financeKpi.chiffreAffaire}
+          value={kpi.chiffreAffaire}
           accent="#10b981"
-          note="revenu total"
-          trend="+12%"
-          trendUp={true}
+          note="total facture en DT"
         />
 
         <KpiCard
-          label="Dépenses Totales"
-          value={financeKpi.depensesTotal}
+          label="Recettes encaissees"
+          value={kpi.recettesEncaissees}
+          accent="#0ea5e9"
+          note="paiements recus en DT"
+        />
+
+        <KpiCard
+          label="Depenses"
+          value={kpi.depensesTotal}
           accent="#f43f5e"
-          note="charges globales"
-          trend="+5%"
-          trendUp={false}
+          note="charges globales en DT"
+        />
+
+        <KpiCard
+          label="Benefice net"
+          value={beneficeNet}
+          accent={beneficeNet >= 0 ? '#16a34a' : '#dc2626'}
+          note="recettes moins depenses"
+          trend={beneficeNet >= 0 ? 'positif' : 'negatif'}
+          trendUp={beneficeNet >= 0}
         />
 
         <KpiCard
           label="Transactions"
-          value={financeKpi.transactionsTotal}
+          value={kpi.transactionsTotal}
           accent="#6366f1"
-          note="opérations effectuées"
-          trend="+8%"
-          trendUp={true}
+          note="operations validees"
         />
-
       </div>
-
     </div>
   );
 };

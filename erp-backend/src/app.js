@@ -131,9 +131,11 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/depenses', depensesRoutes);
 app.use('/api/dashboard/facture', dashboardFactureRoutes);
+app.use('/api/dashboard/facturation', dashboardFactureRoutes);
 app.use('/api/dashboard/stock', dashboardStockRoutes);
 app.use('/api/dashboard/finance', dashboardFinanceRoutes);
 app.use('/api/archive', archiveRoutes);
+app.use('/api/archives', archiveRoutes);
 
 // ============================================
 // 7. Routes de test

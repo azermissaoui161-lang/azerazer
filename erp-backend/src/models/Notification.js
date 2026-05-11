@@ -17,7 +17,11 @@ const notificationSchema = new mongoose.Schema({
       'commande_validee',
       'produit_epuise',
       'client_nouveau',
-      'transaction_effectuee'
+      'transaction_effectuee',
+      'facture_emise',
+      'depense_limit_warning',
+      'depense_limit_exceeded',
+      'compte_cree'
     ]
   },
   title: {

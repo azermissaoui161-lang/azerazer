@@ -1,5 +1,20 @@
 import { useState } from 'react';
 
+const ROLE_OPTIONS = [
+  { value: 'employe', label: 'Employe', department: 'administration' },
+  { value: 'admin_finance', label: 'Admin finance', department: 'finance' },
+  { value: 'admin_facture', label: 'Admin facturation', department: 'facturation' },
+  { value: 'admin_stock', label: 'Admin stock', department: 'stock' },
+  { value: 'admin_principal', label: 'Admin principal', department: 'administration' },
+];
+
+const DEPARTMENT_OPTIONS = [
+  { value: 'administration', label: 'Administration' },
+  { value: 'finance', label: 'Finance' },
+  { value: 'facturation', label: 'Facturation' },
+  { value: 'stock', label: 'Stock' },
+];
+
 function CreateAccount({ onClose, onAccountCreated, standalone = false, onCancel }) {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -7,8 +22,8 @@ function CreateAccount({ onClose, onAccountCreated, standalone = false, onCancel
     email: '',
     password: '',
     confirmPassword: '',
-    role: '',
-    department: '',
+    role: 'employe',
+    department: 'administration',
   });
 
   const [loading, setLoading] = useState(false);
@@ -29,10 +44,14 @@ function CreateAccount({ onClose, onAccountCreated, standalone = false, onCancel
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    const selectedRole = name === 'role'
+      ? ROLE_OPTIONS.find((option) => option.value === value)
+      : null;
 
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+      ...(selectedRole ? { department: selectedRole.department } : {}),
     }));
 
     clearFieldError(name);
@@ -116,9 +135,10 @@ function CreateAccount({ onClose, onAccountCreated, standalone = false, onCancel
 
     try {
       const { confirmPassword, ...userData } = formData;
+      let result = null;
 
       if (onAccountCreated) {
-        await onAccountCreated({
+        result = await onAccountCreated({
           ...userData,
           firstName: userData.firstName.trim(),
           lastName: userData.lastName.trim(),
@@ -129,15 +149,20 @@ function CreateAccount({ onClose, onAccountCreated, standalone = false, onCancel
       }
 
       setErrors({});
-      setMessage({ type: 'success', text: 'Compte créé avec succès !' });
+      setMessage({
+        type: result?.emailSent === false ? 'info' : 'success',
+        text: result?.emailSent === false
+          ? 'Compte cree. Email non envoye: configurez SMTP dans le backend.'
+          : 'Compte cree avec succes. Email envoye au nouvel utilisateur.',
+      });
       setFormData({
         firstName: '',
         lastName: '',
         email: '',
         password: '',
         confirmPassword: '',
-        role: '',
-        department: '',
+        role: 'employe',
+        department: 'administration',
       });
 
       if (!standalone) {
@@ -319,28 +344,36 @@ function CreateAccount({ onClose, onAccountCreated, standalone = false, onCancel
             <label style={styles.label}>
               {'Rôle'} <span style={styles.requiredMark}>*</span>
             </label>
-            <input
-              type="text"
+            <select
               name="role"
               value={formData.role}
               onChange={handleChange}
               style={getInputStyle('role')}
               required
-              placeholder="Ex: Administrateur, Manager, Commercial..."
-            />
+            >
+              {ROLE_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
             {renderFieldError('role')}
           </div>
 
           <div style={styles.formGroup}>
             <label style={styles.label}>{'Département'}</label>
-            <input
-              type="text"
+            <select
               name="department"
               value={formData.department}
               onChange={handleChange}
               style={styles.input}
-              placeholder="Ex: Direction, Commercial, IT..."
-            />
+            >
+              {DEPARTMENT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           {!standalone ? (

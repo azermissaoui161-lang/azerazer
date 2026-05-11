@@ -112,7 +112,7 @@ const exportSVG = (canvas) => {
 };
 
 // ─── CHART 1 ────────────────────────────────────────────────────────────────
-const FournisseursBarChart = ({ selected, onSelect, chartRefExport }) => {
+const FournisseursBarChart = ({ fournisseursData, selected, onSelect, chartRefExport }) => {
   const ref = useRef(null);
   const instance = useRef(null);
 
@@ -124,14 +124,14 @@ const FournisseursBarChart = ({ selected, onSelect, chartRefExport }) => {
     instance.current = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: fournisseurs.map(f => f.nom),
+        labels: fournisseursData.map(f => f.nom),
         datasets: [{
           label: 'CA total (DT)',
-          data: fournisseurs.map(f => f.total),
-          backgroundColor: fournisseurs.map((_, i) =>
-            selected === i ? COLORS[i] : COLORS[i] + '55'
+          data: fournisseursData.map(f => f.total),
+          backgroundColor: fournisseursData.map((_, i) =>
+            selected === i ? COLORS[i % COLORS.length] : COLORS[i % COLORS.length] + '55'
           ),
-          borderColor: fournisseurs.map((_, i) => COLORS[i]),
+          borderColor: fournisseursData.map((_, i) => COLORS[i % COLORS.length]),
           borderWidth: 1.5,
           borderRadius: 7,
           borderSkipped: false,
@@ -150,7 +150,7 @@ const FournisseursBarChart = ({ selected, onSelect, chartRefExport }) => {
     if (chartRefExport) chartRefExport.current = instance.current;
 
     return () => instance.current?.destroy();
-  }, [selected]);
+  }, [fournisseursData, selected]);
 
   return (
     <div style={{ position: 'relative', height: '220px', cursor: 'pointer' }}>
@@ -163,6 +163,7 @@ const FournisseursBarChart = ({ selected, onSelect, chartRefExport }) => {
 const ProduitsBarChart = ({ fournisseur, color }) => {
   const ref = useRef(null);
   const instance = useRef(null);
+  const produits = Array.isArray(fournisseur.produits) ? fournisseur.produits : [];
 
   useEffect(() => {
     const ctx = ref.current.getContext('2d');
@@ -172,9 +173,9 @@ const ProduitsBarChart = ({ fournisseur, color }) => {
     instance.current = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: fournisseur.produits.map(p => p.nom),
+        labels: produits.map(p => p.nom),
         datasets: [{
-          data: fournisseur.produits.map(p => p.achat),
+          data: produits.map(p => p.achat),
           backgroundColor: color + '33',
           borderColor: color,
           borderWidth: 1.5,
@@ -189,20 +190,22 @@ const ProduitsBarChart = ({ fournisseur, color }) => {
     });
 
     return () => instance.current?.destroy();
-  }, [fournisseur, color]);
+  }, [produits, color]);
 
   return (
-    <div style={{ position: 'relative', height: `${fournisseur.produits.length * 52}px` }}>
+    <div style={{ position: 'relative', height: `${Math.max(1, produits.length) * 52}px` }}>
       <canvas ref={ref} />
     </div>
   );
 };
 
 // ─── MAIN COMPONENT ─────────────────────────────────────────────────────────
-const TopFournisseursChart = () => {
+const TopFournisseursChart = ({ data }) => {
   const [selected, setSelected] = useState(0);
-  const f = fournisseurs[selected];
-  const color = COLORS[selected];
+  const fournisseursData = Array.isArray(data) && data.length ? data : fournisseurs;
+  const safeSelected = Math.min(selected, Math.max(0, fournisseursData.length - 1));
+  const f = fournisseursData[safeSelected] || { nom: 'Fournisseur', total: 0, produits: [] };
+  const color = COLORS[safeSelected % COLORS.length];
 
   const dashboardRef = useRef(null);
   const chartRef = useRef(null);
@@ -243,7 +246,8 @@ const TopFournisseursChart = () => {
 
       {/* CHART */}
       <FournisseursBarChart
-        selected={selected}
+        fournisseursData={fournisseursData}
+        selected={safeSelected}
         onSelect={setSelected}
         chartRefExport={chartRef}
       />

@@ -120,7 +120,7 @@ depensesSchema.index({ category: 1, date: -1 });
 
 // Méthode statique pour obtenir les statistiques
 depensesSchema.statics.getStats = async function(userId = null) {
-  const matchQuery = userId ? { userId: mongoose.Types.ObjectId(userId) } : {};
+  const matchQuery = userId ? { userId: new mongoose.Types.ObjectId(userId) } : {};
   
   const stats = await this.aggregate([
     { $match: matchQuery },
@@ -169,7 +169,7 @@ depensesSchema.statics.updateOverdueStatus = async function(userId = null) {
   };
   
   if (userId) {
-    query.userId = mongoose.Types.ObjectId(userId);
+    query.userId = new mongoose.Types.ObjectId(userId);
   }
   
   await this.updateMany(query, {

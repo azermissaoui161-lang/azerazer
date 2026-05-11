@@ -5,13 +5,14 @@ import html2canvas from 'html2canvas';
 const DEFAULT_VALUES = [12000, 19000, 15000, 25000, 22000, 30000, 45000, 42000];
 const LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août'];
 
-const RecetteEvolution = ({ dataRecette }) => {
+const RecetteEvolution = ({ labels, dataRecette }) => {
 
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const containerRef = useRef(null);
 
-  const values = dataRecette || DEFAULT_VALUES;
+  const chartLabels = Array.isArray(labels) && labels.length ? labels : LABELS;
+  const values = Array.isArray(dataRecette) && dataRecette.length ? dataRecette : DEFAULT_VALUES;
 
   useEffect(() => {
     const ctx = chartRef.current.getContext('2d');
@@ -29,7 +30,7 @@ const RecetteEvolution = ({ dataRecette }) => {
     chartInstance.current = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: LABELS,
+        labels: chartLabels,
         datasets: [
           {
             label: 'Recettes',
@@ -93,7 +94,7 @@ const RecetteEvolution = ({ dataRecette }) => {
     });
 
     return () => chartInstance.current?.destroy();
-  }, [values]);
+  }, [chartLabels, values]);
 
   // =========================
   // PNG EXPORT (html2canvas)

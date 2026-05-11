@@ -106,6 +106,18 @@
   cursor: not-allowed;
 }
 
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  font-weight: 500;
+}
+
+.settings-toggle input {
+  width: auto;
+}
+
 /* ===== TEXT HELP ===== */
 .settings-group small,
 .settings-hint {

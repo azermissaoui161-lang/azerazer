@@ -28,6 +28,8 @@ const EMPTY_ACCOUNT = {
   balance: '', status: 'actif', inMoneyFlow: false
 }
 
+const ACCOUNT_TYPES = ['Banque', 'Caisse', 'Epargne', 'Creance', 'Dette', 'Produit', 'Charge']
+
 const getStatusStyle = (status) => STATUS_CONFIG[status] || { color: COLORS.muted, bg: COLORS.defaultBg }
 
 const StatusBadge = ({ status }) => {
@@ -41,9 +43,9 @@ const AccountForm = ({ formData, setFormData }) => {
   return (<>
     <div className="form-group"><label>Nom *</label><input type="text" value={fd.name} onChange={e => set('name', e.target.value)} required /></div>
     <div className="form-row">
-      <div className="form-group"><label>Type *</label><div value={fd.type} onChange={e => set('type', e.target.value)}>
-        <option value="Banque">Banque</option>
-      </div>
+      <div className="form-group"><label>Type *</label><select value={fd.type} onChange={e => set('type', e.target.value)}>
+        {ACCOUNT_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
+      </select>
       </div>
       <div className="form-group">
         <label>Capital *</label>
@@ -143,6 +145,7 @@ function AccountsPage({ showNotif }) {
   return (
     <div className="accounts-content">
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
+        <button className="btn-primary" onClick={() => openModal('add')}>+ Nouveau compte</button>
       </div>
 
       <div className="accounts-grid">

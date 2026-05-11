@@ -1,56 +1,27 @@
-const API_URL = '/api/archives'; // Thabet f el 's' mte3 archives kima f server.js
+import api from './api';
 
-// Function bech tjib el token mel localStorage
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token'); // Wala el key elli testa3mel fih
-  return {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  };
-};
-
-const handleResponse = async (res) => {
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.message || 'Erreur serveur');
-  return data;
-};
+const unwrap = (response) => response.data;
 
 const ArchiveService = {
-  // 📥 Get All
   getAll: async () => {
-    const res = await fetch(API_URL, {
-      headers: getAuthHeaders() // Zid hathi
-    });
-    return handleResponse(res);
+    const response = await api.get('/archive');
+    return unwrap(response);
   },
 
-  // 📦 Archive
-  archive: async (invoiceId, reason) => {
-    const res = await fetch(`${API_URL}/${invoiceId}`, {
-      method: 'POST',
-      headers: getAuthHeaders(), // Zid hathi
-      body: JSON.stringify({ reason })
-    });
-    return handleResponse(res);
+  archive: async (invoiceId, reason = '') => {
+    const response = await api.post(`/archive/${invoiceId}`, { reason });
+    return unwrap(response);
   },
 
-  // 🔄 Restore
   restore: async (archiveId) => {
-    const res = await fetch(`${API_URL}/restore/${archiveId}`, {
-      method: 'POST',
-      headers: getAuthHeaders() // Zid hathi
-    });
-    return handleResponse(res);
+    const response = await api.post(`/archive/restore/${archiveId}`);
+    return unwrap(response);
   },
 
-  // ❌ Delete
   delete: async (archiveId) => {
-    const res = await fetch(`${API_URL}/${archiveId}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders() // Zid hathi
-    });
-    return handleResponse(res);
-  }
+    const response = await api.delete(`/archive/${archiveId}`);
+    return unwrap(response);
+  },
 };
 
 export default ArchiveService;

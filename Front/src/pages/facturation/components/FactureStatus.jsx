@@ -6,13 +6,14 @@ const LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'];
 const DEFAULT_PAYE   = [20, 35, 25, 45, 40, 55];
 const DEFAULT_IMPAYE = [10, 15, 20, 10, 25, 15];
 
-const FactureStatus = ({ dataPaye, dataImpaye }) => {
+const FactureStatus = ({ labels, dataPaye, dataImpaye }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const containerRef = useRef(null);
 
-  const paye = dataPaye || DEFAULT_PAYE;
-  const impaye = dataImpaye || DEFAULT_IMPAYE;
+  const chartLabels = Array.isArray(labels) && labels.length ? labels : LABELS;
+  const paye = Array.isArray(dataPaye) && dataPaye.length ? dataPaye : DEFAULT_PAYE;
+  const impaye = Array.isArray(dataImpaye) && dataImpaye.length ? dataImpaye : DEFAULT_IMPAYE;
 
   useEffect(() => {
     const ctx = chartRef.current.getContext('2d');
@@ -28,7 +29,7 @@ const FactureStatus = ({ dataPaye, dataImpaye }) => {
     chartInstance.current = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: LABELS,
+        labels: chartLabels,
         datasets: [
           {
             label: 'Payées',
@@ -66,7 +67,7 @@ const FactureStatus = ({ dataPaye, dataImpaye }) => {
     });
 
     return () => chartInstance.current?.destroy();
-  }, [paye, impaye]);
+  }, [chartLabels, paye, impaye]);
 
   /* ================= PNG EXPORT ================= */
   const downloadPNG = async () => {

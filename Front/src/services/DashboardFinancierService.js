@@ -1,45 +1,10 @@
-const Transaction = require('../models/Transaction');
-const Depense = require('../models/Depense');
+import api from './api';
 
-const getFinanceKpi = async () => {
-
-  try {
-
-    const chiffreAffaireAgg = await Transaction.aggregate([
-      {
-        $group: {
-          _id: null,
-          total: { $sum: '$montant' }
-        }
-      }
-    ]);
-
-    const depensesAgg = await Depense.aggregate([
-      {
-        $group: {
-          _id: null,
-          total: { $sum: '$montant' }
-        }
-      }
-    ]);
-
-    const transactionsTotal =
-      await Transaction.countDocuments();
-
-    return {
-      chiffreAffaire: chiffreAffaireAgg[0]?.total || 0,
-      depensesTotal: depensesAgg[0]?.total || 0,
-      transactionsTotal,
-    };
-
-  } catch (err) {
-
-    throw new Error(err.message);
-
-  }
-
+const getDashboard = async () => {
+  const response = await api.get('/dashboard/finance/kpi-finance');
+  return response.data;
 };
 
-module.exports = {
-  getFinanceKpi
+export default {
+  getDashboard,
 };

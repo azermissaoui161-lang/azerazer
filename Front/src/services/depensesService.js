@@ -171,10 +171,30 @@ export const depensesService = {
    */
   getStats: async (params = {}) => {
     try {
-      const response = await api.get('/depenses/stats', { params });
+      const response = await api.get('/depenses/stats/summary', { params });
       return response.data;
     } catch (error) {
       console.error('❌ Erreur getStats depenses:', error);
+      throw error;
+    }
+  },
+
+  getSettings: async () => {
+    try {
+      const response = await api.get('/depenses/settings');
+      return response.data;
+    } catch (error) {
+      console.error('Erreur getSettings depenses:', error);
+      throw error;
+    }
+  },
+
+  updateSettings: async (settings) => {
+    try {
+      const response = await api.put('/depenses/settings', settings);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur updateSettings depenses:', error);
       throw error;
     }
   },

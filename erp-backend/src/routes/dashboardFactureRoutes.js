@@ -4,7 +4,8 @@ const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 const { 
   getFactureDashboard,
-  getInvoiceStats 
+  getInvoiceStats,
+  getKpiFacture
 } = require('../controllers/dashboardFactureController');
 
 // Toutes les routes nécessitent authentification

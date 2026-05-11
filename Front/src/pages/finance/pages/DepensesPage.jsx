@@ -207,6 +207,7 @@ function DepensesPage({ showNotif }) {
   const [formData, setFormData] = useState({ ...EMPTY_DEPENSE })
   const [loading, setLoading] = useState(true)
   const [accounts, setAccounts] = useState([])
+  const [limitSettings, setLimitSettings] = useState(null)
 
   const formatCurrency = (amount) => (amount || 0).toLocaleString('fr-FR', FORMAT_OPTIONS.currency)
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-FR', FORMAT_OPTIONS.date) : ''
@@ -214,15 +215,17 @@ function DepensesPage({ showNotif }) {
   const loadData = async () => {
     try {
       setLoading(true)
-      const [depRes, accRes] = await Promise.all([
+      const [depRes, accRes, limitRes] = await Promise.all([
         depensesService.getAll(),
-        accountService.getAll({ limit: 200 })
+        accountService.getAll({ limit: 200 }),
+        depensesService.getSettings().catch(() => null)
       ])
       const formatted = (depRes.data || []).map(d => ({
         ...d, id: d._id, amount: -Math.abs(d.amount)
       }))
       setDepenses(formatted)
       setAccounts(pickList(accRes, ['data']).map(mapAccountToUi))
+      setLimitSettings(limitRes?.data || null)
     } catch (error) {
       notify('Impossible de charger les données', 'error')
     } finally {
@@ -265,6 +268,14 @@ function DepensesPage({ showNotif }) {
     return { totalDepenses: montantTotal, totalPaye: paye, totalAttente: attente, totalRetard: retard }
   }, [filteredData])
 
+  const depenseLimit = useMemo(() => {
+    if (!limitSettings?.enabled || !Number(limitSettings.maxMonthlyAmount)) return null
+    const max = Number(limitSettings.maxMonthlyAmount) || 0
+    const used = Number(limitSettings.currentMonthTotal) || 0
+    const percent = max > 0 ? Math.min(100, (used / max) * 100) : 0
+    return { max, used, percent }
+  }, [limitSettings])
+
   const sortedData = useMemo(() => {
     return [...filteredData].sort((a, b) => {
       let valA = a[sort.key]
@@ -304,9 +315,19 @@ function DepensesPage({ showNotif }) {
     setFormData({ ...EMPTY_DEPENSE })
   }
 
+  const assertDepenseLimit = (amount, previousAmount = 0) => {
+    if (!limitSettings?.enabled || !Number(limitSettings.maxMonthlyAmount)) return
+    const projected = (Number(limitSettings.currentMonthTotal) || 0) - Math.abs(previousAmount || 0) + Math.abs(amount || 0)
+    const max = Number(limitSettings.maxMonthlyAmount) || 0
+    if (projected > max) {
+      throw new Error(`Plafond depenses depasse: ${projected.toFixed(2)} / ${max.toFixed(2)}`)
+    }
+  }
+
   const handleAdd = async () => {
     try {
       const amount = Math.abs(parseFloat(formData.amount) || 0)
+      assertDepenseLimit(amount)
       const selectedAccount = accounts.find(a => String(a.id) === String(formData.account))
       if (!selectedAccount) throw new Error("Veuillez choisir un compte")
       const soldeDispo = Math.abs(selectedAccount.solde || 0)
@@ -326,7 +347,9 @@ function DepensesPage({ showNotif }) {
   const handleUpdate = async () => {
     try {
       const targetId = modal.item?.id
-      await depensesService.update(targetId, { ...formData, amount: Math.abs(parseFloat(formData.amount)) })
+      const amount = Math.abs(parseFloat(formData.amount) || 0)
+      assertDepenseLimit(amount, Math.abs(modal.item?.amount || 0))
+      await depensesService.update(targetId, { ...formData, amount })
       await loadData()
       closeModal()
       notify('Dépense modifiée avec succès')
@@ -372,6 +395,13 @@ function DepensesPage({ showNotif }) {
           <span className="stat-label">Total dépenses</span>
           <span className="stat-value">{formatCurrency(stats.totalDepenses)}</span>
         </div>
+        {depenseLimit && (
+          <div className={`stat-card ${depenseLimit.percent >= 100 ? 'danger' : depenseLimit.percent >= Number(limitSettings.warningThresholdPercent || 80) ? 'warning' : 'success'}`}>
+            <span className="stat-label">Plafond mensuel</span>
+            <span className="stat-value">{depenseLimit.percent.toFixed(1)}%</span>
+            <span className="stat-detail">{formatCurrency(depenseLimit.used)} / {formatCurrency(depenseLimit.max)}</span>
+          </div>
+        )}
         <div className="stat-card success">
           <span className="stat-label">Payé</span>
           <span className="stat-value">{stats.totalPaye}</span>

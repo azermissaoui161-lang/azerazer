@@ -11,14 +11,15 @@ const DATA = [
 
 const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b'];
 
-const TypeDepenses = () => {
+const TypeDepenses = ({ data }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const containerRef = useRef(null);
 
   const [selected, setSelected] = useState(null);
 
-  const total = DATA.reduce((a, b) => a + b.montant, 0);
+  const chartData = Array.isArray(data) && data.length ? data : DATA;
+  const total = chartData.reduce((a, b) => a + (Number(b.montant) || 0), 0);
 
   /* ================= CHART ================= */
   useEffect(() => {
@@ -29,11 +30,11 @@ const TypeDepenses = () => {
     chartInstance.current = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: DATA.map(d => d.type),
+        labels: chartData.map(d => d.type),
         datasets: [
           {
-            data: DATA.map(d => d.montant),
-            backgroundColor: COLORS,
+            data: chartData.map(d => Number(d.montant) || 0),
+            backgroundColor: chartData.map((_, index) => COLORS[index % COLORS.length]),
             borderWidth: 3,
             borderColor: '#fff',
             hoverOffset: 8,
@@ -62,7 +63,7 @@ const TypeDepenses = () => {
             callbacks: {
               label: (ctx) => {
                 const val = ctx.raw;
-                const percent = ((val / total) * 100).toFixed(1);
+                const percent = total ? ((val / total) * 100).toFixed(1) : '0.0';
                 return `${ctx.label}: ${val.toLocaleString('fr-TN')} DT (${percent}%)`;
               },
             },
@@ -71,13 +72,13 @@ const TypeDepenses = () => {
         onClick: (evt, elements) => {
           if (!elements.length) return;
           const index = elements[0].index;
-          setSelected(DATA[index]);
+          setSelected(chartData[index]);
         },
       },
     });
 
     return () => chartInstance.current?.destroy();
-  }, []);
+  }, [chartData, total]);
 
   /* ================= EXPORT PNG ================= */
   const downloadPNG = async () => {
@@ -176,20 +177,20 @@ const TypeDepenses = () => {
           </thead>
 
           <tbody>
-            {DATA.map((item, i) => (
+            {chartData.map((item, i) => (
               <tr
                 key={i}
                 className={selected?.type === item.type ? 'active-row' : ''}
                 onClick={() => setSelected(item)}
               >
                 <td>
-                  <span className="dot" style={{ background: COLORS[i] }} />
+                  <span className="dot" style={{ background: COLORS[i % COLORS.length] }} />
                   {item.type}
                 </td>
 
-                <td>{item.montant.toLocaleString('fr-TN')} DT</td>
+                <td>{Number(item.montant || 0).toLocaleString('fr-TN')} DT</td>
 
-                <td>{((item.montant / total) * 100).toFixed(1)}%</td>
+                <td>{total ? ((Number(item.montant || 0) / total) * 100).toFixed(1) : '0.0'}%</td>
 
                 <td><span className="arrow">›</span></td>
               </tr>
@@ -209,12 +210,12 @@ const TypeDepenses = () => {
           <div className="details-content">
             <div>
               <span>Montant</span>
-              <b>{selected.montant.toLocaleString('fr-TN')} DT</b>
+              <b>{Number(selected.montant || 0).toLocaleString('fr-TN')} DT</b>
             </div>
 
             <div>
               <span>Part</span>
-              <b>{((selected.montant / total) * 100).toFixed(1)}%</b>
+              <b>{total ? ((Number(selected.montant || 0) / total) * 100).toFixed(1) : '0.0'}%</b>
             </div>
           </div>
         </div>

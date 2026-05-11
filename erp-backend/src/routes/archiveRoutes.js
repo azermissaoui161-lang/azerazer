@@ -7,6 +7,11 @@ const {
   restoreArchive,
   deleteArchive
 } = require('../controllers/archiveController');
+const { protect } = require('../middleware/authMiddleware');
+const { authorize } = require('../middleware/roleMiddleware');
+
+router.use(protect);
+router.use(authorize('admin_principal', 'admin_facture'));
 
 // 1. Static Routes (ijiw el loul dima)
 router.get('/', getArchives);

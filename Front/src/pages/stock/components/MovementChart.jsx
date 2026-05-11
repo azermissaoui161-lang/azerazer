@@ -2,13 +2,14 @@ import React, { useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 import html2canvas from 'html2canvas';
 
-const MovementLineChart = ({ dataEntree, dataSortie }) => {
+const MovementLineChart = ({ labels, dataEntree, dataSortie }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const containerRef = useRef(null);
 
-  const dataE = dataEntree || [30, 45, 35, 60, 50, 70];
-  const dataS = dataSortie || [20, 35, 40, 30, 45, 55];
+  const chartLabels = Array.isArray(labels) && labels.length ? labels : ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin'];
+  const dataE = Array.isArray(dataEntree) && dataEntree.length ? dataEntree : [30, 45, 35, 60, 50, 70];
+  const dataS = Array.isArray(dataSortie) && dataSortie.length ? dataSortie : [20, 35, 40, 30, 45, 55];
 
   // ─── INIT CHART ─────────────────────────────
   useEffect(() => {
@@ -23,7 +24,7 @@ const MovementLineChart = ({ dataEntree, dataSortie }) => {
     chartInstance.current = new Chart(ctx, {
       type: 'bar',
       data: {
-        labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+        labels: chartLabels,
         datasets: [
           {
             label: 'Entrées',
@@ -80,7 +81,7 @@ const MovementLineChart = ({ dataEntree, dataSortie }) => {
     return () => {
       chartInstance.current?.destroy();
     };
-  }, [dataEntree, dataSortie]);
+  }, [chartLabels, dataE, dataS]);
 
   // ─── EXPORT PNG (html2canvas FULL CARD) ─────────────────────────────
   const downloadPNG = async () => {

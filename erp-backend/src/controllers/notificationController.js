@@ -5,12 +5,15 @@ const Notification = require('../models/Notification');
 // Fonction utilitaire mise à jour pour éviter les doublons
 const createNotification = async (userId, type, title, message, data = {}, priority = 'moyenne') => {
   try {
-    // 1. Nlawjou ken fama notification "non lue" l-nefs el produit
-    const filter = {
-      user: userId,
-      'data.productId': data.productId, // On identifie par le produit
-      read: false // Ken "non lue" barka n-badlouha
-    };
+    const dedupeFilter = {};
+
+    if (data.dedupeKey) {
+      dedupeFilter['data.dedupeKey'] = data.dedupeKey;
+    } else if (data.productId) {
+      dedupeFilter['data.productId'] = data.productId;
+    } else if (data.invoiceId) {
+      dedupeFilter['data.invoiceId'] = data.invoiceId;
+    }
 
     const update = {
       type,
@@ -21,8 +24,20 @@ const createNotification = async (userId, type, title, message, data = {}, prior
       createdAt: Date.now() // N-jaddou el wa9t bech tatla3 mel fou9
     };
 
-    // 2. findOneAndUpdate m3a upsert: true
-    // Ken l9a -> Update. Ken ma l9ash -> Insert.
+    if (Object.keys(dedupeFilter).length === 0) {
+      return await Notification.create({
+        user: userId,
+        ...update,
+      });
+    }
+
+    const filter = {
+      user: userId,
+      type,
+      read: false,
+      ...dedupeFilter,
+    };
+
     const notification = await Notification.findOneAndUpdate(
       filter, 
       update, 

@@ -1,53 +1,83 @@
-﻿import React from 'react';
+import React, { useEffect, useState } from 'react';
 import CommandeParMois from './components/CommandeParMois';
 import TotalCommandeParClient from './components/TotalCommandeParClient';
 import FactureStatus from './components/FactureStatus';
 import ClientFidele from './components/ClientFidele';
-import KpiFacture from './components/KpiFacture'; // ✅ AJOUT
+import KpiFacture from './components/KpiFacture';
+import dashboardFacturationService from '../../services/DashboardFacturationService';
+import { extractApiErrorMessage } from '../../utils/frontendApiAdapters';
 
 import './DashboardFacturation.css';
 
-// ─── Dashboard ───────────────────────────────────────────────────────────────
-const DashboardFacturation = () => (
-  <div className="df">
+const DashboardFacturation = () => {
+  const [dashboard, setDashboard] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
-    <header className="df-header">
-      <div>
-        <h1>Tableau de bord facturation</h1>
-        <p>Suivi des performances et de la trésorerie</p>
-      </div>
-      <span className="df-badge">Trésorerie</span>
-    </header>
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const response = await dashboardFacturationService.getDashboard();
+        setDashboard(response.data || response);
+        setErrorMessage('');
+      } catch (error) {
+        setErrorMessage(extractApiErrorMessage(error, 'Impossible de charger le dashboard facturation'));
+      }
+    };
 
-    {/* ── KPI GLOBAL (comme stock KpiPage) ── */}
-    <div className="card">
-      <KpiFacture />
-    </div>
+    loadDashboard();
+  }, []);
 
-    {/* ── Graphiques ── */}
-    <div className="df-grid">
+  const commandes = dashboard?.commandesParMois || [];
+  const factureStatus = dashboard?.factureStatus || [];
+
+  return (
+    <div className="df">
+      <header className="df-header">
+        <div>
+          <h1>Tableau de bord facturation</h1>
+          <p>Suivi des performances et de la tresorerie</p>
+        </div>
+        <span className="df-badge">Tresorerie</span>
+      </header>
+
+      {errorMessage && (
+        <div className="card" style={{ color: '#b91c1c' }}>
+          {errorMessage}
+        </div>
+      )}
 
       <div className="card">
-        <CommandeParMois />
+        <KpiFacture kpi={dashboard?.kpi} />
       </div>
 
-      <div className="row-2">
+      <div className="df-grid">
         <div className="card">
-          <FactureStatus />
+          <CommandeParMois
+            labels={commandes.map((item) => item.label)}
+            dataCommandes={commandes.map((item) => Number(item.count || 0))}
+          />
+        </div>
+
+        <div className="row-2">
+          <div className="card">
+            <FactureStatus
+              labels={factureStatus.map((item) => item.label)}
+              dataPaye={factureStatus.map((item) => Number(item.paye || 0))}
+              dataImpaye={factureStatus.map((item) => Number(item.impaye || 0))}
+            />
+          </div>
+
+          <div className="card">
+            <TotalCommandeParClient data={dashboard?.topCustomers} />
+          </div>
         </div>
 
         <div className="card">
-          <TotalCommandeParClient />
+          <ClientFidele data={dashboard?.loyalCustomers} />
         </div>
       </div>
-
-      <div className="card">
-        <ClientFidele />
-      </div>
-
     </div>
-
-  </div>
-);
+  );
+};
 
 export default DashboardFacturation;

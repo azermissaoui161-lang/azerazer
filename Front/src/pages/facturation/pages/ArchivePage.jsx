@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import ArchiveService from '../../../services/ArchiveService'
+import { extractApiErrorMessage, pickList } from '../../../utils/frontendApiAdapters'
 
 import './ArchivePage.css'
 
@@ -35,9 +36,9 @@ export default function ArchivePage() {
     const fetchData = async () => {
       try {
         const data = await ArchiveService.getAll()
-        setArchiveLog(data)
+        setArchiveLog(pickList(data, ['data']))
       } catch (err) {
-        showNotification('Erreur chargement archives', 'error')
+        showNotification(extractApiErrorMessage(err, 'Erreur chargement archives'), 'error')
       }
     }
 
@@ -84,7 +85,7 @@ export default function ArchivePage() {
 
       showNotification(`Facture ${entry.invoiceNumber} restaurée`, 'success')
     } catch (err) {
-      showNotification(err.message, 'error')
+      showNotification(extractApiErrorMessage(err, 'Erreur restauration archive'), 'error')
     }
   }
 

@@ -1,32 +1,16 @@
-const Invoice = require('../models/Invoice');
-const Customer = require('../models/Customer');
-const Order = require('../models/Order');
+import api from './api';
 
-const getKpiFacture = async () => {
-
-  const totalClients = await Customer.countDocuments();
-
-  const totalFactures = await Invoice.countDocuments();
-
-  const facturesPayees = await Invoice.countDocuments({
-    status: 'payée'
-  });
-
-  const facturesImpayees = await Invoice.countDocuments({
-    status: 'impayée'
-  });
-
-  const totalCommandes = await Order.countDocuments();
-
-  return {
-    totalClients,
-    totalFactures,
-    facturesPayees,
-    facturesImpayees,
-    totalCommandes,
-  };
+const getDashboard = async () => {
+  const response = await api.get('/dashboard/facture');
+  return response.data;
 };
 
-module.exports = {
-  getKpiFacture
+const getKpiFacture = async () => {
+  const response = await api.get('/dashboard/facture/kpi-facture');
+  return response.data;
+};
+
+export default {
+  getDashboard,
+  getKpiFacture,
 };

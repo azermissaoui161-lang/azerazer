@@ -7,15 +7,16 @@ const DEF_RECETTES = [5000, 7000, 6000, 9000, 8000, 10000];
 const DEF_DEPENSES = [3000, 4000, 5500, 6000, 7000, 8500];
 const DEF_NET      = [2000, 3000, 500, 3000, 1000, 1500];
 
-const RecetteDepense = ({ dataRecettes, dataDepenses, dataNet }) => {
+const RecetteDepense = ({ labels, dataRecettes, dataDepenses, dataNet }) => {
 
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const containerRef = useRef(null);
 
-  const recettes = dataRecettes || DEF_RECETTES;
-  const depenses = dataDepenses || DEF_DEPENSES;
-  const net      = dataNet      || DEF_NET;
+  const chartLabels = Array.isArray(labels) && labels.length ? labels : LABELS;
+  const recettes = Array.isArray(dataRecettes) && dataRecettes.length ? dataRecettes : DEF_RECETTES;
+  const depenses = Array.isArray(dataDepenses) && dataDepenses.length ? dataDepenses : DEF_DEPENSES;
+  const net = Array.isArray(dataNet) && dataNet.length ? dataNet : DEF_NET;
 
   /* ================= CHART ================= */
   useEffect(() => {
@@ -27,7 +28,7 @@ const RecetteDepense = ({ dataRecettes, dataDepenses, dataNet }) => {
 
     chartInstance.current = new Chart(ctx, {
       data: {
-        labels: LABELS,
+        labels: chartLabels,
         datasets: [
           {
             type: 'bar',
@@ -101,7 +102,7 @@ const RecetteDepense = ({ dataRecettes, dataDepenses, dataNet }) => {
     });
 
     return () => chartInstance.current?.destroy();
-  }, [recettes, depenses, net]);
+  }, [chartLabels, recettes, depenses, net]);
 
   /* ================= PNG EXPORT ================= */
   const downloadPNG = async () => {

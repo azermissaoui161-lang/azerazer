@@ -5,12 +5,13 @@ import html2canvas from 'html2canvas';
 const LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil'];
 const DEFAULT_DATA = [12, 19, 15, 25, 22, 30, 45];
 
-const CommandeParMois = ({ dataCommandes }) => {
+const CommandeParMois = ({ labels, dataCommandes }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
   const containerRef = useRef(null);
 
-  const values = dataCommandes || DEFAULT_DATA;
+  const chartLabels = Array.isArray(labels) && labels.length ? labels : LABELS;
+  const values = Array.isArray(dataCommandes) && dataCommandes.length ? dataCommandes : DEFAULT_DATA;
 
   const total = values.reduce((a, b) => a + b, 0);
   const last = values[values.length - 1];
@@ -29,7 +30,7 @@ const CommandeParMois = ({ dataCommandes }) => {
     chartInstance.current = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: LABELS,
+        labels: chartLabels,
         datasets: [{
           label: 'Commandes',
           data: values,
@@ -67,7 +68,7 @@ const CommandeParMois = ({ dataCommandes }) => {
     });
 
     return () => chartInstance.current?.destroy();
-  }, [dataCommandes]);
+  }, [chartLabels, values]);
 
   // =========================
   // PNG EXPORT (html2canvas)

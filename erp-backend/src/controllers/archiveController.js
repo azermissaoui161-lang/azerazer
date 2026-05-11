@@ -1,88 +1,147 @@
 const Archive = require('../models/Archive');
 const Invoice = require('../models/Invoice');
 
-// 📦 Archiver une facture
 const archiveInvoice = async (req, res) => {
   try {
     const invoice = await Invoice.findById(req.params.id).populate('customer');
 
     if (!invoice) {
-      return res.status(404).json({ message: 'Facture non trouvée' });
+      return res.status(404).json({ success: false, message: 'Facture non trouvee' });
+    }
+
+    const existingArchive = await Archive.findOne({ invoiceId: invoice._id });
+    if (existingArchive) {
+      return res.status(409).json({
+        success: false,
+        message: 'Cette facture est deja archivee',
+        data: existingArchive,
+      });
     }
 
     const archive = await Archive.create({
       invoiceId: invoice._id,
       invoiceNumber: invoice.invoiceNumber,
-      customer: invoice.customer 
-        ? `${invoice.customer.firstName} ${invoice.customer.lastName}` 
+      customer: invoice.customer
+        ? `${invoice.customer.firstName} ${invoice.customer.lastName}`.trim()
         : 'Inconnu',
       amount: invoice.totalTTC,
       reason: req.body.reason || '',
-      data: invoice.toObject(), // On convertit en objet pur
-      archivedBy: req.user?._id || null, // Thabet f req.user._id wala req.user.id
-      archivedAt: new Date()
+      data: invoice.toObject(),
+      archivedBy: req.user?._id || null,
+      archivedAt: new Date(),
     });
 
     await invoice.deleteOne();
 
     res.status(201).json({
-      message: 'Facture archivée avec succès',
-      data: archive
+      success: true,
+      message: 'Facture archivee avec succes',
+      data: archive,
     });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur archivage', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Erreur archivage',
+      error: error.message,
+    });
   }
 };
 
-// 📥 Get all archives
 const getArchives = async (req, res) => {
   try {
     const archives = await Archive.find().sort({ archivedAt: -1 });
-    res.json(archives);
+    res.json({
+      success: true,
+      data: archives,
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur récupération archives', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Erreur recuperation archives',
+      error: error.message,
+    });
   }
 };
 
 const restoreArchive = async (req, res) => {
   try {
     const archive = await Archive.findById(req.params.id);
-    if (!archive) return res.status(404).json({ message: 'Archive non trouvée' });
 
-    // ⏳ Check délai 7 jours (Kima 3malt enti, mrigel)
-    const days = (Date.now() - new Date(archive.archivedAt)) / (1000 * 60 * 60 * 24);
-    if (days > 7) {
-      return res.status(400).json({ message: `Délai dépassé (${Math.floor(days)} jours)` });
+    if (!archive) {
+      return res.status(404).json({ success: false, message: 'Archive non trouvee' });
     }
 
-    // ♻️ Nettoyage strict
-    let invoiceData = archive.data instanceof Map ? Object.fromEntries(archive.data) : archive.data;
-    
-    // Na7iw ay 7aja t-causi conflict
-    const { _id, __v, createdAt, updatedAt, ...cleanData } = invoiceData;
+    const days = (Date.now() - new Date(archive.archivedAt)) / (1000 * 60 * 60 * 24);
+    if (days > 7) {
+      return res.status(400).json({
+        success: false,
+        message: `Delai depasse (${Math.floor(days)} jours)`,
+      });
+    }
 
-    // 🚀 Création avec gestion d'erreur spécifique
-    const restoredInvoice = new Invoice(cleanData);
-    await restoredInvoice.save();
+    const invoiceData = archive.data instanceof Map
+      ? Object.fromEntries(archive.data)
+      : archive.data;
 
+    if (!invoiceData) {
+      return res.status(400).json({
+        success: false,
+        message: 'Archive sans donnees facture',
+      });
+    }
+
+    const restoredId = invoiceData?._id || archive.invoiceId;
+    const existingInvoice = await Invoice.findOne({
+      $or: [
+        { _id: restoredId },
+        { invoiceNumber: archive.invoiceNumber },
+      ],
+    });
+
+    if (existingInvoice) {
+      return res.status(409).json({
+        success: false,
+        message: 'Cette facture existe deja dans la page factures',
+      });
+    }
+
+    const { __v, ...cleanData } = invoiceData;
+    cleanData._id = restoredId;
+    cleanData.invoiceNumber = cleanData.invoiceNumber || archive.invoiceNumber;
+
+    const restoredInvoice = await Invoice.create(cleanData);
     await archive.deleteOne();
 
-    res.json({ message: 'Facture restaurée', data: restoredInvoice });
+    res.json({
+      success: true,
+      message: 'Facture restauree',
+      data: restoredInvoice,
+    });
   } catch (error) {
-    console.error("❌ Error:", error);
-    res.status(500).json({ message: 'Erreur restauration', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Erreur restauration',
+      error: error.message,
+    });
   }
 };
 
-// ❌ Supprimer l'archive
 const deleteArchive = async (req, res) => {
   try {
     const archive = await Archive.findById(req.params.id);
-    if (!archive) return res.status(404).json({ message: 'Archive non trouvée' });
+
+    if (!archive) {
+      return res.status(404).json({ success: false, message: 'Archive non trouvee' });
+    }
+
     await archive.deleteOne();
-    res.json({ message: 'Archive supprimée définitivement' });
+    res.json({ success: true, message: 'Archive supprimee definitivement' });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur suppression', error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Erreur suppression',
+      error: error.message,
+    });
   }
 };
 
@@ -90,5 +149,5 @@ module.exports = {
   archiveInvoice,
   getArchives,
   restoreArchive,
-  deleteArchive
+  deleteArchive,
 };

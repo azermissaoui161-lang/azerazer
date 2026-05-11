@@ -17,7 +17,8 @@ const {
   createUser,
   updateUser,
   deleteUser,
-  toggleUserStatus
+  toggleUserStatus,
+  resetUserPassword
 } = require('../controllers/userController');
 
 // Toutes les routes nécessitent une authentification
@@ -43,5 +44,6 @@ router.route('/:id')
   .delete(deleteUser);
 
 router.patch('/:id/toggle', toggleUserStatus);
+router.post('/:id/reset-password', resetUserPassword);
 
 module.exports = router;

@@ -1,92 +1,86 @@
-﻿import React, { useRef } from 'react';
-import html2canvas from 'html2canvas';
+import React, { useEffect, useRef, useState } from 'react';
 
 import KpiFinance from './components/KpiFinance';
 import EvolutionRecettes from './components/EvolutionRecettes';
 import RecetteDepense from './components/RecetteDepense';
 import TypeDepenses from './components/TypeDepenses';
+import dashboardFinancierService from '../../services/DashboardFinancierService';
+import { extractApiErrorMessage } from '../../utils/frontendApiAdapters';
 
 import './DashboardFinancier.css';
 
-// ─── DATA ─────────────────────────────
-const FINANCE_KPI = {
-  chiffreAffaire: 75000,
-  depenses: 42000,
-  transactions: 128,
-};
-
-const recettesMensuelles = [
-  { mois: "Jan", valeur: 5000 },
-  { mois: "Fév", valeur: 7000 },
-  { mois: "Mar", valeur: 9000 },
-  { mois: "Avr", valeur: 8500 },
-  { mois: "Mai", valeur: 11000 },
-  { mois: "Juin", valeur: 13000 },
-];
-
-// ─── MAIN ─────────────────────────────
 const DashboardFinancier = () => {
   const dashboardRef = useRef(null);
+  const [dashboard, setDashboard] = useState(null);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    const loadDashboard = async () => {
+      try {
+        const response = await dashboardFinancierService.getDashboard();
+        setDashboard(response.data || response);
+        setErrorMessage('');
+      } catch (error) {
+        setErrorMessage(extractApiErrorMessage(error, 'Impossible de charger le dashboard finance'));
+      }
+    };
+
+    loadDashboard();
+  }, []);
+
+  const monthly = dashboard?.monthly || [];
+  const labels = monthly.map((item) => item.label);
+  const recettes = monthly.map((item) => Number(item.recettes || 0));
+  const depenses = monthly.map((item) => Number(item.depenses || 0));
+  const net = monthly.map((item) => Number(item.net || 0));
 
   return (
     <div className="db" ref={dashboardRef}>
-      
-      {/* HEADER (NO BUTTON) */}
       <header className="db-header">
         <div>
-          <h1>📊 Tableau de bord financier</h1>
+          <h1>Tableau de bord financier</h1>
           <p>
-            Suivi des recettes et dépenses - Mise à jour{" "}
+            Suivi des recettes et depenses - Mise a jour{' '}
             {new Date().toLocaleDateString('fr-TN')}
           </p>
         </div>
       </header>
 
-      {/* KPI */}
-      <KpiFinance
-        chiffreAffaire={FINANCE_KPI.chiffreAffaire}
-        depenses={FINANCE_KPI.depenses}
-        transactions={FINANCE_KPI.transactions}
-      />
+      {errorMessage && (
+        <div className="card" style={{ maxWidth: 1000, margin: '0 auto 20px', color: '#b91c1c' }}>
+          {errorMessage}
+        </div>
+      )}
 
-      {/* GRID */}
+      <KpiFinance kpi={dashboard?.kpi} />
+
       <div className="db-grid">
-
-        {/* EVOLUTION */}
         <div className="card full">
-          <div className="card-title">
-            📈 Évolution des recettes
-          </div>
+          <div className="card-title">Evolution des recettes</div>
           <div className="chart-container">
-            <EvolutionRecettes data={recettesMensuelles} />
+            <EvolutionRecettes labels={labels} dataRecette={recettes} />
           </div>
         </div>
 
-        {/* RECETTES VS DEPENSES */}
         <div className="card">
-          <div className="card-title">
-            ⚖️ Recettes vs Dépenses
-          </div>
+          <div className="card-title">Recettes vs Depenses</div>
           <div className="chart-container">
             <RecetteDepense
-              recette={FINANCE_KPI.chiffreAffaire}
-              depense={FINANCE_KPI.depenses}
+              labels={labels}
+              dataRecettes={recettes}
+              dataDepenses={depenses}
+              dataNet={net}
             />
           </div>
         </div>
 
-        {/* TYPE DEPENSES */}
         <div className="card">
-          <div className="card-title">
-            🥧 Types de dépenses
-          </div>
+          <div className="card-title">Types de depenses</div>
           <div className="chart-container">
-            <TypeDepenses />
+            <TypeDepenses data={dashboard?.depensesByCategory} />
           </div>
         </div>
-
       </div>
-
     </div>
   );
 };

@@ -14,8 +14,7 @@ function CreateAccountPage() {
 
   const handleAccountCreated = async (newUser) => {
     try {
-      await userService.createUser(newUser)
-      handleBackToAccueil()
+      return await userService.createUser(newUser)
     } catch (error) {
       throw new Error(extractApiErrorMessage(error, "Impossible de créer le compte"))
     }
