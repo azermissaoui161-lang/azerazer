@@ -7,11 +7,16 @@ const MONTH_LABELS = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout',
 
 const roundMoney = (value = 0) => Math.round((Number(value) || 0) * 100) / 100;
 
-const getMonthSeries = () => {
+/**
+ * Genere les mois a afficher selon le nombre de jours selectionnés
+ */
+const getMonthSeries = (days) => {
   const now = new Date();
   const months = [];
+  // On calcule combien de mois on doit reculer (min 1 mois pour 7j/30j)
+  const monthsToCover = days <= 30 ? 1 : Math.ceil(days / 30);
 
-  for (let i = 11; i >= 0; i -= 1) {
+  for (let i = monthsToCover - 1; i >= 0; i -= 1) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
@@ -24,7 +29,6 @@ const getMonthSeries = () => {
       label: MONTH_LABELS[month - 1],
     });
   }
-
   return months;
 };
 
@@ -46,15 +50,23 @@ const isEntryExpression = {
   $regexMatch: { input: { $ifNull: ['$type', ''] }, regex: /^entr/i },
 };
 
-const buildStockDashboard = async () => {
-  const months = getMonthSeries();
-  const firstMonth = months[0];
-  const startDate = new Date(firstMonth.year, firstMonth.month - 1, 1);
+/**
+ * Build Dashboard Logic
+ */
+const buildStockDashboard = async (period = 30) => {
+  const days = parseInt(period) || 30;
+  const months = getMonthSeries(days);
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
 
   const activeProductMatch = { isActive: { $ne: false }, archived: { $ne: true } };
+  
+  // Filtre dynamique pour la période sélectionnée
+  const periodMatch = { date: { $gte: startDate } };
+  const productPeriodMatch = { createdAt: { $gte: startDate } }; // Pour les nouveaux produits
 
   const [
-    totalProducts,
+    totalProducts,      
     produitsEnStock,
     produitsEnRupture,
     lowStock,
@@ -67,16 +79,31 @@ const buildStockDashboard = async () => {
     categories,
     topFournisseurs,
   ] = await Promise.all([
-    Product.countDocuments(activeProductMatch),
-    Product.countDocuments({ ...activeProductMatch, stock: { $gt: 0 } }),
-    Product.countDocuments({ ...activeProductMatch, stock: { $lte: 0 } }),
+    // 1. KPI: Total produits ajoutés dans CETTE période
+    Product.countDocuments({ ...activeProductMatch, ...productPeriodMatch }), 
+    
+    // 2. KPI: Produits en stock (actifs dans cette période)
+    Product.countDocuments({ ...activeProductMatch, stock: { $gt: 0 }, ...productPeriodMatch }),
+    
+    // 3. KPI: Produits tombés en rupture dans cette période
+    Product.countDocuments({ ...activeProductMatch, stock: { $lte: 0 }, updatedAt: { $gte: startDate } }),
+
+    // 4. KPI: Stock faible détecté récemment
     Product.countDocuments({
       ...activeProductMatch,
       $expr: { $lte: ['$stock', { $ifNull: ['$minStock', 10] }] },
+      updatedAt: { $gte: startDate }
     }),
-    Category.countDocuments(),
-    Supplier.countDocuments({ status: { $ne: 'inactif' } }),
+
+    // 5. Categories créées ou actives
+    Category.countDocuments({ createdAt: { $gte: startDate } }),
+    
+    // 6. Fournisseurs actifs dans cette période
+    Supplier.countDocuments({ status: { $ne: 'inactif' }, updatedAt: { $gte: startDate } }),
+    
+    // 7. Totaux des mouvements (ENTREES / SORTIES) - Dynamique
     StockMovement.aggregate([
+      { $match: periodMatch },
       {
         $group: {
           _id: null,
@@ -88,8 +115,10 @@ const buildStockDashboard = async () => {
         },
       },
     ]),
+
+    // 8. Valeur de stock des produits concernés
     Product.aggregate([
-      { $match: activeProductMatch },
+      { $match: { ...activeProductMatch, updatedAt: { $gte: startDate } } },
       {
         $group: {
           _id: null,
@@ -97,8 +126,10 @@ const buildStockDashboard = async () => {
         },
       },
     ]),
+
+    // 9. Flux mensuel (Chart)
     StockMovement.aggregate([
-      { $match: { date: { $gte: startDate } } },
+      { $match: periodMatch },
       {
         $group: {
           _id: {
@@ -110,88 +141,42 @@ const buildStockDashboard = async () => {
         },
       },
     ]),
-    Product.aggregate([
-      { $match: activeProductMatch },
-      {
-        $project: {
-          name: 1,
-          stock: 1,
-          price: 1,
-          value: { $multiply: ['$stock', '$price'] },
-        },
-      },
-      { $sort: { value: -1, stock: -1 } },
-      { $limit: 8 },
-      {
-        $project: {
-          _id: 0,
-          name: 1,
-          stock: 1,
-          value: 1,
-        },
-      },
-    ]),
-    Product.aggregate([
-      { $match: activeProductMatch },
-      {
-        $group: {
-          _id: '$category',
-          count: { $sum: 1 },
-          totalStock: { $sum: '$stock' },
-          totalValue: { $sum: { $multiply: ['$stock', '$price'] } },
-        },
-      },
-      { $sort: { count: -1 } },
-      { $limit: 8 },
-      {
-        $project: {
-          _id: 0,
-          name: { $ifNull: ['$_id', 'Sans categorie'] },
-          count: 1,
-          totalStock: 1,
-          totalValue: 1,
-        },
-      },
-    ]),
-    Product.aggregate([
-      { $match: activeProductMatch },
-      {
-        $group: {
-          _id: '$supplierId',
-          total: { $sum: { $multiply: ['$stock', '$price'] } },
-          commandes: { $sum: 1 },
-          produits: {
-            $push: {
-              nom: '$name',
-              achat: { $multiply: ['$stock', '$price'] },
-            },
-          },
-        },
-      },
-      { $sort: { total: -1 } },
-      { $limit: 5 },
-      {
-        $lookup: {
-          from: 'suppliers',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'supplier',
-        },
-      },
-      { $unwind: { path: '$supplier', preserveNullAndEmptyArrays: true } },
-      {
-        $project: {
-          _id: 0,
-          id: '$_id',
-          nom: { $ifNull: ['$supplier.name', 'Fournisseur'] },
-          total: 1,
-          commandes: 1,
-          produits: { $slice: ['$produits', 4] },
-        },
-      },
-    ]),
-  ]);
 
+    // 10. TOP Produits (Mouvements de la période)
+    StockMovement.aggregate([
+      { $match: periodMatch },
+      { $group: { _id: '$productId', totalQty: { $sum: '$quantity' } } },
+      { $sort: { totalQty: -1 } },
+      { $limit: 8 },
+      { $lookup: { from: 'products', localField: '_id', foreignField: '_id', as: 'product' } },
+      { $unwind: '$product' },
+      { $project: { name: '$product.name', stock: '$product.stock', value: { $multiply: ['$product.stock', '$product.price'] } } }
+    ]),
+
+    // 11. Categories actives
+    StockMovement.aggregate([
+        { $match: periodMatch },
+        { $lookup: { from: 'products', localField: 'productId', foreignField: '_id', as: 'product' } },
+        { $unwind: '$product' },
+        { $group: { _id: '$product.category', count: { $sum: 1 }, totalStock: { $sum: '$product.stock' }, totalValue: { $sum: { $multiply: ['$product.stock', '$product.price'] } } } },
+        { $sort: { count: -1 } },
+        { $limit: 8 },
+        { $project: { _id: 0, name: { $ifNull: ['$_id', 'Sans categorie'] }, count: 1, totalStock: 1, totalValue: 1 } }
+    ]),
+
+    // 12. Top Fournisseurs
+    StockMovement.aggregate([
+        { $match: periodMatch },
+        { $lookup: { from: 'products', localField: 'productId', foreignField: '_id', as: 'product' } },
+        { $unwind: '$product' },
+        { $group: { _id: '$product.supplierId', total: { $sum: { $multiply: ['$product.stock', '$product.price'] } }, commandes: { $sum: 1 } } },
+        { $sort: { total: -1 } },
+        { $limit: 5 },
+        { $lookup: { from: 'suppliers', localField: '_id', foreignField: '_id', as: 'supplier' } },
+        { $unwind: { path: '$supplier', preserveNullAndEmptyArrays: true } },
+        { $project: { _id: 0, nom: { $ifNull: ['$supplier.name', 'Fournisseur'] }, total: 1, commandes: 1 } }
+    ])
+  ]);
   const movement = movementTotals[0] || {};
   const movementMap = new Map();
   monthlyMovements.forEach((row) => {
@@ -245,9 +230,16 @@ const buildStockDashboard = async () => {
   };
 };
 
+/**
+ * Route Handler
+ */
 const getStockKpi = async (req, res) => {
   try {
-    const dashboard = await buildStockDashboard();
+    // On récupère la période depuis les query params (?period=7)
+    const { period } = req.query; 
+    
+    // On construit le dashboard en passant la période
+    const dashboard = await buildStockDashboard(period);
     const { kpi } = dashboard;
 
     res.json({
