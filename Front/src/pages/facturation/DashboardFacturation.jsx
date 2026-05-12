@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import CommandeParMois from './components/CommandeParMois';
 import TotalCommandeParClient from './components/TotalCommandeParClient';
 import FactureStatus from './components/FactureStatus';
@@ -12,20 +12,25 @@ import './DashboardFacturation.css';
 const DashboardFacturation = () => {
   const [dashboard, setDashboard] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState('30'); // Periode par défaut
+
+  const loadDashboard = useCallback(async (period) => {
+    try {
+      const response = await dashboardFacturationService.getDashboard(period);
+      setDashboard(response.data || response);
+      setErrorMessage('');
+    } catch (error) {
+      setErrorMessage(extractApiErrorMessage(error, 'Impossible de charger le dashboard facturation'));
+    }
+  }, []);
 
   useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        const response = await dashboardFacturationService.getDashboard();
-        setDashboard(response.data || response);
-        setErrorMessage('');
-      } catch (error) {
-        setErrorMessage(extractApiErrorMessage(error, 'Impossible de charger le dashboard facturation'));
-      }
-    };
+    loadDashboard(selectedPeriod);
+  }, [selectedPeriod, loadDashboard]);
 
-    loadDashboard();
-  }, []);
+  const handlePeriodChange = (e) => {
+    setSelectedPeriod(e.target.value);
+  };
 
   const commandes = dashboard?.commandesParMois || [];
   const factureStatus = dashboard?.factureStatus || [];
@@ -37,7 +42,21 @@ const DashboardFacturation = () => {
           <h1>Tableau de bord facturation</h1>
           <p>Suivi des performances et de la tresorerie</p>
         </div>
-        <span className="df-badge">Tresorerie</span>
+        
+        {/* El Menu Jdid houni */}
+        <div className="df-controls">
+          <select 
+            className="df-select" 
+            value={selectedPeriod} 
+            onChange={handlePeriodChange}
+          >
+            <option value="7">7 derniers jours</option>
+            <option value="30">30 derniers jours</option>
+            <option value="90">3 derniers mois</option>
+            <option value="365">Cette année</option>
+          </select>
+          <span className="df-badge">Tresorerie</span>
+        </div>
       </header>
 
       {errorMessage && (

@@ -191,3 +191,26 @@
     font-size: 1.6rem;
   }
 }
+
+
+
+/* ── période ────────────────────────────── */
+.df-controls {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.df-select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.df-select:focus {
+  border-color: #3b82f6;
+}

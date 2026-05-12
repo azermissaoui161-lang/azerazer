@@ -7,11 +7,15 @@ const MONTH_LABELS = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout',
 
 const roundMoney = (value = 0) => Math.round((Number(value) || 0) * 100) / 100;
 
-const getMonthSeries = () => {
+/**
+ * Génère les séries de mois selon le nombre de jours demandés
+ */
+const getMonthSeries = (days) => {
   const now = new Date();
   const months = [];
+  const monthsToCover = days <= 30 ? 1 : Math.ceil(days / 30);
 
-  for (let i = 11; i >= 0; i -= 1) {
+  for (let i = monthsToCover - 1; i >= 0; i -= 1) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
@@ -27,27 +31,32 @@ const getMonthSeries = () => {
       net: 0,
     });
   }
-
   return months;
 };
 
 const mapByMonth = (rows = [], valueField) => {
   const map = new Map();
-
   rows.forEach((row) => {
     if (row?._id) {
       map.set(row._id, Number(row[valueField]) || 0);
     }
   });
-
   return map;
 };
 
-const buildFinanceDashboard = async () => {
-  const months = getMonthSeries();
-  const firstMonth = months[0];
-  const startDate = new Date(firstMonth.year, firstMonth.month - 1, 1);
-  const startMonthKey = firstMonth.key;
+/**
+ * Logic principale avec support de la période
+ */
+const buildFinanceDashboard = async (period = 30) => {
+  const days = parseInt(period) || 30;
+  const months = getMonthSeries(days);
+  
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - days);
+  startDate.setHours(0, 0, 0, 0);
+
+  // Pour les dépenses stockées en format String "YYYY-MM-DD"
+  const startMonthKey = startDate.toISOString().split('T')[0];
 
   const [
     invoiceTotals,
@@ -58,7 +67,9 @@ const buildFinanceDashboard = async () => {
     depenseMonthly,
     depensesByCategory,
   ] = await Promise.all([
+    // KPI: Factures de la période
     Invoice.aggregate([
+      { $match: { date: { $gte: startDate } } },
       {
         $group: {
           _id: null,
@@ -69,8 +80,12 @@ const buildFinanceDashboard = async () => {
         },
       },
     ]),
+    // KPI: Transactions validées de la période
     Transaction.aggregate([
-      { $match: { status: { $regex: '^valid', $options: 'i' } } },
+      { $match: { 
+          status: { $regex: '^valid', $options: 'i' },
+          date: { $gte: startDate }
+      } },
       {
         $group: {
           _id: null,
@@ -80,13 +95,17 @@ const buildFinanceDashboard = async () => {
         },
       },
     ]),
+    // KPI: Dépenses de la période
     Depenses.aggregate([
+      { $match: { date: { $gte: startMonthKey } } },
       { $group: { _id: null, total: { $sum: '$amount' }, count: { $sum: 1 } } },
     ]),
+    // Comptes (Dima Global pour le solde actuel)
     Account.aggregate([
       { $match: { isActive: { $ne: false } } },
       { $group: { _id: null, totalBalance: { $sum: '$balance' }, count: { $sum: 1 } } },
     ]),
+    // Chart Recettes
     Invoice.aggregate([
       { $match: { date: { $gte: startDate } } },
       {
@@ -95,20 +114,14 @@ const buildFinanceDashboard = async () => {
             $concat: [
               { $toString: { $year: '$date' } },
               '-',
-              {
-                $cond: [
-                  { $lt: [{ $month: '$date' }, 10] },
-                  { $concat: ['0', { $toString: { $month: '$date' } }] },
-                  { $toString: { $month: '$date' } },
-                ],
-              },
+              { $cond: [{ $lt: [{ $month: '$date' }, 10] }, { $concat: ['0', { $toString: { $month: '$date' } }] }, { $toString: { $month: '$date' } }] },
             ],
           },
           total: { $sum: '$totalTTC' },
-          paid: { $sum: '$amountPaid' },
         },
       },
     ]),
+    // Chart Dépenses
     Depenses.aggregate([
       { $match: { date: { $gte: startMonthKey } } },
       {
@@ -118,7 +131,9 @@ const buildFinanceDashboard = async () => {
         },
       },
     ]),
+    // Doughnut Chart: Catégories de dépenses de la période
     Depenses.aggregate([
+      { $match: { date: { $gte: startMonthKey } } },
       {
         $group: {
           _id: '$category',
@@ -128,14 +143,7 @@ const buildFinanceDashboard = async () => {
       },
       { $sort: { montant: -1 } },
       { $limit: 8 },
-      {
-        $project: {
-          _id: 0,
-          type: { $ifNull: ['$_id', 'Autre'] },
-          montant: 1,
-          count: 1,
-        },
-      },
+      { $project: { _id: 0, type: { $ifNull: ['$_id', 'Autre'] }, montant: 1, count: 1 } },
     ]),
   ]);
 
@@ -150,7 +158,6 @@ const buildFinanceDashboard = async () => {
   const monthly = months.map((month) => {
     const recettes = roundMoney(invoiceByMonth.get(month.key) || 0);
     const depenses = roundMoney(depenseByMonth.get(month.key) || 0);
-
     return {
       ...month,
       recettes,
@@ -159,28 +166,26 @@ const buildFinanceDashboard = async () => {
     };
   });
 
-  const chiffreAffaire = roundMoney(invoiceTotal.chiffreAffaire || transactionTotal.totalCredit || 0);
+  const chiffreAffaire = roundMoney(invoiceTotal.chiffreAffaire || 0);
   const depensesTotal = roundMoney(depenseTotal.total || 0);
   const recettesEncaissees = roundMoney(invoiceTotal.recettesEncaissees || 0);
-  const beneficeNet = roundMoney((recettesEncaissees || chiffreAffaire) - depensesTotal);
-
-  const kpi = {
-    chiffreAffaire,
-    recettesEncaissees,
-    depensesTotal,
-    depensesCount: depenseTotal.count || 0,
-    transactionsTotal: transactionTotal.count || 0,
-    totalDebit: roundMoney(transactionTotal.totalDebit || 0),
-    totalCredit: roundMoney(transactionTotal.totalCredit || 0),
-    totalAccounts: accountTotal.count || 0,
-    totalBalance: roundMoney(accountTotal.totalBalance || 0),
-    facturesTotal: invoiceTotal.count || 0,
-    resteAPayer: roundMoney(invoiceTotal.resteAPayer || 0),
-    beneficeNet,
-  };
+  const beneficeNet = roundMoney(recettesEncaissees - depensesTotal);
 
   return {
-    kpi,
+    kpi: {
+      chiffreAffaire,
+      recettesEncaissees,
+      depensesTotal,
+      depensesCount: depenseTotal.count || 0,
+      transactionsTotal: transactionTotal.count || 0,
+      totalDebit: roundMoney(transactionTotal.totalDebit || 0),
+      totalCredit: roundMoney(transactionTotal.totalCredit || 0),
+      totalAccounts: accountTotal.count || 0,
+      totalBalance: roundMoney(accountTotal.totalBalance || 0),
+      facturesTotal: invoiceTotal.count || 0,
+      resteAPayer: roundMoney(invoiceTotal.resteAPayer || 0),
+      beneficeNet,
+    },
     monthly,
     depensesByCategory: depensesByCategory.map((item) => ({
       ...item,
@@ -191,15 +196,15 @@ const buildFinanceDashboard = async () => {
 
 const getFinanceKpi = async (req, res) => {
   try {
-    const dashboard = await buildFinanceDashboard();
-    const { kpi } = dashboard;
-
+    const { period } = req.query; // On récupère la période du menu
+    const dashboard = await buildFinanceDashboard(period);
+    
     res.json({
       success: true,
-      ...kpi,
-      transactions: kpi.transactionsTotal,
-      totalDepenses: kpi.depensesTotal,
-      depensesCount: kpi.depensesCount,
+      ...dashboard.kpi,
+      transactions: dashboard.kpi.transactionsTotal,
+      totalDepenses: dashboard.kpi.depensesTotal,
+      depensesCount: dashboard.kpi.depensesCount,
       monthly: dashboard.monthly,
       depensesByCategory: dashboard.depensesByCategory,
       data: dashboard,

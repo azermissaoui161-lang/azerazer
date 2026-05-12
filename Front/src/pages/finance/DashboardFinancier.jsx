@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import KpiFinance from './components/KpiFinance';
 import EvolutionRecettes from './components/EvolutionRecettes';
 import RecetteDepense from './components/RecetteDepense';
@@ -13,20 +12,25 @@ const DashboardFinancier = () => {
   const dashboardRef = useRef(null);
   const [dashboard, setDashboard] = useState(null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [selectedPeriod, setSelectedPeriod] = useState('30'); // Periode par défaut
+
+  const loadDashboard = useCallback(async (period) => {
+    try {
+      const response = await dashboardFinancierService.getDashboard(period);
+      setDashboard(response.data || response);
+      setErrorMessage('');
+    } catch (error) {
+      setErrorMessage(extractApiErrorMessage(error, 'Impossible de charger le dashboard finance'));
+    }
+  }, []);
 
   useEffect(() => {
-    const loadDashboard = async () => {
-      try {
-        const response = await dashboardFinancierService.getDashboard();
-        setDashboard(response.data || response);
-        setErrorMessage('');
-      } catch (error) {
-        setErrorMessage(extractApiErrorMessage(error, 'Impossible de charger le dashboard finance'));
-      }
-    };
+    loadDashboard(selectedPeriod);
+  }, [selectedPeriod, loadDashboard]);
 
-    loadDashboard();
-  }, []);
+  const handlePeriodChange = (e) => {
+    setSelectedPeriod(e.target.value);
+  };
 
   const monthly = dashboard?.monthly || [];
   const labels = monthly.map((item) => item.label);
@@ -43,6 +47,20 @@ const DashboardFinancier = () => {
             Suivi des recettes et depenses - Mise a jour{' '}
             {new Date().toLocaleDateString('fr-TN')}
           </p>
+        </div>
+
+        {/* El Menu Select Jdid */}
+        <div className="db-controls">
+          <select 
+            className="df-select" 
+            value={selectedPeriod} 
+            onChange={handlePeriodChange}
+          >
+            <option value="7">7 derniers jours</option>
+            <option value="30">30 derniers jours</option>
+            <option value="90">3 derniers mois</option>
+            <option value="365">Cette année</option>
+          </select>
         </div>
       </header>
 
