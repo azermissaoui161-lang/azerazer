@@ -8,7 +8,7 @@ export const transactionService = {
       const response = await api.get('/transactions', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getAll transactions:', error);
+      console.error(' Erreur getAll transactions:', error);
       throw error;
     }
   },
@@ -19,7 +19,7 @@ export const transactionService = {
       const response = await api.get(`/transactions/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getById transaction ${id}:`, error);
+      console.error(` Erreur getById transaction ${id}:`, error);
       throw error;
     }
   },
@@ -30,7 +30,7 @@ export const transactionService = {
       const response = await api.post('/transactions', transactionData);
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur create transaction:', error);
+      console.error(' Erreur create transaction:', error);
       throw error;
     }
   },
@@ -41,7 +41,7 @@ export const transactionService = {
       const response = await api.put(`/transactions/${id}`, transactionData);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur update transaction ${id}:`, error);
+      console.error(` Erreur update transaction ${id}:`, error);
       throw error;
     }
   },
@@ -52,7 +52,7 @@ export const transactionService = {
       const response = await api.patch(`/transactions/${id}/validate`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur validate transaction ${id}:`, error);
+      console.error(` Erreur validate transaction ${id}:`, error);
       throw error;
     }
   },
@@ -63,7 +63,7 @@ export const transactionService = {
       const response = await api.delete(`/transactions/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur delete transaction ${id}:`, error);
+      console.error(` Erreur delete transaction ${id}:`, error);
       throw error;
     }
   },
@@ -74,7 +74,7 @@ export const transactionService = {
       const response = await api.get(`/transactions/account/${accountId}`, { params });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getByAccount ${accountId}:`, error);
+      console.error(` Erreur getByAccount ${accountId}:`, error);
       throw error;
     }
   },
@@ -87,7 +87,7 @@ export const transactionService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getByDateRange:', error);
+      console.error(' Erreur getByDateRange:', error);
       throw error;
     }
   },
@@ -98,7 +98,7 @@ export const transactionService = {
       const response = await api.get('/transactions/stats', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getStats transactions:', error);
+      console.error(' Erreur getStats transactions:', error);
       throw error;
     }
   },
@@ -121,7 +121,7 @@ export const transactionService = {
       
       return true;
     } catch (error) {
-      console.error('❌ Erreur exportToCSV:', error);
+      console.error(' Erreur exportToCSV:', error);
       throw error;
     }
   }

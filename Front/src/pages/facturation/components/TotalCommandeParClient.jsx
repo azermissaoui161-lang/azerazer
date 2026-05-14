@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
-import html2canvas from 'html2canvas';
 
 const DEFAULT_DATA = [
   { name: 'Client Ahmed', total: 4500, count: 12 },
@@ -16,29 +15,34 @@ const TotalCommandeParClient = ({ data }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
-  const containerRef = useRef(null);
-
   const [selectedIndex, setSelectedIndex] = useState(null);
   const rowRefs = useRef([]);
 
   const clients = data || DEFAULT_DATA;
 
   useEffect(() => {
+    if (!chartRef.current) return;
+
     const ctx = chartRef.current.getContext('2d');
-    if (chartInstance.current) chartInstance.current.destroy();
+
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
 
     chartInstance.current = new Chart(ctx, {
       type: 'bar',
       data: {
         labels: clients.map(c => c.name.split(' ')[1] || c.name.split(' ')[0]),
-        datasets: [{
-          data: clients.map(c => c.total),
-          backgroundColor: COLORS.map(c => c + 'cc'),
-          borderColor: COLORS,
-          borderWidth: 1.5,
-          borderRadius: 7,
-          borderSkipped: false,
-        }]
+        datasets: [
+          {
+            data: clients.map(c => c.total),
+            backgroundColor: COLORS.map(c => c + 'cc'),
+            borderColor: COLORS,
+            borderWidth: 1.5,
+            borderRadius: 7,
+            borderSkipped: false,
+          }
+        ]
       },
       options: {
         responsive: true,
@@ -67,7 +71,8 @@ const TotalCommandeParClient = ({ data }) => {
             padding: 10,
             callbacks: {
               title: (items) => [clients[items[0].dataIndex].name],
-              label: (item) => `  ${item.parsed.y.toLocaleString()} DT`,
+              label: (item) =>
+                `${item.parsed.y.toLocaleString()} DT`,
             }
           }
         },
@@ -97,68 +102,8 @@ const TotalCommandeParClient = ({ data }) => {
     return () => chartInstance.current?.destroy();
   }, [data]);
 
-  /* ================= EXPORT PNG ================= */
-  const downloadPNG = async () => {
-    if (!containerRef.current) return;
-
-    const canvas = await html2canvas(containerRef.current, {
-      backgroundColor: null,
-      scale: 2,
-      useCORS: true,
-    });
-
-    const url = canvas.toDataURL('image/png');
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'chart-client.png';
-    link.click();
-  };
-
-  /* ================= EXPORT SVG ================= */
-  const downloadSVG = async () => {
-    if (!containerRef.current) return;
-
-    const canvas = await html2canvas(containerRef.current, {
-      backgroundColor: null,
-      scale: 2,
-      useCORS: true,
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg"
-           width="${canvas.width}"
-           height="${canvas.height}">
-        <image href="${imgData}" width="100%" height="100%" />
-      </svg>
-    `;
-
-    const blob = new Blob([svg], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'chart-client.svg';
-    link.click();
-
-    URL.revokeObjectURL(url);
-  };
-
-  const btnStyle = {
-    background: '#1e293b',
-    color: '#e2e8f0',
-    border: '1px solid rgba(148,163,184,.2)',
-    padding: '6px 10px',
-    borderRadius: '6px',
-    fontSize: '11px',
-    cursor: 'pointer',
-  };
-
   return (
     <div
-      ref={containerRef}
       style={{
         background: 'linear-gradient(145deg,#0f172a,#1e293b)',
         borderRadius: '16px',
@@ -168,14 +113,14 @@ const TotalCommandeParClient = ({ data }) => {
     >
 
       {/* HEADER */}
-      <div style={{ marginBottom: '18px', display: 'flex', justifyContent: 'space-between' }}>
-        <h3 style={{ color: '#e2e8f0' }}>Commandes par client</h3>
-
-        {/* BUTTONS (only change here) */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={downloadPNG} style={btnStyle}>PNG</button>
-          <button onClick={downloadSVG} style={btnStyle}>SVG</button>
-        </div>
+      <div style={{
+        marginBottom: '18px',
+        display: 'flex',
+        justifyContent: 'space-between'
+      }}>
+        <h3 style={{ color: '#e2e8f0' }}>
+          Commandes par client
+        </h3>
       </div>
 
       {/* CHART */}
@@ -194,14 +139,15 @@ const TotalCommandeParClient = ({ data }) => {
                 key={i}
                 ref={(el) => (rowRefs.current[i] = el)}
                 style={{
-                  transition: '0.2s',
                   background: isActive ? 'rgba(96,165,250,.08)' : 'transparent',
                   borderLeft: isActive ? '3px solid #60a5fa' : '3px solid transparent',
                 }}
               >
                 <td style={{ padding: '10px', color: '#e2e8f0' }}>{i + 1}</td>
                 <td style={{ padding: '10px', color: '#e2e8f0' }}>{c.name}</td>
-                <td style={{ padding: '10px', color: '#60a5fa', fontWeight: 600 }}>{c.count}</td>
+                <td style={{ padding: '10px', color: '#60a5fa', fontWeight: 600 }}>
+                  {c.count}
+                </td>
                 <td style={{ padding: '10px', color: '#34d399', fontWeight: 600 }}>
                   {c.total.toLocaleString()} DT
                 </td>

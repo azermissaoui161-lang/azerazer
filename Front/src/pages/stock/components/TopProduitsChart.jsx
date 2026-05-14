@@ -1,62 +1,43 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
-import html2canvas from 'html2canvas';
 
-const COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f59e0b', '#f87171', '#22d3ee', '#fb7185', '#84cc16'];
+const COLORS = [
+  '#60a5fa',
+  '#34d399',
+  '#a78bfa',
+  '#f59e0b',
+  '#f87171',
+  '#22d3ee',
+  '#fb7185',
+  '#84cc16',
+];
+
 const LABELS = ['Produit A', 'Produit B', 'Produit C', 'Autres'];
 
 const TopProduitsChart = ({ labels, dataVentes }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
-  const containerRef = useRef(null);
 
   const [selectedIndex, setSelectedIndex] = useState(null);
 
-  const chartLabels = Array.isArray(labels) && labels.length ? labels : LABELS;
-  const data = Array.isArray(dataVentes) && dataVentes.length ? dataVentes : [300, 50, 100, 80];
+  const chartLabels =
+    Array.isArray(labels) && labels.length ? labels : LABELS;
+
+  const data =
+    Array.isArray(dataVentes) && dataVentes.length
+      ? dataVentes
+      : [300, 50, 100, 80];
+
   const total = data.reduce((a, b) => a + b, 0);
 
-  // ─── EXPORT PNG ─────────────────────────────
-  const downloadPNG = async () => {
-    const canvas = await html2canvas(containerRef.current, {
-      backgroundColor: '#0b1220',
-      scale: 2
-    });
-
-    const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
-    link.download = 'top-produits.png';
-    link.click();
-  };
-
-  // ─── EXPORT SVG ─────────────────────────────
-  const downloadSVG = async () => {
-    const canvas = await html2canvas(containerRef.current, {
-      backgroundColor: '#0b1220',
-      scale: 2
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
-        <image href="${imgData}" width="100%" height="100%"/>
-      </svg>
-    `;
-
-    const blob = new Blob([svg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'top-produits.svg';
-    link.click();
-  };
-
   useEffect(() => {
+    if (!chartRef.current) return;
+
     const ctx = chartRef.current.getContext('2d');
 
-    if (chartInstance.current) chartInstance.current.destroy();
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
 
     chartInstance.current = new Chart(ctx, {
       type: 'doughnut',
@@ -65,22 +46,27 @@ const TopProduitsChart = ({ labels, dataVentes }) => {
         datasets: [
           {
             data,
-            backgroundColor: chartLabels.map((_, index) => COLORS[index % COLORS.length]),
+            backgroundColor: chartLabels.map(
+              (_, index) => COLORS[index % COLORS.length]
+            ),
             borderColor: '#0b1220',
             borderWidth: 3,
             hoverOffset: 10,
           },
         ],
       },
+
       options: {
         responsive: true,
         maintainAspectRatio: false,
         cutout: '72%',
-        onClick: (e, elements) => {
+
+        onClick: (_, elements) => {
           if (elements.length > 0) {
             setSelectedIndex(elements[0].index);
           }
         },
+
         plugins: {
           legend: { display: false },
         },
@@ -92,11 +78,10 @@ const TopProduitsChart = ({ labels, dataVentes }) => {
 
   return (
     <div
-      ref={containerRef}
       style={{
         background: 'linear-gradient(145deg, #0b1220, #111c33)',
-        borderRadius: '18px',
-        padding: '22px',
+        borderRadius: 18,
+        padding: 22,
         color: '#fff',
         fontFamily: 'Inter, sans-serif',
         boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
@@ -104,50 +89,44 @@ const TopProduitsChart = ({ labels, dataVentes }) => {
       }}
     >
       {/* HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <div>
-          <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
+          <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>
             Top produits
           </h3>
-          <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>
+          <p style={{ margin: 0, fontSize: 12, color: '#94a3b8' }}>
             Répartition des ventes
           </p>
-        </div>
-
-        {/* BUTTONS */}
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={downloadPNG} style={btnStyle('#22c55e')}>
-            PNG
-          </button>
-          <button onClick={downloadSVG} style={btnStyle('#3b82f6')}>
-            SVG
-          </button>
         </div>
       </div>
 
       {/* CHART */}
-      <div style={{ height: '220px', marginTop: '15px' }}>
+      <div style={{ height: 220, marginTop: 15 }}>
         <canvas ref={chartRef} />
       </div>
 
       {/* LEGEND */}
-      <div style={{ marginTop: '20px' }}>
+      <div style={{ marginTop: 20 }}>
         {chartLabels.map((label, i) => {
-          const percent = total ? Math.round(((data[i] || 0) / total) * 100) : 0;
+          const percent = total
+            ? Math.round(((data[i] || 0) / total) * 100)
+            : 0;
 
           return (
             <div
               key={label}
+              onClick={() => setSelectedIndex(i)}
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 padding: '6px 10px',
-                borderRadius: '8px',
+                borderRadius: 8,
                 cursor: 'pointer',
                 background:
-                  selectedIndex === i ? 'rgba(255,255,255,0.06)' : 'transparent',
+                  selectedIndex === i
+                    ? 'rgba(255,255,255,0.06)'
+                    : 'transparent',
               }}
-              onClick={() => setSelectedIndex(i)}
             >
               <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span
@@ -155,8 +134,7 @@ const TopProduitsChart = ({ labels, dataVentes }) => {
                     width: 10,
                     height: 10,
                     borderRadius: '50%',
-                    background: COLORS[i],
-                    display: 'inline-block',
+                    background: COLORS[i % COLORS.length],
                   }}
                 />
                 {label}
@@ -195,7 +173,14 @@ const TopProduitsChart = ({ labels, dataVentes }) => {
               </tr>
               <tr>
                 <td style={{ color: '#94a3b8' }}>%</td>
-                <td>{total ? Math.round(((data[selectedIndex] || 0) / total) * 100) : 0}%</td>
+                <td>
+                  {total
+                    ? Math.round(
+                        ((data[selectedIndex] || 0) / total) * 100
+                      )
+                    : 0}
+                  %
+                </td>
               </tr>
             </tbody>
           </table>
@@ -204,18 +189,5 @@ const TopProduitsChart = ({ labels, dataVentes }) => {
     </div>
   );
 };
-
-// ─── BUTTON STYLE HELPER ─────────────────────────────
-const btnStyle = (color) => ({
-  background: color,
-  border: 'none',
-  padding: '6px 12px',
-  borderRadius: '8px',
-  color: '#fff',
-  cursor: 'pointer',
-  fontSize: '12px',
-  fontWeight: 600,
-  transition: '0.2s',
-});
 
 export default TopProduitsChart;

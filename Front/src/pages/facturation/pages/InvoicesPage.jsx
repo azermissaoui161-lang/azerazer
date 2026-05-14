@@ -157,7 +157,7 @@ export default function InvoicesPage() {
 
       <div className="search-section">
         <div className="search-box large">
-          <span className="search-icon">Rech.</span>
+          <span className="search-icon"></span>
           <input
             type="text"
             placeholder="Rechercher par numero facture, client ou commande..."

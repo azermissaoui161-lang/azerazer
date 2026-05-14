@@ -117,7 +117,7 @@ const formatAccount = (account, soldeFromTransactions = 0) => {
     balance: capital + soldeFromTransactions,
     capital: capital,
     solde: capital + soldeFromTransactions,
-    inMoneyFlow: Boolean(account.inMoneyFlow ?? account.inBudget),
+    inMoneyFlow: Boolean(account.inMoneyFlow),
     currency: account.currency || 'EUR',
     status: account.isActive === false ? 'inactif' : 'actif',
     notes: account.description || metadata.notes || '',
@@ -156,12 +156,10 @@ const handleError = (error, res, defaultMessage = 'Erreur serveur') => {
 // ===== GET /api/accounts =====
 exports.getAll = async (req, res) => {
   try {
-    const { page = 1, limit = 50, type, status, search, inMoneyFlow } = req.query;
+    const { page = 1, limit = 50, type, status, search,  } = req.query;
     const filter = {};
 
-    if (inMoneyFlow !== undefined) {
-      filter.inMoneyFlow = inMoneyFlow === 'true';
-    }
+   
 
     if (type) {
       const normalized = normalizeAccountPayload({ type });
@@ -280,7 +278,7 @@ exports.create = async (req, res) => {
       type: normalized.type,
       category: normalized.category,
       balance: parseFloat(balance) || 0,
-      inMoneyFlow: Boolean(req.body.inMoneyFlow ?? req.body.inBudget),
+      inMoneyFlow: Boolean(req.body.inMoneyFlow),
       currency: String(currency || 'EUR').trim().toUpperCase(),
       isActive: isActive !== undefined ? Boolean(isActive) : status !== 'inactif',
       description: String(req.body.description || req.body.notes || '').trim(),
@@ -365,10 +363,7 @@ exports.update = async (req, res) => {
       updatedFields.push('balance');
     }
 
-    if (updates.inMoneyFlow !== undefined || updates.inBudget !== undefined) {
-      account.inMoneyFlow = Boolean(updates.inMoneyFlow ?? updates.inBudget);
-      updatedFields.push('inMoneyFlow');
-    }
+    
 
     if (updates.currency !== undefined) {
       account.currency = String(updates.currency || 'EUR').trim().toUpperCase();

@@ -33,12 +33,7 @@ const FinanceKpiPage = ({ kpi = {} }) => {
   return (
     <div className="kpi-page">
       <div className="ds-kpi-row">
-        <KpiCard
-          label="Chiffre d'affaires"
-          value={kpi.chiffreAffaire}
-          accent="#10b981"
-          note="total facture en DT"
-        />
+        
 
         <KpiCard
           label="Recettes encaissees"

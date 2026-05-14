@@ -139,7 +139,7 @@ const hdlDelCatRemote = async () => {
     await categoryService.delete(catToDelete.id)
     await loadData()
 
-    setMsg("✅ Catégorie supprimée avec succès")
+    setMsg(" Catégorie supprimée avec succès")
 
     setModDelete(false)
     setCatToDelete(null)
@@ -156,7 +156,7 @@ const hdlDelCatRemote = async () => {
   return (
     <div className="categories-tab">
       <header className="tab-header">
-        <h2>📑 Catégories</h2>
+        <h2> Catégories</h2>
         <button className="btn-primary" onClick={() => { rCat(); setModCategory(true) }}>+ Nouvelle</button>
       </header>
       {stats && stats.global && (
@@ -195,7 +195,7 @@ const hdlDelCatRemote = async () => {
       {/* Search bar */}
       <div className="categories-search-bar" style={{ marginBottom: "1.5rem" }}>
         <div className="search-row">
-          <FormField label="🔍 Rechercher une catégorie" id="search-category-name">
+          <FormField label=" Rechercher une catégorie" id="search-category-name">
             <input
               type="text"
               placeholder="Nom de la catégorie..."
@@ -227,13 +227,13 @@ const hdlDelCatRemote = async () => {
             <div className="category-icon">📁</div>
             <div className="category-info">
               <h3>{c.name}</h3>
-              {c.code && <p style={{ fontSize: '0.8rem', fontFamily: 'monospace', fontWeight: 600, color: '#4a5568' }}>🔑 {c.code}</p>}
+              {c.code && <p style={{ fontSize: '0.8rem', fontFamily: 'monospace', fontWeight: 600, color: '#4a5568' }}> {c.code}</p>}
               <p style={{ fontSize: '0.7rem', color: '#a0aec0', fontFamily: 'monospace' }}>ID: {c.id}</p>
               <p>{c.description}</p>
               <div className="category-stats">
                 {c.productCount
                   ? <button className="product-count-link" onClick={() => { setSc(c); setModCategoryProducts(true) }}>📦 <strong>{c.productCount}</strong> produits →</button>
-                  : <span>📦 0 produit</span>}
+                  : <span> 0 produit</span>}
               </div>
             </div>
             <div className="category-actions">
@@ -261,7 +261,7 @@ const hdlDelCatRemote = async () => {
       </Modal>
 
       {/* Category Products Modal */}
-      <Modal isOpen={modCategoryProducts} onClose={() => setModCategoryProducts(false)} title={`📁 ${sc?.name}`} showConfirm={false}>
+      <Modal isOpen={modCategoryProducts} onClose={() => setModCategoryProducts(false)} title={` ${sc?.name}`} showConfirm={false}>
         {sc && <>
           <div className="category-info-header">
             <p>{sc.description}</p>
@@ -295,7 +295,7 @@ const hdlDelCatRemote = async () => {
     setModDelete(false)
     setCatToDelete(null)
   }}
-  title="⚠️ Confirmation"
+  title=" Confirmation"
   onConfirm={hdlDelCatRemote}
   confirmText="Supprimer"
 >

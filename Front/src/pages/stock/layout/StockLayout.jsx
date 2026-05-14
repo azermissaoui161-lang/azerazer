@@ -75,33 +75,33 @@ function StockLayout() {
               <p>MENU STOCK</p>
               {isAdmin && (
                 <button className="router-button" onClick={() => navigate('/admin')}>
-                  👑 Admin
+                   Admin
                 </button>
               )}
             </div>
           )}
           <div className="menu-items">
             <NavLink to="/stock/dashboard" className={({ isActive }) => `menu-item${isActive ? ' active' : ''}`}>
-              <span className="menu-icon">📊</span>{!sidebarCollapsed && <span>Dashboard Stock</span>}
+              <span className="menu-icon"></span>{!sidebarCollapsed && <span>Dashboard Stock</span>}
             </NavLink>
             <NavLink to="/stock/products"   className={({ isActive }) => `menu-item${isActive ? ' active' : ''}`}>
-              <span className="menu-icon">📦</span>{!sidebarCollapsed && <span>Produits</span>}
+              <span className="menu-icon"></span>{!sidebarCollapsed && <span>Produits</span>}
             </NavLink>
             <NavLink to="/stock/categories" className={({ isActive }) => `menu-item${isActive ? ' active' : ''}`}>
-              <span className="menu-icon">📑</span>{!sidebarCollapsed && <span>Catégories</span>}
+              <span className="menu-icon"></span>{!sidebarCollapsed && <span>Catégories</span>}
             </NavLink>
             <NavLink to="/stock/suppliers"  className={({ isActive }) => `menu-item${isActive ? ' active' : ''}`}>
-              <span className="menu-icon">🤝</span>{!sidebarCollapsed && <span>Fournisseurs</span>}
+              <span className="menu-icon"></span>{!sidebarCollapsed && <span>Fournisseurs</span>}
             </NavLink>
             <NavLink to="/stock/movements"  className={({ isActive }) => `menu-item${isActive ? ' active' : ''}`}>
-              <span className="menu-icon">🔄</span>{!sidebarCollapsed && <span>Mouvements</span>}
+              <span className="menu-icon"></span>{!sidebarCollapsed && <span>Mouvements</span>}
             </NavLink>
             <NavLink to="/stock/alerts"     className={({ isActive }) => `menu-item${isActive ? ' active' : ''}`}>
-              <span className="menu-icon">⚠️</span>{!sidebarCollapsed && <span>Alertes</span>}
+              <span className="menu-icon"></span>{!sidebarCollapsed && <span>Alertes</span>}
             </NavLink>
             
             <NavLink to="/stock/settings"   className={({ isActive }) => `menu-item${isActive ? ' active' : ''}`}>
-              <span className="menu-icon">⚙️</span>{!sidebarCollapsed && <span>Paramètres</span>}
+              <span className="menu-icon"></span>{!sidebarCollapsed && <span>Paramètres</span>}
             </NavLink>
           </div>
         </nav>

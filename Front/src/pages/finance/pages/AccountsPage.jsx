@@ -153,7 +153,7 @@ function AccountsPage({ showNotif }) {
           <div key={a.id} className="account-card">
             <div className="account-card-header">
               <div className="account-icon" style={{ background: '#4299e115', color: '#4299e1' }}>
-                {a.type === 'Banque' ? '🏦' : a.type === 'Épargne' ? '💰' : '📋'}
+                {a.type === 'Banque' ? '' : a.type === 'Épargne' ? '' : ''}
               </div>
               <div className="account-info"><h4>{a.name}</h4><p className="account-number">{a.number}</p></div>
               <StatusBadge status={a.status} />
@@ -194,7 +194,7 @@ function AccountsPage({ showNotif }) {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{modal.mode === 'add' ? '➕ Nouveau compte' : '✏️ Modifier le compte'}</h3>
+              <h3>{modal.mode === 'add' ? ' Nouveau compte' : ' Modifier le compte'}</h3>
               <button className="modal-close" onClick={closeModal}>×</button>
             </div>
             <div className="modal-body">

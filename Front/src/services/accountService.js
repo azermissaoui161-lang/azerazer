@@ -68,7 +68,6 @@ export const accountService = {
         iban: accountData.iban?.trim() || '',
         bic: accountData.bic?.trim() || '',
         status: accountData.status || 'actif',
-        inMoneyFlow: Boolean(accountData.inMoneyFlow ?? accountData.inBudget)
       });
       return response.data;
     } catch (error) {
@@ -94,9 +93,7 @@ export const accountService = {
         bic: accountData.bic?.trim(),
         status: accountData.status,
         notes: accountData.notes?.trim(),
-        inMoneyFlow: (accountData.inMoneyFlow !== undefined || accountData.inBudget !== undefined)
-          ? Boolean(accountData.inMoneyFlow ?? accountData.inBudget)
-          : undefined
+        
       });
       return response.data;
     } catch (error) {

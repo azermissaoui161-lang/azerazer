@@ -120,18 +120,18 @@ export default function ClientsPage() {
 
       <div className="content-header">
         <div className="header-left">
-          <h2>👥 Clients</h2>
+          <h2> Clients</h2>
           <span className="header-count">{filteredClients.length}</span>
         </div>
-        <button className="btn-primary" onClick={() => openModal()}>+ Nouveau client</button>
+        <button className="btn-primary" onClick={() => openModal()}> Nouveau client</button>
       </div>
 
       <div className="search-section">
         <div className="search-box large">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"></span>
           <input
             type="text"
-            placeholder="Rechercher par nom, email ou SIRET..."
+            placeholder="Rechercher par nom, email ou ID..."
             className="search-input"
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -152,9 +152,9 @@ export default function ClientsPage() {
             </div>
             <div className="client-card-body">
               <div className="client-contact">
-                <p><span>📧</span>{c.email}</p>
-                <p><span>📞</span>{c.phone}</p>
-                <p><span>📍</span>{c.address}</p>
+                <p><span>email : </span>{c.email}</p>
+                <p><span>phone : </span>{c.phone}</p>
+                <p><span>adress :</span>{c.address}</p>
               </div>
               <div className="client-stats">
                 <div className="client-stat"><span>Cmd</span><strong>{c.totalOrders}</strong></div>
@@ -180,7 +180,7 @@ export default function ClientsPage() {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{edit.type === 'client' ? '✏️ Modifier' : '➕ Nouveau'} client</h3>
+              <h3>{edit.type === 'client' ? ' Modifier' : ' Nouveau'} client</h3>
               <button className="modal-close" onClick={closeModal}>×</button>
             </div>
             <div className="modal-body">

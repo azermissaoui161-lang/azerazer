@@ -201,3 +201,35 @@
     text-align:center;
   }
 }
+
+
+
+
+.btn-toggle-date {
+  padding: 8px 14px;
+  background: #c2a878; /* tourabi soft */
+  color: #1f2937;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.btn-toggle-date:hover {
+  background: #b89a6b; /* darker tourabi */
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+.btn-toggle-date:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.btn-toggle-date:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(194, 168, 120, 0.35);
+}

@@ -211,7 +211,7 @@ export default function OrdersPage() {
 
       <div className="content-header">
         <div className="header-left">
-          <h2>📋 Commandes</h2>
+          <h2> Commandes</h2>
           <span className="header-count">{filteredOrders.length}</span>
         </div>
         <button className="btn-primary" onClick={() => openModal()}>+ Nouvelle commande</button>
@@ -219,7 +219,7 @@ export default function OrdersPage() {
 
       <div className="filters-bar">
         <div className="search-box large">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"></span>
           <input
             type="text"
             placeholder="Rechercher par N° commande ou client..."
@@ -257,7 +257,7 @@ export default function OrdersPage() {
                 <td><StatusBadge status={o.paymentStatus}/></td>
                 <td>
                   {o.invoiceId
-                    ? <span className="invoice-linked">✅ {o.invoiceId}</span>
+                    ? <span className="invoice-linked"> {o.invoiceId}</span>
                     : <button className="btn-small btn-warning" onClick={() => handleGenerateInvoice(o)}>Générer</button>
                   }
                 </td>
@@ -277,8 +277,8 @@ export default function OrdersPage() {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content modal-large" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{edit.type === 'order' ? '✏️ Modifier' : '➕ Nouvelle'} commande</h3>
-              <button className="modal-close" onClick={closeModal}>×</button>
+              <h3>{edit.type === 'order' ? ' Modifier' : ' Nouvelle'} commande</h3>
+              <button className="modal-close" onClick={closeModal}>supp</button>
             </div>
             <div className="modal-body" style={{maxHeight:'65vh',overflowY:'auto'}}>
               <div className="form-group">

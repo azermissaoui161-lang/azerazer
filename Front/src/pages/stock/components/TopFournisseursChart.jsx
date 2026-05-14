@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
-import html2canvas from 'html2canvas';
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const fournisseurs = [
@@ -68,55 +67,14 @@ const fournisseurs = [
 
 const COLORS = ['#60a5fa', '#34d399', '#a78bfa', '#f59e0b', '#f87171'];
 
-// ─── EXPORT PNG (html2canvas FULL CARD) ─────────────────────────────────────
-const exportPNG = async (ref) => {
-  if (!ref) return;
-
-  const canvas = await html2canvas(ref, {
-    backgroundColor: null,
-    scale: 2,
-    useCORS: true,
-  });
-
-  const url = canvas.toDataURL('image/png');
-
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'fournisseurs.png';
-  link.click();
-};
-
-// ─── EXPORT SVG (image wrapper) ─────────────────────────────────────────────
-const exportSVG = (canvas) => {
-  if (!canvas) return;
-
-  const imgData = canvas.toDataURL("image/png");
-
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg"
-         width="${canvas.width}"
-         height="${canvas.height}">
-      <image href="${imgData}" width="100%" height="100%" />
-    </svg>
-  `;
-
-  const blob = new Blob([svg], { type: "image/svg+xml" });
-  const url = URL.createObjectURL(blob);
-
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = 'fournisseurs.svg';
-  link.click();
-
-  URL.revokeObjectURL(url);
-};
-
 // ─── CHART 1 ────────────────────────────────────────────────────────────────
-const FournisseursBarChart = ({ fournisseursData, selected, onSelect, chartRefExport }) => {
+const FournisseursBarChart = ({ fournisseursData, selected, onSelect }) => {
   const ref = useRef(null);
   const instance = useRef(null);
 
   useEffect(() => {
+    if (!ref.current) return;
+
     const ctx = ref.current.getContext('2d');
 
     if (instance.current) instance.current.destroy();
@@ -125,17 +83,23 @@ const FournisseursBarChart = ({ fournisseursData, selected, onSelect, chartRefEx
       type: 'bar',
       data: {
         labels: fournisseursData.map(f => f.nom),
-        datasets: [{
-          label: 'CA total (DT)',
-          data: fournisseursData.map(f => f.total),
-          backgroundColor: fournisseursData.map((_, i) =>
-            selected === i ? COLORS[i % COLORS.length] : COLORS[i % COLORS.length] + '55'
-          ),
-          borderColor: fournisseursData.map((_, i) => COLORS[i % COLORS.length]),
-          borderWidth: 1.5,
-          borderRadius: 7,
-          borderSkipped: false,
-        }],
+        datasets: [
+          {
+            label: 'CA total (DT)',
+            data: fournisseursData.map(f => f.total),
+            backgroundColor: fournisseursData.map((_, i) =>
+              selected === i
+                ? COLORS[i % COLORS.length]
+                : COLORS[i % COLORS.length] + '55'
+            ),
+            borderColor: fournisseursData.map(
+              (_, i) => COLORS[i % COLORS.length]
+            ),
+            borderWidth: 1.5,
+            borderRadius: 7,
+            borderSkipped: false,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -143,17 +107,17 @@ const FournisseursBarChart = ({ fournisseursData, selected, onSelect, chartRefEx
         onClick: (_, elements) => {
           if (elements.length > 0) onSelect(elements[0].index);
         },
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+        },
       },
     });
-
-    if (chartRefExport) chartRefExport.current = instance.current;
 
     return () => instance.current?.destroy();
   }, [fournisseursData, selected]);
 
   return (
-    <div style={{ position: 'relative', height: '220px', cursor: 'pointer' }}>
+    <div style={{ position: 'relative', height: 220 }}>
       <canvas ref={ref} />
     </div>
   );
@@ -163,9 +127,14 @@ const FournisseursBarChart = ({ fournisseursData, selected, onSelect, chartRefEx
 const ProduitsBarChart = ({ fournisseur, color }) => {
   const ref = useRef(null);
   const instance = useRef(null);
-  const produits = Array.isArray(fournisseur.produits) ? fournisseur.produits : [];
+
+  const produits = Array.isArray(fournisseur.produits)
+    ? fournisseur.produits
+    : [];
 
   useEffect(() => {
+    if (!ref.current) return;
+
     const ctx = ref.current.getContext('2d');
 
     if (instance.current) instance.current.destroy();
@@ -174,18 +143,22 @@ const ProduitsBarChart = ({ fournisseur, color }) => {
       type: 'bar',
       data: {
         labels: produits.map(p => p.nom),
-        datasets: [{
-          data: produits.map(p => p.achat),
-          backgroundColor: color + '33',
-          borderColor: color,
-          borderWidth: 1.5,
-        }],
+        datasets: [
+          {
+            data: produits.map(p => p.achat),
+            backgroundColor: color + '33',
+            borderColor: color,
+            borderWidth: 1.5,
+          },
+        ],
       },
       options: {
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+        plugins: {
+          legend: { display: false },
+        },
       },
     });
 
@@ -193,7 +166,12 @@ const ProduitsBarChart = ({ fournisseur, color }) => {
   }, [produits, color]);
 
   return (
-    <div style={{ position: 'relative', height: `${Math.max(1, produits.length) * 52}px` }}>
+    <div
+      style={{
+        position: 'relative',
+        height: `${Math.max(1, produits.length) * 52}px`,
+      }}
+    >
       <canvas ref={ref} />
     </div>
   );
@@ -202,46 +180,37 @@ const ProduitsBarChart = ({ fournisseur, color }) => {
 // ─── MAIN COMPONENT ─────────────────────────────────────────────────────────
 const TopFournisseursChart = ({ data }) => {
   const [selected, setSelected] = useState(0);
-  const fournisseursData = Array.isArray(data) && data.length ? data : fournisseurs;
-  const safeSelected = Math.min(selected, Math.max(0, fournisseursData.length - 1));
-  const f = fournisseursData[safeSelected] || { nom: 'Fournisseur', total: 0, produits: [] };
+
+  const fournisseursData =
+    Array.isArray(data) && data.length ? data : fournisseurs;
+
+  const safeSelected = Math.min(
+    selected,
+    fournisseursData.length - 1
+  );
+
+  const f = fournisseursData[safeSelected];
+
   const color = COLORS[safeSelected % COLORS.length];
 
-  const dashboardRef = useRef(null);
-  const chartRef = useRef(null);
-
-  const btnStyle = {
-    background: '#1e293b',
-    color: '#e2e8f0',
-    border: '1px solid rgba(148,163,184,.2)',
-    padding: '6px 10px',
-    borderRadius: '6px',
-    fontSize: '11px',
-    cursor: 'pointer',
-  };
-
   return (
-    <div ref={dashboardRef} style={{
-      background: 'linear-gradient(145deg, #0f172a, #1e293b)',
-      borderRadius: '16px',
-      border: '1px solid rgba(148,163,184,0.1)',
-      padding: '24px',
-    }}>
-
+    <div
+      style={{
+        background: 'linear-gradient(145deg, #0f172a, #1e293b)',
+        borderRadius: 16,
+        border: '1px solid rgba(148,163,184,0.1)',
+        padding: 24,
+      }}
+    >
       {/* HEADER */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '15px' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginBottom: 15,
+        }}
+      >
         <h3 style={{ color: '#f1f5f9' }}>Top fournisseurs</h3>
-
-        {/* BUTTONS */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <button style={btnStyle} onClick={() => exportPNG(dashboardRef.current)}>
-            PNG
-          </button>
-
-          <button style={btnStyle} onClick={() => exportSVG(chartRef.current?.canvas)}>
-            SVG
-          </button>
-        </div>
       </div>
 
       {/* CHART */}
@@ -249,11 +218,10 @@ const TopFournisseursChart = ({ data }) => {
         fournisseursData={fournisseursData}
         selected={safeSelected}
         onSelect={setSelected}
-        chartRefExport={chartRef}
       />
 
       {/* DETAILS */}
-      <div style={{ marginTop: '20px' }}>
+      <div style={{ marginTop: 20 }}>
         <h4 style={{ color: '#fff' }}>{f.nom}</h4>
         <p style={{ color: '#94a3b8' }}>
           CA: {f.total.toLocaleString()} DT
@@ -262,7 +230,6 @@ const TopFournisseursChart = ({ data }) => {
 
       {/* PRODUCTS CHART */}
       <ProduitsBarChart fournisseur={f} color={color} />
-
     </div>
   );
 };

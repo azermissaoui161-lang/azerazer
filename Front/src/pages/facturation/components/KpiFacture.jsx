@@ -32,16 +32,18 @@ const KpiFacture = ({ kpi = {} }) => (
         </div>
 
         <div className="ds-kpi-split">
-          <div className="ds-kpi-split-item">
-            <span className="ds-kpi-split-dot" style={{ background: '#10b981' }} />
-            <span>Payees</span>
-            <span>{formatNumber(kpi.facturesPayees)}</span>
+          {/* Payé - VERT BRILLANT */}
+          <div className="ds-kpi-split-item paye-item">
+            <span className="ds-kpi-split-dot paye-dot"></span>
+            <span className="ds-kpi-split-label paye-label">Payées</span>
+            <span className="ds-kpi-split-val paye-val">{formatNumber(kpi.facturesPayees)}</span>
           </div>
 
-          <div className="ds-kpi-split-item">
-            <span className="ds-kpi-split-dot" style={{ background: '#f43f5e' }} />
-            <span>Impayees</span>
-            <span>{formatNumber(kpi.facturesImpayees)}</span>
+          {/* Impayé - ROUGE BRILLANT */}
+          <div className="ds-kpi-split-item impaye-item">
+            <span className="ds-kpi-split-dot impaye-dot"></span>
+            <span className="ds-kpi-split-label impaye-label">Impayées</span>
+            <span className="ds-kpi-split-val impaye-val">{formatNumber(kpi.facturesImpayees)}</span>
           </div>
         </div>
       </div>

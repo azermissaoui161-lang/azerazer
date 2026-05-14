@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
-import html2canvas from 'html2canvas';
 
 const DATA = [
   { type: 'Salaires', montant: 12000 },
@@ -14,18 +13,25 @@ const COLORS = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b'];
 const TypeDepenses = ({ data }) => {
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
-  const containerRef = useRef(null);
 
   const [selected, setSelected] = useState(null);
 
   const chartData = Array.isArray(data) && data.length ? data : DATA;
-  const total = chartData.reduce((a, b) => a + (Number(b.montant) || 0), 0);
+
+  const total = chartData.reduce(
+    (a, b) => a + (Number(b.montant) || 0),
+    0
+  );
 
   /* ================= CHART ================= */
   useEffect(() => {
+    if (!chartRef.current) return;
+
     const ctx = chartRef.current.getContext('2d');
 
-    if (chartInstance.current) chartInstance.current.destroy();
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
 
     chartInstance.current = new Chart(ctx, {
       type: 'doughnut',
@@ -34,7 +40,9 @@ const TypeDepenses = ({ data }) => {
         datasets: [
           {
             data: chartData.map(d => Number(d.montant) || 0),
-            backgroundColor: chartData.map((_, index) => COLORS[index % COLORS.length]),
+            backgroundColor: chartData.map(
+              (_, i) => COLORS[i % COLORS.length]
+            ),
             borderWidth: 3,
             borderColor: '#fff',
             hoverOffset: 8,
@@ -45,6 +53,7 @@ const TypeDepenses = ({ data }) => {
         responsive: true,
         maintainAspectRatio: false,
         cutout: '65%',
+
         plugins: {
           legend: {
             position: 'bottom',
@@ -55,6 +64,7 @@ const TypeDepenses = ({ data }) => {
               font: { size: 12 },
             },
           },
+
           tooltip: {
             backgroundColor: '#0f172a',
             titleColor: '#fff',
@@ -63,12 +73,16 @@ const TypeDepenses = ({ data }) => {
             callbacks: {
               label: (ctx) => {
                 const val = ctx.raw;
-                const percent = total ? ((val / total) * 100).toFixed(1) : '0.0';
+                const percent = total
+                  ? ((val / total) * 100).toFixed(1)
+                  : '0.0';
+
                 return `${ctx.label}: ${val.toLocaleString('fr-TN')} DT (${percent}%)`;
               },
             },
           },
         },
+
         onClick: (evt, elements) => {
           if (!elements.length) return;
           const index = elements[0].index;
@@ -80,82 +94,30 @@ const TypeDepenses = ({ data }) => {
     return () => chartInstance.current?.destroy();
   }, [chartData, total]);
 
-  /* ================= EXPORT PNG ================= */
-  const downloadPNG = async () => {
-    if (!containerRef.current) return;
-
-    const canvas = await html2canvas(containerRef.current, {
-      backgroundColor: '#fff',
-      scale: 2,
-      useCORS: true,
-    });
-
-    const url = canvas.toDataURL('image/png');
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'type-depenses.png';
-    a.click();
-  };
-
-  /* ================= EXPORT SVG (FIX SAFE) ================= */
-  const downloadSVG = () => {
-    const canvas = chartRef.current;
-    if (!canvas) return;
-
-    const imgData = canvas.toDataURL('image/png');
-
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg"
-           width="${canvas.width}"
-           height="${canvas.height}">
-        <image href="${imgData}" width="100%" height="100%" />
-      </svg>
-    `;
-
-    const blob = new Blob([svg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'type-depenses.svg';
-    a.click();
-
-    URL.revokeObjectURL(url);
-  };
-
-  /* ================= STYLE ================= */
-  const btnStyle = {
-    background: '#1e293b',
-    color: '#e2e8f0',
-    border: '1px solid rgba(148,163,184,.2)',
-    padding: '6px 10px',
-    borderRadius: '6px',
-    fontSize: '11px',
-    cursor: 'pointer',
-  };
-
-  /* ================= UI ================= */
   return (
-    <div ref={containerRef} className="card-pro">
+    <div
+      className="card-pro"
+      style={{
+        background: '#fff',
+        border: '1px solid rgba(0,0,0,0.08)',
+        borderRadius: 14,
+        padding: 16,
+      }}
+    >
 
       {/* HEADER */}
-      <div className="card-header" style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <div>
-          <h3>Types de dépenses</h3>
-          <span className="badge">
+          <h3 style={{ margin: 0 }}>Types de dépenses</h3>
+          <span style={{ fontSize: 12, color: '#64748b' }}>
             Total: {total.toLocaleString('fr-TN')} DT
           </span>
-        </div>
-
-        {/* BUTTONS */}
-        <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={downloadPNG} style={btnStyle}>PNG</button>
-          <button onClick={downloadSVG} style={btnStyle}>SVG</button>
         </div>
       </div>
 
@@ -165,62 +127,66 @@ const TypeDepenses = ({ data }) => {
       </div>
 
       {/* TABLE */}
-      <div className="table-wrapper">
-        <table className="pro-table">
-          <thead>
-            <tr>
-              <th>Type</th>
-              <th>Montant</th>
-              <th>%</th>
-              <th></th>
+      <table style={{ width: '100%', fontSize: 12, marginTop: 10 }}>
+        <thead>
+          <tr style={{ textAlign: 'left', color: '#64748b' }}>
+            <th>Type</th>
+            <th>Montant</th>
+            <th>%</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {chartData.map((item, i) => (
+            <tr
+              key={i}
+              onClick={() => setSelected(item)}
+              style={{
+                cursor: 'pointer',
+                background:
+                  selected?.type === item.type
+                    ? 'rgba(59,130,246,0.1)'
+                    : 'transparent',
+              }}
+            >
+              <td>
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    marginRight: 6,
+                    background: COLORS[i % COLORS.length],
+                  }}
+                />
+                {item.type}
+              </td>
+
+              <td>
+                {Number(item.montant || 0).toLocaleString('fr-TN')} DT
+              </td>
+
+              <td>
+                {total
+                  ? ((Number(item.montant || 0) / total) * 100).toFixed(1)
+                  : '0.0'}
+                %
+              </td>
             </tr>
-          </thead>
-
-          <tbody>
-            {chartData.map((item, i) => (
-              <tr
-                key={i}
-                className={selected?.type === item.type ? 'active-row' : ''}
-                onClick={() => setSelected(item)}
-              >
-                <td>
-                  <span className="dot" style={{ background: COLORS[i % COLORS.length] }} />
-                  {item.type}
-                </td>
-
-                <td>{Number(item.montant || 0).toLocaleString('fr-TN')} DT</td>
-
-                <td>{total ? ((Number(item.montant || 0) / total) * 100).toFixed(1) : '0.0'}%</td>
-
-                <td><span className="arrow">›</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          ))}
+        </tbody>
+      </table>
 
       {/* DETAILS */}
       {selected && (
-        <div className="details-panel">
-          <div className="details-header">
-            <h4>Détails: {selected.type}</h4>
-            <button onClick={() => setSelected(null)}>✕</button>
-          </div>
-
-          <div className="details-content">
-            <div>
-              <span>Montant</span>
-              <b>{Number(selected.montant || 0).toLocaleString('fr-TN')} DT</b>
-            </div>
-
-            <div>
-              <span>Part</span>
-              <b>{total ? ((Number(selected.montant || 0) / total) * 100).toFixed(1) : '0.0'}%</b>
-            </div>
+        <div style={{ marginTop: 12, padding: 10, borderTop: '1px solid #eee' }}>
+          <strong>Détails: {selected.type}</strong>
+          <div style={{ fontSize: 12, marginTop: 6 }}>
+            Montant: {selected.montant.toLocaleString('fr-TN')} DT
           </div>
         </div>
       )}
-
     </div>
   );
 };

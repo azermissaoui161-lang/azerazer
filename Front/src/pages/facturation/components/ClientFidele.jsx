@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
-import html2canvas from 'html2canvas';
 
 const DEFAULT_DATA = [
   { name: 'Client Ahmed', total: 4500, commandes: 12, retour: 1, mois: [300, 450, 380, 500, 420, 550, 480, 600, 520, 580, 610, 650] },
@@ -22,8 +21,13 @@ const FideliteLineChart = ({ clients, selected, chartRefExport }) => {
   const instance = useRef(null);
 
   useEffect(() => {
+    if (!ref.current) return;
+
     const ctx = ref.current.getContext('2d');
-    if (instance.current) instance.current.destroy();
+
+    if (instance.current) {
+      instance.current.destroy();
+    }
 
     const mkGradient = (color) => {
       const g = ctx.createLinearGradient(0, 0, 0, 260);
@@ -49,7 +53,10 @@ const FideliteLineChart = ({ clients, selected, chartRefExport }) => {
 
     instance.current = new Chart(ctx, {
       type: 'line',
-      data: { labels: LABELS, datasets },
+      data: {
+        labels: LABELS,
+        datasets
+      },
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -60,7 +67,8 @@ const FideliteLineChart = ({ clients, selected, chartRefExport }) => {
             titleColor: '#fff',
             bodyColor: '#cbd5e1',
             callbacks: {
-              label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y} DT`,
+              label: (ctx) =>
+                `${ctx.dataset.label}: ${ctx.parsed.y} DT`,
             }
           }
         },
@@ -85,79 +93,33 @@ const ClientFidele = ({ data }) => {
   const [selected, setSelected] = useState(0);
 
   const chartRef = useRef(null);
-  const containerRef = useRef(null);
+  const sorted = [...clients].sort((a, b) => score(b) - score(a));
 
-  const sorted = [...clients].sort((a,b)=>score(b)-score(a));
-
-  /* ================= EXPORT PNG ================= */
-  const downloadPNG = async () => {
-    const canvas = await html2canvas(containerRef.current, {
-      backgroundColor: null,
-      scale: 2
-    });
-
-    const url = canvas.toDataURL('image/png');
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'clients-fideles.png';
-    a.click();
-  };
-
-  /* ================= EXPORT SVG ================= */
-  const downloadSVG = () => {
-    const canvas = chartRef.current.canvas;
-    const img = canvas.toDataURL();
-
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
-        <image href="${img}" width="100%" height="100%"/>
-      </svg>
-    `;
-
-    const blob = new Blob([svg], { type: 'image/svg+xml' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'chart.svg';
-    a.click();
-
-    URL.revokeObjectURL(url);
-  };
-
-  /* ================= UI ================= */
   return (
     <div
-      ref={containerRef}
       style={{
-        background:'linear-gradient(145deg,#0f172a,#1e293b)',
-        borderRadius:16,
-        padding:22,
-        color:'#e2e8f0',
-        border:'1px solid rgba(148,163,184,.1)'
+        background: 'linear-gradient(145deg,#0f172a,#1e293b)',
+        borderRadius: 16,
+        padding: 22,
+        color: '#e2e8f0',
+        border: '1px solid rgba(148,163,184,.1)'
       }}
     >
 
       {/* HEADER */}
       <div style={{
-        display:'flex',
-        justifyContent:'space-between',
-        alignItems:'center',
-        marginBottom:12
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginBottom: 12
       }}>
-        <h3 style={{ margin:0 }}>Clients fidèles</h3>
-
-        <div style={{ display:'flex', gap:8 }}>
-          <button onClick={downloadPNG} style={btn}>PNG</button>
-          <button onClick={downloadSVG} style={btn}>SVG</button>
-        </div>
+        <h3 style={{ margin: 0 }}>Clients fidèles</h3>
       </div>
 
       {/* MAIN */}
-      <div style={{ display:'flex', gap:20 }}>
+      <div style={{ display: 'flex', gap: 20 }}>
 
         {/* CHART */}
-        <div style={{ flex:2 }}>
+        <div style={{ flex: 2 }}>
           <FideliteLineChart
             clients={sorted}
             selected={selected}
@@ -165,36 +127,36 @@ const ClientFidele = ({ data }) => {
           />
         </div>
 
-        {/* SIDEBAR CLIENTS */}
+        {/* SIDEBAR */}
         <div style={{
-          flex:1,
-          background:'rgba(15,23,42,0.6)',
-          border:'1px solid rgba(148,163,184,.1)',
-          borderRadius:12,
-          padding:12,
-          maxHeight:260,
-          overflowY:'auto'
+          flex: 1,
+          background: 'rgba(15,23,42,0.6)',
+          border: '1px solid rgba(148,163,184,.1)',
+          borderRadius: 12,
+          padding: 12,
+          maxHeight: 260,
+          overflowY: 'auto'
         }}>
-          <h4 style={{ marginBottom:10 }}>Top Clients</h4>
+          <h4 style={{ marginBottom: 10 }}>Top Clients</h4>
 
           {sorted.map((c, i) => (
             <div
               key={i}
               onClick={() => setSelected(i)}
               style={{
-                padding:10,
-                marginBottom:8,
-                borderRadius:8,
-                cursor:'pointer',
+                padding: 10,
+                marginBottom: 8,
+                borderRadius: 8,
+                cursor: 'pointer',
                 background: selected === i ? COLORS[i] + '33' : 'transparent',
                 border: selected === i ? `1px solid ${COLORS[i]}` : '1px solid transparent'
               }}
             >
-              <div style={{ fontWeight:600 }}>{c.name}</div>
-              <div style={{ fontSize:12, opacity:0.8 }}>
+              <div style={{ fontWeight: 600 }}>{c.name}</div>
+              <div style={{ fontSize: 12, opacity: 0.8 }}>
                 💰 {c.total} DT
               </div>
-              <div style={{ fontSize:11, opacity:0.6 }}>
+              <div style={{ fontSize: 11, opacity: 0.6 }}>
                 📦 {c.commandes} commandes | 🔁 {c.retour} retours
               </div>
             </div>
@@ -204,17 +166,6 @@ const ClientFidele = ({ data }) => {
       </div>
     </div>
   );
-};
-
-/* ================= STYLE ================= */
-const btn = {
-  background:'#1e293b',
-  border:'1px solid rgba(148,163,184,.2)',
-  color:'#e2e8f0',
-  padding:'6px 10px',
-  borderRadius:8,
-  fontSize:11,
-  cursor:'pointer'
 };
 
 export default ClientFidele;

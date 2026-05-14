@@ -245,7 +245,7 @@ const GenerateReportModal = ({ onClose, onGenerate, loading }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
         <div className="modal-header">
-          <h3>📊 Générer un rapport financier</h3>
+          <h3> Générer un rapport financier</h3>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -280,7 +280,7 @@ const GenerateReportModal = ({ onClose, onGenerate, loading }) => {
           <button className="btn-primary" style={{ background: '#4299e1' }}
             disabled={loading || (period === 'custom' && (!customStart || !customEnd))}
             onClick={() => onGenerate({ period, customStart, customEnd, title: reportTitle })}>
-            {loading ? '⏳ Génération...' : '⚡ Générer'}
+            {loading ? ' Génération...' : ' Générer'}
           </button>
         </div>
       </div>
@@ -317,7 +317,7 @@ const PreviewModal = ({ reportData, reportTitle, onClose, onSave, saving }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '780px', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
         <div className="modal-header">
-          <h3>👁️ Aperçu du rapport</h3>
+          <h3> Aperçu du rapport</h3>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
         <div className="modal-body" ref={printRef} style={{ overflowY: 'auto', flex: 1, padding: 0 }}>
@@ -325,10 +325,10 @@ const PreviewModal = ({ reportData, reportTitle, onClose, onSave, saving }) => {
         </div>
         <div className="modal-footer" style={{ gap: '8px' }}>
           <button className="btn-secondary" onClick={onClose}>Fermer</button>
-          <button className="btn-secondary" onClick={handlePrint}>🖨️ Imprimer / PDF</button>
+          <button className="btn-secondary" onClick={handlePrint}> Imprimer / PDF</button>
           {onSave && (
             <button className="btn-primary" style={{ background: '#4299e1' }} onClick={onSave} disabled={saving}>
-              {saving ? '⏳ Sauvegarde...' : '💾 Sauvegarder'}
+              {saving ? ' Sauvegarde...' : ' Sauvegarder'}
             </button>
           )}
         </div>
@@ -349,7 +349,7 @@ const ReportViewModal = ({ report, onClose }) => {
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" style={{ maxWidth: '800px' }} onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h3>👁️ Contenu du rapport</h3>
+          <h3> Contenu du rapport</h3>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
@@ -389,7 +389,7 @@ const ReportViewModal = ({ report, onClose }) => {
           {details && (
             <div className="report-details-table" style={{ marginTop: '20px', maxHeight: '300px', overflowY: 'auto' }}>
               <h4 style={{ fontSize: '0.9rem', marginBottom: '10px', borderBottom: '1px solid #edf2f7', paddingBottom: '5px' }}>
-                📊 Détails des opérations ({summary.periodLabel})
+                 Détails des opérations ({summary.periodLabel})
               </h4>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                 <thead style={{ background: '#f7fafc', textAlign: 'left' }}>
@@ -640,14 +640,14 @@ const handleGenerate = async ({ period, customStart, customEnd, title }) => {
       {/* Action bar */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginBottom: '12px' }}>
         <button className="btn-primary" style={{ background: '#38a169' }} onClick={() => setShowGenerateModal(true)}>
-          ⚡ Générer un rapport financier
+           Générer un rapport financier
         </button>
       </div>
 
       {/* Filters */}
       <div className="filters-container">
         <div className="search-box">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"></span>
           <input type="text" placeholder="Rechercher par titre ou description..."
             value={filters.search}
             onChange={e => { setFilters({ ...filters, search: e.target.value }); setPagination(p => ({ ...p, currentPage: 1 })) }}
@@ -667,7 +667,7 @@ const handleGenerate = async ({ period, customStart, customEnd, title }) => {
         {paginatedData.map(r => (
           <div key={r.id} className="report-card">
             <div className="report-icon" style={{ background: '#4299e115', color: '#4299e1' }}>
-              {r.tags?.includes('auto-generated') ? '📊' : '📄'}
+              {r.tags?.includes('auto-generated') ? '' : '📄'}
             </div>
             <div className="report-info">
               <h4>{r.title}</h4>
@@ -683,7 +683,7 @@ const handleGenerate = async ({ period, customStart, customEnd, title }) => {
               )}
             </div>
             <div className="report-actions">
-              <button className="btn-icon" title="Voir" onClick={() => setViewReport(r)}>👁️</button>
+              <button className="btn-icon" title="Voir" onClick={() => setViewReport(r)}>voir</button>
               <button className="btn-icon delete" title="Supprimer" onClick={() => openModal('delete', r)}>🗑️</button>
             </div>
           </div>
@@ -722,7 +722,7 @@ const handleGenerate = async ({ period, customStart, customEnd, title }) => {
       {modal.isOpen && modal.mode === 'delete' && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content modal-small" onClick={e => e.stopPropagation()}>
-            <div className="modal-header"><h3>⚠️ Confirmation</h3><button className="modal-close" onClick={closeModal}>×</button></div>
+            <div className="modal-header"><h3> Confirmation</h3><button className="modal-close" onClick={closeModal}>×</button></div>
             <div className="modal-body">
               <p>Êtes-vous sûr de vouloir supprimer cet élément ?</p>
               <p className="text-danger">Cette action est irréversible.</p>

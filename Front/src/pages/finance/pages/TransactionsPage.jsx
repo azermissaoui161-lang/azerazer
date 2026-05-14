@@ -286,7 +286,7 @@ function TransactionsPage({ showNotif }) {
       </div>
       <div className="filters-container">
         <div className="search-box">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"></span>
           <input type="text" placeholder="Rechercher..." value={filters.search}
             onChange={(e) => setFilters({ ...filters, search: e.target.value })} className="search-input" />
           {filters.search && <button className="clear-search" onClick={() => setFilters({ ...filters, search: '' })}>×</button>}
@@ -302,7 +302,7 @@ function TransactionsPage({ showNotif }) {
             <option value="tous">Tous comptes</option>{accounts.map(acc => <option key={acc.id} value={acc.name}>{acc.name}</option>)}
           </select>
           <button className="btn-reset-filters" onClick={resetFilters}>↻ Réinitialiser</button>
-          <button className="btn-export" onClick={exportToCSV}>📥 Exporter</button>
+          <button className="btn-export" onClick={exportToCSV}> Exporter</button>
         </div>
       </div>
 
@@ -322,7 +322,7 @@ function TransactionsPage({ showNotif }) {
               <tr key={t.id}>
                 <td className="transaction-number">{t.id}</td>
                 <td>{formatDate(t.date)}</td>
-                <td className="transaction-desc">{t.description}{t.notes && <small className="notes-indicator">📝</small>}</td>
+                <td className="transaction-desc">{t.description}{t.notes && <small className="notes-indicator"></small>}</td>
                 <td><span className="category-badge">{t.category}</span></td>
                 <td>{t.account}</td>
                 <td className={t.type === 'revenu' ? 'text-success' : 'text-danger'}>
@@ -345,8 +345,8 @@ function TransactionsPage({ showNotif }) {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{modal.mode === 'add' ? '➕ Nouvelle transaction' : '✏️ Modifier la transaction'}</h3>
-              <button className="modal-close" onClick={closeModal}>×</button>
+              <h3>{modal.mode === 'add' ? ' Nouvelle transaction' : ' Modifier la transaction'}</h3>
+              <button className="modal-close" onClick={closeModal}></button>
             </div>
             <div className="modal-body">
               <TransactionForm formData={formData} setFormData={setFormData} accounts={accounts} />
@@ -365,7 +365,7 @@ function TransactionsPage({ showNotif }) {
       {modal.isOpen && modal.mode === 'delete' && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content modal-small" onClick={e => e.stopPropagation()}>
-            <div className="modal-header"><h3>⚠️ Confirmation</h3><button className="modal-close" onClick={closeModal}>×</button></div>
+            <div className="modal-header"><h3> Confirmation</h3><button className="modal-close" onClick={closeModal}>×</button></div>
             <div className="modal-body">
               <p>Êtes-vous sûr de vouloir supprimer cet élément ?</p>
               <p className="text-danger">Cette action est irréversible.</p>

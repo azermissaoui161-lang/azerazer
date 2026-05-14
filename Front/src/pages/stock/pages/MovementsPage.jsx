@@ -122,10 +122,10 @@ function MovementsPage() {
   return (
     <div className="movements-tab">
       <header className="tab-header">
-        <h2>🔄 Mouvements</h2>
+        <h2> Mouvements</h2>
         <div className="header-buttons">
-          <button className="btn-secondary" onClick={clearFilters}>🧹 Effacer</button>
-          <button className="btn-primary" onClick={() => { rMv(); setMod(true) }}>+ Nouveau</button>
+          <button className="btn-secondary" onClick={clearFilters}> Effacer</button>
+          <button className="btn-primary" onClick={() => { rMv(); setMod(true) }}> Nouveau</button>
         </div>
       </header>
 
@@ -198,7 +198,7 @@ function MovementsPage() {
                   <td>{supplier?.name || '-'}</td>
                   <td>
                     <span className={`movement-type ${m.type}`} style={{ background: m.type === MV.IN ? "#c6f6d5" : "#fed7d7", color: m.type === MV.IN ? "#22543d" : "#742a2a" }}>
-                      {m.type === MV.IN ? "⬆️ Entrée" : "⬇️ Sortie"}
+                      {m.type === MV.IN ? "⬆ Entrée" : "⬇ Sortie"}
                     </span>
                   </td>
                   <td className={m.type === MV.IN ? "text-success" : "text-danger"}><strong>{m.quantity}</strong></td>
@@ -213,7 +213,7 @@ function MovementsPage() {
       </div>
 
       {/* Modals */}
-      <Modal isOpen={mod} onClose={() => { setMod(false); rMv() }} title="➕ Nouveau mouvement" onConfirm={hdlAddMvRemote} confirmText="Ajouter">
+      <Modal isOpen={mod} onClose={() => { setMod(false); rMv() }} title=" Nouveau mouvement" onConfirm={hdlAddMvRemote} confirmText="Ajouter">
         <FormField label="Produit" id="mvmt-prod" error={fe.productId}>
           <select value={mf.productId} onChange={hdlProdChange}>
             <option value="">Sélectionner</option>
@@ -226,14 +226,14 @@ function MovementsPage() {
         </div>
         <FormField label="Date" id="mvmt-date"><input type="date" value={mf.date} onChange={e => setMf({ ...mf, date: e.target.value })} /></FormField>
         <FormField label="Note" id="mvmt-note"><textarea value={mf.note} onChange={e => setMf({ ...mf, note: e.target.value })} rows="2" /></FormField>
-        {mf.productId && mf.type === MV.OUT && <div className="stock-warning">⚠️ Stock: {prod.find(p => String(p.id) === String(mf.productId))?.stock}</div>}
+        {mf.productId && mf.type === MV.OUT && <div className="stock-warning"> Stock: {prod.find(p => String(p.id) === String(mf.productId))?.stock}</div>}
       </Modal>
 
       {deleteModal.isOpen && (
         <div className="modal-overlay" onClick={() => setDeleteModal({ isOpen: false, id: null })}>
           <div className="modal-content modal-small" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>⚠️ Confirmation</h3>
+              <h3> Confirmation</h3>
               <button className="modal-close" onClick={() => setDeleteModal({ isOpen: false, id: null })}>×</button>
             </div>
             <div className="modal-body">

@@ -70,60 +70,7 @@ const CommandeParMois = ({ labels, dataCommandes }) => {
     return () => chartInstance.current?.destroy();
   }, [chartLabels, values]);
 
-  // =========================
-  // PNG EXPORT (html2canvas)
-  // =========================
-  const downloadPNG = async () => {
-    if (!containerRef.current) return;
-
-    const canvas = await html2canvas(containerRef.current, {
-      backgroundColor: null,
-      scale: 2,
-      useCORS: true,
-    });
-
-    const url = canvas.toDataURL('image/png');
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'commandes-mois.png';
-    link.click();
-  };
-
-  // =========================
-  // SVG EXPORT (FIXED + RELIABLE)
-  // =========================
-  const downloadSVG = async () => {
-    if (!containerRef.current) return;
-
-    const canvas = await html2canvas(containerRef.current, {
-      backgroundColor: null,
-      scale: 2,
-      useCORS: true,
-    });
-
-    const imgData = canvas.toDataURL("image/png");
-
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg"
-           width="${canvas.width}"
-           height="${canvas.height}">
-        <rect width="100%" height="100%" fill="transparent"/>
-        <image href="${imgData}" width="100%" height="100%"/>
-      </svg>
-    `;
-
-    const blob = new Blob([svg], { type: "image/svg+xml" });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'commandes-mois.svg';
-    link.click();
-
-    URL.revokeObjectURL(url);
-  };
-
+  
   const btnStyle = {
     background: '#1e293b',
     color: '#e2e8f0',
@@ -175,11 +122,7 @@ const CommandeParMois = ({ labels, dataCommandes }) => {
             {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
           </div>
 
-          {/* BUTTONS */}
-          <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
-            <button onClick={downloadPNG} style={btnStyle}>PNG</button>
-            <button onClick={downloadSVG} style={btnStyle}>SVG</button>
-          </div>
+          
         </div>
       </div>
 

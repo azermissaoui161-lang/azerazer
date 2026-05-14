@@ -109,7 +109,7 @@ const Pagination = ({ total, pagination, setPagination }) => {
   )
 }
 
-// ✅ Fix Bug 1 : accounts passé en prop depuis le parent, plus de loadData/notify/setLoading internes
+//  Fix Bug 1 : accounts passé en prop depuis le parent, plus de loadData/notify/setLoading internes
 const DepenseForm = ({ formData, setFormData, accounts }) => {
   const fd = formData
   const set = (field, value) => setFormData({ ...fd, [field]: value })
@@ -418,12 +418,12 @@ function DepensesPage({ showNotif }) {
 
       <div className="depenses-actions">
         <button className="btn-primary" onClick={() => openModal('add')}>+ Nouvelle dépense</button>
-        <button className="btn-export" onClick={handleExport}>📥 Exporter CSV</button>
+        <button className="btn-export" onClick={handleExport}> Exporter CSV</button>
       </div>
 
       <div className="filters-container">
         <div className="search-box">
-          <span className="search-icon">🔍</span>
+          <span className="search-icon"></span>
           <input type="text" placeholder="Rechercher par description, fournisseur..."
             value={filters.search}
             onChange={e => setFilters({ ...filters, search: e.target.value })}
@@ -459,7 +459,7 @@ function DepensesPage({ showNotif }) {
               <th>Description</th>
               <th>Fournisseur</th>
               <th>Catégorie</th>
-              {/* ✅ Fix Bug 2 : affiche la valeur, pas un input */}
+              {/*  Fix Bug 2 : affiche la valeur, pas un input */}
               <th onClick={() => toggleSort('amount')}>Montant{sortIcon('amount')}</th>
               <th>Statut</th>
               <th>Actions</th>
@@ -475,7 +475,7 @@ function DepensesPage({ showNotif }) {
                 </td>
                 <td className="depense-desc">
                   {d.description}
-                  {d.notes && <small className="notes-indicator">📝</small>}
+                  {d.notes && <small className="notes-indicator"></small>}
                 </td>
                 <td>{d.fournisseur || '-'}</td>
                 <td><span className="category-badge">{d.category}</span></td>
@@ -500,11 +500,11 @@ function DepensesPage({ showNotif }) {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content modal-depense" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>{modal.mode === 'add' ? '➕ Nouvelle dépense' : '✏️ Modifier la dépense'}</h3>
+              <h3>{modal.mode === 'add' ? ' Nouvelle dépense' : ' Modifier la dépense'}</h3>
               <button className="modal-close" onClick={closeModal}>×</button>
             </div>
             <div className="modal-body">
-              {/* ✅ Fix Bug 3 : accounts passé en prop */}
+              {/*  Fix Bug 3 : accounts passé en prop */}
               <DepenseForm formData={formData} setFormData={setFormData} accounts={accounts} />
             </div>
             <div className="modal-footer">
@@ -522,7 +522,7 @@ function DepensesPage({ showNotif }) {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content modal-small" onClick={e => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>⚠️ Confirmation</h3>
+              <h3> Confirmation</h3>
               <button className="modal-close" onClick={closeModal}>×</button>
             </div>
             <div className="modal-body">

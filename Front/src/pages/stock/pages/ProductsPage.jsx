@@ -148,9 +148,9 @@ function ProductsPage() {
   return (
     <div className="products-tab">
       <header className="tab-header">
-        <h2>📦 Produits</h2>
+        <h2> Produits</h2>
         <div className="header-buttons">
-          <button className="btn-toggle-filters" onClick={() => setSpf(!spf)}>{spf ? "Masquer" : "Afficher"} filtres 🔍</button>
+          <button className="btn-toggle-filters" onClick={() => setSpf(!spf)}>{spf ? "Masquer" : "Afficher"} filtres </button>
           <button className="btn-primary" onClick={() => { rProd(); setMod(true) }}>+ Nouveau produit</button>
         </div>
       </header>
@@ -177,9 +177,9 @@ function ProductsPage() {
       {spf && (
         <div className="products-search-bar">
           <div className="search-row">
-            <FormField label="🔍 Nom" id="search-name"><input type="text" value={f.productName} onChange={e => updateFilter('productName', e.target.value)} className="search-input" /></FormField>
-            <FormField label="📂 Catégorie" id="search-cat"><select value={f.productCategory} onChange={e => updateFilter('productCategory', e.target.value)} className="search-input"><option value="">Toutes</option>{cat.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}</select></FormField>
-            <FormField label="📊 Statut" id="search-status"><select value={f.productStatus} onChange={e => updateFilter('productStatus', e.target.value)} className="search-input"><option value="">Tous</option><option value={STATUS.IN_STOCK}>En stock</option><option value={STATUS.LOW_STOCK}>Stock faible</option><option value={STATUS.OUT_OF_STOCK}>Rupture</option></select></FormField>
+            <FormField label=" Nom" id="search-name"><input type="text" value={f.productName} onChange={e => updateFilter('productName', e.target.value)} className="search-input" /></FormField>
+            <FormField label=" Catégorie" id="search-cat"><select value={f.productCategory} onChange={e => updateFilter('productCategory', e.target.value)} className="search-input"><option value="">Toutes</option>{cat.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}</select></FormField>
+            <FormField label=" Statut" id="search-status"><select value={f.productStatus} onChange={e => updateFilter('productStatus', e.target.value)} className="search-input"><option value="">Tous</option><option value={STATUS.IN_STOCK}>En stock</option><option value={STATUS.LOW_STOCK}>Stock faible</option><option value={STATUS.OUT_OF_STOCK}>Rupture</option></select></FormField>
           </div>
         </div>
       )}
@@ -210,7 +210,7 @@ function ProductsPage() {
         </table>
       </div>
 
-      <Modal isOpen={mod} onClose={() => { setMod(false); rProd() }} title={ep ? '✏️ Modifier' : '➕ Nouveau produit'} onConfirm={ep ? hdlUpdProdRemote : hdlAddProdRemote}>
+      <Modal isOpen={mod} onClose={() => { setMod(false); rProd() }} title={ep ? ' Modifier' : ' Nouveau produit'} onConfirm={ep ? hdlUpdProdRemote : hdlAddProdRemote}>
         <FormField label="Nom" id="prod-name" error={fe.name}><input type="text" value={pf.name} onChange={e => setPf({ ...pf, name: e.target.value })} /></FormField>
         <FormField label="Code unique" id="prod-sku" error={fe.sku}><input type="text" value={pf.sku} onChange={e => setPf({ ...pf, sku: e.target.value })} /></FormField>
         <FormField label="Catégorie" id="prod-cat" error={fe.category}><select value={pf.category} onChange={e => setPf({ ...pf, category: e.target.value })}><option value="">Sélectionner</option>{cat.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}</select></FormField>
