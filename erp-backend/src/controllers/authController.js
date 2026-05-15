@@ -64,8 +64,8 @@ exports.register = async (req, res) => {
 // @desc    Connexion
 // @route   POST /api/auth/login
 exports.login = async (req, res) => {
-  console.log('🔥 LOGIN EXÉCUTÉ - req.url:', req.url);
-  console.log('   req.body:', req.body);
+  console.log(' LOGIN EXÉCUTÉ - req.url:', req.url);
+  console.log(' req.body:', req.body);
   
   try {
     const { email, password } = req.body;

@@ -115,7 +115,7 @@ const createOrder = async (req, res) => {
           await createNotification(
             req.user.id,
             'stock_faible',
-            '⚠️ Stock faible',
+            'Stock faible',
             `Le produit "${product.name}" a un stock critique (${product.currentStock})`,
             { productId: product._id, stock: product.currentStock }
           );
@@ -637,7 +637,7 @@ const generateOrderNumber = async (type) => {
   return `${prefix}-${year}${month}-${String(count + 1).padStart(5, '0')}`;
 };
 
-// ✅ UN SEUL export à la fin avec TOUTES les fonctions
+//  UN SEUL export à la fin avec TOUTES les fonctions
 module.exports = {
   createOrder,
   getAllOrders,

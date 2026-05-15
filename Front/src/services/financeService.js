@@ -16,7 +16,7 @@ const financeService = {
       const response = await api.get('/finance/cashflow', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getCashFlow:', error);
+      console.error(' Erreur getCashFlow:', error);
       throw error;
     }
   },
@@ -34,7 +34,7 @@ const financeService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getProfitLoss:', error);
+      console.error(' Erreur getProfitLoss:', error);
       throw error;
     }
   },
@@ -51,7 +51,7 @@ const financeService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getBalanceSheet:', error);
+      console.error(' Erreur getBalanceSheet:', error);
       throw error;
     }
   },
@@ -65,7 +65,7 @@ const financeService = {
       const response = await api.get('/finance/ratios');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getFinancialRatios:', error);
+      console.error(' Erreur getFinancialRatios:', error);
       throw error;
     }
   },
@@ -97,7 +97,7 @@ const financeService = {
       
       return true;
     } catch (error) {
-      console.error('❌ Erreur exportToPDF:', error);
+      console.error(' Erreur exportToPDF:', error);
       throw error;
     }
   },
@@ -127,7 +127,7 @@ const financeService = {
       
       return true;
     } catch (error) {
-      console.error('❌ Erreur exportToExcel:', error);
+      console.error(' Erreur exportToExcel:', error);
       throw error;
     }
   },
@@ -144,7 +144,7 @@ const financeService = {
       const response = await api.get('/finance/forecasts', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getForecasts:', error);
+      console.error(' Erreur getForecasts:', error);
       throw error;
     }
   }

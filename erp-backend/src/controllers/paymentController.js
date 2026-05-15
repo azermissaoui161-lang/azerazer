@@ -348,7 +348,7 @@ const validatePayment = async (req, res) => {
     await createNotification(
       req.user.id,
       'paiement_valide',
-      '✅ Paiement validé',
+      ' Paiement validé',
       `Le paiement ${payment.paymentNumber} a été validé`,
       { paymentId: payment._id, paymentNumber: payment.paymentNumber }
     );
@@ -436,7 +436,7 @@ const generatePaymentNumber = async () => {
   return `PAY-${year}${month}-${String(count + 1).padStart(5, '0')}`;
 };
 
-// ✅ UN SEUL export à la fin avec TOUTES les fonctions
+//  UN SEUL export à la fin avec TOUTES les fonctions
 module.exports = {
   createPayment,
   getAllPayments,

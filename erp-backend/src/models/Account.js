@@ -66,7 +66,7 @@ const accountSchema = new mongoose.Schema({
     trim: true,
     maxlength: [300, 'La description ne peut pas dépasser 300 caractères']
   },
-  // ✅ Nouveaux champs pour plus de fonctionnalités
+  //  Nouveaux champs pour plus de fonctionnalités
   parentAccount: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Account',
@@ -131,14 +131,14 @@ const accountSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-// ✅ Index optimisés
+//  Index optimisés
 //accountSchema.index({ code: 1 }, { unique: true }); 
 accountSchema.index({ type: 1, category: 1 });
 accountSchema.index({ isActive: 1, type: 1 });
 //accountSchema.index({ parentAccount: 1 });
 accountSchema.index({ 'contactInfo.email': 1 }, { sparse: true });
 
-// ✅ Middleware pre-validate
+//  Middleware pre-validate
 accountSchema.pre('validate', function() {
   // Définir le niveau automatiquement basé sur la longueur du code
   if (this.code) {
@@ -146,7 +146,7 @@ accountSchema.pre('validate', function() {
   }
 });
 
-// ✅ Virtuals
+//  Virtuals
 accountSchema.virtual('fullName').get(function() {
   return `${this.code} - ${this.name}`;
 });
@@ -165,7 +165,7 @@ accountSchema.virtual('children', {
   foreignField: 'parentAccount'
 });
 
-// ✅ Méthodes d'instance
+//  Méthodes d'instance
 // Daxel models/Account.js
 accountSchema.methods.credit = async function(amount, session) {
   // Lezem el balance i-koun akbar men amount
@@ -191,7 +191,7 @@ accountSchema.methods.getBalanceHistory = async function(startDate, endDate) {
   return Transaction.getAccountLedger(this._id, startDate, endDate);
 };
 
-// ✅ Méthodes statiques
+//  Méthodes statiques
 accountSchema.statics.getChartOfAccounts = async function() {
   return this.find({ isActive: true })
     .sort('code')

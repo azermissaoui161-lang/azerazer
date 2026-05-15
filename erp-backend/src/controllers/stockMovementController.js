@@ -32,7 +32,7 @@ const formatMovement = (movement) => ({
  * Gérer les erreurs de manière sécurisée
  */
 const handleError = (error, res, defaultMessage = 'Erreur serveur') => {
-  console.error(`❌ ${defaultMessage}:`, error);
+  console.error(` ${defaultMessage}:`, error);
   const message = process.env.NODE_ENV === 'production' 
     ? defaultMessage 
     : error.message;
@@ -155,7 +155,7 @@ exports.addEntry = async (req, res) => {
     await commitOptionalTransaction(session);
 
     // Log pour audit
-    console.log(`✅ Entrée stock: ${quantity} x ${product.name} (${oldStock} → ${product.stock})`);
+    console.log(` Entrée stock: ${quantity} x ${product.name} (${oldStock} → ${product.stock})`);
 
     res.status(201).json({
       movement: formatMovement(movement),
@@ -216,7 +216,7 @@ exports.addExit = async (req, res) => {
 
     if (newStock <= 10) {
       const type = newStock <= 5 ? 'stock_faible' : 'produit_epuise';
-      const title = newStock <= 5 ? '⚠️ Alerte Stock Faible' : '❌ Zone Critique';
+      const title = newStock <= 5 ? ' Alerte Stock Faible' : ' Zone Critique';
       
       // On utilise req.user?._id pour éviter le crash
       const notification = await createNotification(
@@ -228,9 +228,9 @@ exports.addExit = async (req, res) => {
       );
 
       if (notification) {
-        console.log("✅ Notification insérée en base !");
+        console.log(" Notification insérée en base !");
       } else {
-        console.log("❌ createNotification a échoué.");
+        console.log(" createNotification a échoué.");
       }
     }
 
@@ -242,7 +242,7 @@ exports.addExit = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("❌ Erreur addExit:", error.message);
+    console.error(" Erreur addExit:", error.message);
     await abortOptionalTransaction(session);
     res.status(400).json({ message: error.message });
   } finally {
@@ -302,7 +302,7 @@ exports.delete = async (req, res) => {
     await commitOptionalTransaction(session);
 
     // Log pour audit
-    console.log(`✅ Mouvement supprimé: ${movement.type} ${movement.quantity} x ${product.name}`);
+    console.log(` Mouvement supprimé: ${movement.type} ${movement.quantity} x ${product.name}`);
 
     res.json({ 
       message: 'Mouvement supprimé avec succès',

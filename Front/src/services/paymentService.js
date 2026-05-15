@@ -14,7 +14,7 @@ export const paymentService = {
       const response = await api.get('/payments', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getAllPayments:', error);
+      console.error(' Erreur getAllPayments:', error);
       throw error;
     }
   },
@@ -37,7 +37,7 @@ export const paymentService = {
       const response = await api.get(`/payments/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getPaymentById ${id}:`, error);
+      console.error(` Erreur getPaymentById ${id}:`, error);
       throw error;
     }
   },
@@ -74,7 +74,7 @@ export const paymentService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur createPayment:', error);
+      console.error(' Erreur createPayment:', error);
       throw error;
     }
   },
@@ -97,7 +97,7 @@ export const paymentService = {
       });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur updatePayment ${id}:`, error);
+      console.error(` Erreur updatePayment ${id}:`, error);
       throw error;
     }
   },
@@ -113,7 +113,7 @@ export const paymentService = {
       const response = await api.delete(`/payments/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur deletePayment ${id}:`, error);
+      console.error(` Erreur deletePayment ${id}:`, error);
       throw error;
     }
   },
@@ -131,7 +131,7 @@ export const paymentService = {
       const response = await api.patch(`/payments/${id}/validate`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur validatePayment ${id}:`, error);
+      console.error(` Erreur validatePayment ${id}:`, error);
       throw error;
     }
   },
@@ -148,7 +148,7 @@ export const paymentService = {
       const response = await api.post(`/payments/${id}/cancel`, { reason });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur cancelPayment ${id}:`, error);
+      console.error(` Erreur cancelPayment ${id}:`, error);
       throw error;
     }
   },
@@ -165,7 +165,7 @@ export const paymentService = {
       const response = await api.get('/payments/stats', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getPaymentStats:', error);
+      console.error(' Erreur getPaymentStats:', error);
       throw error;
     }
   },
@@ -185,7 +185,7 @@ export const paymentService = {
       });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getByInvoice ${invoiceId}:`, error);
+      console.error(` Erreur getByInvoice ${invoiceId}:`, error);
       throw error;
     }
   },
@@ -203,7 +203,7 @@ export const paymentService = {
       });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getByMethod ${method}:`, error);
+      console.error(` Erreur getByMethod ${method}:`, error);
       throw error;
     }
   },
@@ -235,7 +235,7 @@ export const paymentService = {
       
       return true;
     } catch (error) {
-      console.error('❌ Erreur exportPayments:', error);
+      console.error(' Erreur exportPayments:', error);
       throw error;
     }
   }

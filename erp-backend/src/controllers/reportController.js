@@ -28,7 +28,7 @@ const formatReport = (report) => ({
  * Gérer les erreurs de manière sécurisée
  */
 const handleError = (error, res, defaultMessage = 'Erreur serveur') => {
-  console.error(`❌ ${defaultMessage}:`, error);
+  console.error(` ${defaultMessage}:`, error);
   const message = process.env.NODE_ENV === 'production' 
     ? defaultMessage 
     : error.message;

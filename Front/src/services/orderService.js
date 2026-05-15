@@ -14,7 +14,7 @@ export const orderService = {
       const response = await api.get('/orders', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getAll orders:', error);
+      console.error(' Erreur getAll orders:', error);
       throw error;
     }
   },
@@ -35,7 +35,7 @@ export const orderService = {
       const response = await api.get(`/orders/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getById order ${id}:`, error);
+      console.error(` Erreur getById order ${id}:`, error);
       throw error;
     }
   },
@@ -49,7 +49,7 @@ export const orderService = {
       const response = await api.post('/orders', orderData);
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur create order:', error);
+      console.error(' Erreur create order:', error);
       throw error;
     }
   },
@@ -65,7 +65,7 @@ export const orderService = {
       const response = await api.put(`/orders/${id}`, orderData);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur update order ${id}:`, error);
+      console.error(` Erreur update order ${id}:`, error);
       throw error;
     }
   },
@@ -80,7 +80,7 @@ export const orderService = {
       const response = await api.delete(`/orders/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur delete order ${id}:`, error);
+      console.error(` Erreur delete order ${id}:`, error);
       throw error;
     }
   },
@@ -98,7 +98,7 @@ export const orderService = {
       const response = await api.patch(`/orders/${id}/status`, { status });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur updateStatus order ${id}:`, error);
+      console.error(` Erreur updateStatus order ${id}:`, error);
       throw error;
     }
   },
@@ -113,7 +113,7 @@ export const orderService = {
       const response = await api.get(`/customers/${clientId}/orders`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getByClient ${clientId}:`, error);
+      console.error(` Erreur getByClient ${clientId}:`, error);
       throw error;
     }
   },
@@ -129,7 +129,7 @@ export const orderService = {
       });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getByStatus ${status}:`, error);
+      console.error(` Erreur getByStatus ${status}:`, error);
       throw error;
     }
   },
@@ -145,7 +145,7 @@ export const orderService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getRecent orders:', error);
+      console.error(' Erreur getRecent orders:', error);
       throw error;
     }
   },
@@ -159,7 +159,7 @@ export const orderService = {
       const response = await api.post(`/orders/${id}/quote`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur generateQuote order ${id}:`, error);
+      console.error(` Erreur generateQuote order ${id}:`, error);
       throw error;
     }
   },
@@ -174,7 +174,7 @@ export const orderService = {
       const response = await api.post(`/orders/${id}/cancel`, { reason });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur cancel order ${id}:`, error);
+      console.error(` Erreur cancel order ${id}:`, error);
       throw error;
     }
   }

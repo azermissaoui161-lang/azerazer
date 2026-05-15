@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { protect } = require('../middleware/authMiddleware');      // ✅ protect depuis authMiddleware
-const { authorize } = require('../middleware/roleMiddleware');    // ✅ authorize depuis roleMiddleware
+const { protect } = require('../middleware/authMiddleware');     
+const { authorize } = require('../middleware/roleMiddleware');    
 const {
   createOrder,
   getAllOrders,

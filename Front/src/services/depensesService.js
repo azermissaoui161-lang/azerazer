@@ -13,7 +13,7 @@ export const depensesService = {
       const response = await api.get('/depenses', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getAll depenses:', error);
+      console.error(' Erreur getAll depenses:', error);
       throw error;
     }
   },
@@ -31,7 +31,7 @@ export const depensesService = {
       const response = await api.get(`/depenses/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getById depense ${id}:`, error);
+      console.error(` Erreur getById depense ${id}:`, error);
       throw error;
     }
   },
@@ -67,7 +67,7 @@ export const depensesService = {
       const response = await api.post('/depenses', depenseData);
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur create depense:', error);
+      console.error(' Erreur create depense:', error);
       throw error;
     }
   },
@@ -91,7 +91,7 @@ export const depensesService = {
       const response = await api.put(`/depenses/${id}`, depenseData);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur update depense ${id}:`, error);
+      console.error(` Erreur update depense ${id}:`, error);
       throw error;
     }
   },
@@ -109,7 +109,7 @@ export const depensesService = {
       const response = await api.delete(`/depenses/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur delete depense ${id}:`, error);
+      console.error(` Erreur delete depense ${id}:`, error);
       throw error;
     }
   },
@@ -134,7 +134,7 @@ export const depensesService = {
       const response = await api.patch(`/depenses/${id}/pay`, paymentData);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur markAsPaid depense ${id}:`, error);
+      console.error(` Erreur markAsPaid depense ${id}:`, error);
       throw error;
     }
   },
@@ -158,7 +158,7 @@ export const depensesService = {
       const response = await api.patch(`/depenses/${id}/status`, { status });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur changeStatus depense ${id}:`, error);
+      console.error(` Erreur changeStatus depense ${id}:`, error);
       throw error;
     }
   },
@@ -174,7 +174,7 @@ export const depensesService = {
       const response = await api.get('/depenses/stats/summary', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getStats depenses:', error);
+      console.error(' Erreur getStats depenses:', error);
       throw error;
     }
   },
@@ -209,7 +209,7 @@ export const depensesService = {
       const response = await api.get('/depenses/stats/by-category', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getTotalByCategory depenses:', error);
+      console.error(' Erreur getTotalByCategory depenses:', error);
       throw error;
     }
   },
@@ -223,7 +223,7 @@ export const depensesService = {
       const response = await api.get('/depenses/overdue');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getOverdue depenses:', error);
+      console.error(' Erreur getOverdue depenses:', error);
       throw error;
     }
   },
@@ -258,7 +258,7 @@ export const depensesService = {
       
       return true;
     } catch (error) {
-      console.error('❌ Erreur exportToCSV depenses:', error);
+      console.error(' Erreur exportToCSV depenses:', error);
       throw error;
     }
   },
@@ -282,7 +282,7 @@ export const depensesService = {
       const response = await api.get('/depenses/search', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur search depenses:', error);
+      console.error(' Erreur search depenses:', error);
       throw error;
     }
   }

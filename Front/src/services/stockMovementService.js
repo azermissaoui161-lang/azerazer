@@ -14,7 +14,7 @@ const stockMovementService = {
       const response = await api.get('/stock', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getAll mouvements:', error);
+      console.error(' Erreur getAll mouvements:', error);
       throw error;
     }
   },
@@ -73,7 +73,7 @@ addExit: async (data) => {
       const response = await api.delete(`/stock/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur delete mouvement ${id}:`, error);
+      console.error(` Erreur delete mouvement ${id}:`, error);
       throw error;
     }
   },
@@ -90,7 +90,7 @@ addExit: async (data) => {
       const response = await api.get('/stock/stats', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getStats mouvements:', error);
+      console.error(' Erreur getStats mouvements:', error);
       throw error;
     }
   },
@@ -106,7 +106,7 @@ addExit: async (data) => {
       const response = await api.get(`/stock/product/${productId}`, { params });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getByProduct ${productId}:`, error);
+      console.error(` Erreur getByProduct ${productId}:`, error);
       throw error;
     }
   },
@@ -121,7 +121,7 @@ addExit: async (data) => {
       const response = await api.get('/stock/history', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getHistory:', error);
+      console.error(' Erreur getHistory:', error);
       throw error;
     }
   }

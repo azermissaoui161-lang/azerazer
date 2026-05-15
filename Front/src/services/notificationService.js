@@ -13,7 +13,7 @@ const notificationService = {
       const response = await api.get('/notifications', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getNotifications:', error);
+      console.error(' Erreur getNotifications:', error);
       throw error;
     }
   },
@@ -34,7 +34,7 @@ const notificationService = {
       const response = await api.get(`/notifications/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getById notification ${id}:`, error);
+      console.error(` Erreur getById notification ${id}:`, error);
       throw error;
     }
   },
@@ -50,7 +50,7 @@ const notificationService = {
       const response = await api.patch(`/notifications/${id}/read`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur markAsRead ${id}:`, error);
+      console.error(` Erreur markAsRead ${id}:`, error);
       throw error;
     }
   },
@@ -65,7 +65,7 @@ const notificationService = {
       const response = await api.patch(`/notifications/${id}/unread`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur markAsUnread ${id}:`, error);
+      console.error(` Erreur markAsUnread ${id}:`, error);
       throw error;
     }
   },
@@ -78,7 +78,7 @@ const notificationService = {
       const response = await api.patch('/notifications/read-all');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur markAllAsRead:', error);
+      console.error(' Erreur markAllAsRead:', error);
       throw error;
     }
   },
@@ -94,7 +94,7 @@ const notificationService = {
       const response = await api.delete(`/notifications/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur deleteNotification ${id}:`, error);
+      console.error(` Erreur deleteNotification ${id}:`, error);
       throw error;
     }
   },
@@ -107,7 +107,7 @@ const notificationService = {
       const response = await api.delete('/notifications');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur deleteAll:', error);
+      console.error(' Erreur deleteAll:', error);
       throw error;
     }
   },
@@ -121,7 +121,7 @@ const notificationService = {
       const response = await api.get('/notifications/unread-count');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getUnreadCount:', error);
+      console.error(' Erreur getUnreadCount:', error);
       throw error;
     }
   },
@@ -139,7 +139,7 @@ const notificationService = {
       });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getByType ${type}:`, error);
+      console.error(` Erreur getByType ${type}:`, error);
       throw error;
     }
   },
@@ -154,7 +154,7 @@ const notificationService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getUnread:', error);
+      console.error(' Erreur getUnread:', error);
       throw error;
     }
   },
@@ -169,7 +169,7 @@ const notificationService = {
       const response = await api.post('/notifications', notificationData);
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur create notification:', error);
+      console.error(' Erreur create notification:', error);
       throw error;
     }
   }

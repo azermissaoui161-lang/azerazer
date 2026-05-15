@@ -50,7 +50,7 @@ const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g,
  * @param {string} defaultMessage - Message par défaut
  */
 const handleError = (error, res, defaultMessage = 'Erreur serveur') => {
-  console.error(`❌ ${defaultMessage}:`, error);
+  console.error(` ${defaultMessage}:`, error);
   
   // En production, ne pas exposer les détails techniques
   const message = process.env.NODE_ENV === 'production' 
@@ -668,7 +668,7 @@ exports.validateOrder = async (req, res) => {
           await createNotification(
             req.user?._id, // L'admin connecté
             'stock_faible',
-            'Alerte: Stock Faible ⚠️',
+            'Alerte: Stock Faible ',
             `Le produit ${product.name} est faible (${currentStock}).`,
             { productId: product._id, stock: currentStock },
             'haute'
@@ -679,7 +679,7 @@ exports.validateOrder = async (req, res) => {
           await createNotification(
             req.user?._id,
             'produit_epuise', // Type Rupture
-            'Alerte: Seuil de Réappro ❌',
+            'Alerte: Seuil de Réappro ',
             `Le produit ${product.name} est à surveiller (${currentStock}).`,
             { productId: product._id, stock: currentStock },
             'moyenne'
@@ -692,7 +692,7 @@ exports.validateOrder = async (req, res) => {
     await createNotification(
       order.user,
       'commande_validee',
-      'Commande Validée ✅',
+      'Commande Validée ',
       `La commande #${order.orderNumber} a été confirmée.`,
       { orderId: order._id }
     );

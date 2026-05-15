@@ -6,7 +6,7 @@ const { authorize } = require('../middleware/roleMiddleware');
 const productController = require('../controllers/productController');
 
 // Vérification des fonctions disponibles dans le controller
-console.log('🔍 Vérification productController:');
+console.log(' Vérification productController:');
 const availableFunctions = Object.keys(productController);
 console.log('   Fonctions disponibles:', availableFunctions.join(', '));
 
@@ -14,9 +14,9 @@ console.log('   Fonctions disponibles:', availableFunctions.join(', '));
 const requiredFunctions = ['getAll', 'getOne', 'create', 'update', 'delete', 'updateStock', 'getLowStock', 'updateCategory', 'getStats'];
 requiredFunctions.forEach(func => {
   if (typeof productController[func] === 'function') {
-    console.log(`   ✅ ${func}`);
+    console.log(`    ${func}`);
   } else {
-    console.log(`   ❌ ${func} - MANQUANTE`);
+    console.log(`    ${func} - MANQUANTE`);
   }
 });
 
@@ -31,7 +31,7 @@ router.get('/test', (req, res) => {
 // Utilisation sécurisée avec vérification
 const safeHandler = (handler, name) => {
   if (typeof handler !== 'function') {
-    console.error(`❌ Erreur: ${name} n'est pas une fonction`);
+    console.error(` Erreur: ${name} n'est pas une fonction`);
     return (req, res) => res.status(500).json({ error: `Configuration error: ${name} missing` });
   }
   return handler;

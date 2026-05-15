@@ -11,7 +11,7 @@ const {
 } = require('../utils/mongoTransaction');
 
 /**
- * Formatter une catégorie 
+ * form catégorie front
  */
 const formatCategory = (category) => ({
   id: category._id,
@@ -44,20 +44,19 @@ exports.getAll = async (req, res) => {
     // filter de recherche
     const filter = {};
     if (search) {
-      filter.$or = [
+      filter.$or = [//comparison not =
         { name: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
       ];
     }
 
     // Pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
     
-    // Exécuter en parallèle
+    // get all + filter
     const [categories, total] = await Promise.all([
       Category.find(filter)
         .sort('name')
-        .skip(skip)
+        .skip(skip)// les page +
         .limit(parseInt(limit))
         .lean(),
       Category.countDocuments(filter)
@@ -66,8 +65,8 @@ exports.getAll = async (req, res) => {
     res.json({
       categories: categories.map(formatCategory),
       pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: parseInt(page), //mimite par page
+        limit: parseInt(limit),// limite 
         total,
         pages: Math.ceil(total / parseInt(limit))
       }
@@ -179,7 +178,7 @@ exports.create = async (req, res) => {
         errors: Object.values(error.errors).map(e => e.message)
       });
     }
-    if (error.code === 11000) { // Duplicate key
+    if (error.code === 11000) { //
       return res.status(400).json({ message: 'Une catégorie avec ce nom existe déjà' });
     }
     handleError(error, res, 'Erreur lors de la création de la catégorie');
@@ -307,13 +306,6 @@ exports.delete = async (req, res) => {
         message: 'Impossible de supprimer une catégorie qui contient des produits',
         productCount: category.productCount
       });
-      
-      // Option 2: Décommenter pour déplacer les produits vers "Non catégorisé"
-      // await Product.updateMany(
-      //   { category: category.name },
-      //   { $set: { category: 'Non catégorisé' } },
-      //   { session }
-      // );
     }
     
     // Vérifier si la catégorie est utilisée dans des produits archivés

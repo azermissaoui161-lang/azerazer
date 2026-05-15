@@ -8,7 +8,7 @@ export const moduleService = {
       const response = await api.get('/modules/base');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getBaseModules:', error);
+      console.error(' Erreur getBaseModules:', error);
       throw error;
     }
   },
@@ -19,12 +19,12 @@ export const moduleService = {
       const response = await api.get('/modules/custom');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getCustomModules:', error);
+      console.error(' Erreur getCustomModules:', error);
       throw error;
     }
   },
 
-  // ✅ VALIDATION RENFORCÉE pour activer/désactiver un module
+  //  VALIDATION RENFORCÉE pour activer/désactiver un module
   toggleModule: async (moduleId, active) => {
     try {
       // Validation de l'ID
@@ -55,7 +55,7 @@ export const moduleService = {
       const response = await api.patch(`/modules/${moduleId}/toggle`, data);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur toggleModule ${moduleId}:`, error);
+      console.error(` Erreur toggleModule ${moduleId}:`, error);
       throw error;
     }
   },
@@ -76,7 +76,7 @@ export const moduleService = {
       const response = await api.post('/modules/custom', moduleData);
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur createCustomModule:', error);
+      console.error(' Erreur createCustomModule:', error);
       throw error;
     }
   },

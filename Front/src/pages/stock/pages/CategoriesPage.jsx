@@ -18,7 +18,7 @@ import FormField from '../../../components/common/FormField'
 function CategoriesPage() {
   const navigate = useNavigate()
 
-  // Data
+  // Data 
   const [cat, setCat] = useState([])
   const [prod, setProd] = useState([])
   const [supp, setSupp] = useState([])
@@ -32,12 +32,12 @@ const [msg, setMsg] = useState(null)
   // Filters
   const [f, setF] = useState({ categorySearch: "" })
 
-  // Modals
+  // Modals por affiche
   const [modCategory, setModCategory] = useState(false)
   const [modCategoryProducts, setModCategoryProducts] = useState(false)
-  const [sc, setSc] = useState(null)
+  const [sc, setSc] = useState(null)  // cliquer sur le cat il affiche
 
-  // Form
+  // Form de modification 
   const [ec, setEc] = useState(null)
   const [cf, setCf] = useState({ name: "", code: "", description: "" })
   const [fe, setFe] = useState({})
@@ -45,19 +45,17 @@ const [msg, setMsg] = useState(null)
   // Load data
  const loadData = useCallback(async () => {
     try {
-      // قمنا بإضافة statsRes هنا ليتم تعيين نتائج categoryService.getStats() إليه
       const [categoryRes, productRes, supplierRes, statsRes] = await Promise.all([
         categoryService.getAll({ limit: 200 }),
         productService.getAll({ limit: 200 }),
         supplierService.getAll({ limit: 200 }),
         categoryService.getStats(),
       ]);
-
+// get resultat par service
       setCat(pickList(categoryRes, ['categories', 'data']).map(mapCategoryToUi));
       setProd(pickList(productRes, ['products', 'data']).map(mapProductToUi));
       setSupp(pickList(supplierRes, ['suppliers', 'data']).map(mapSupplierToUi));
       
-      // الآن statsRes معرفة ومتاحة هنا
       setStats(statsRes); 
     } catch (error) {
       console.error('CategoriesPage load error:', error);
@@ -73,7 +71,7 @@ const [msg, setMsg] = useState(null)
 
   const updateFilter = (k, v) => setF(prev => ({ ...prev, [k]: v }))
 
-  // Validation
+  // Validation obligatoire
   const vCat = useCallback(() => {
     const e = {}
     if (!cf.name.trim()) e.name = "Nom requis"; else if (cf.name.length > 50) e.name = "Max 50"
@@ -82,24 +80,24 @@ const [msg, setMsg] = useState(null)
     return e
   }, [cf])
 
-  // Reset
+  // formulaire ajouter ou modification
   const rCat = useCallback(() => {
     setCf({ name: "", code: "", description: "" })
     setEc(null)
     setFe({})
   }, [])
 
-  // Edit
+  // modification
   const hdlEditCat = (c) => {
     setEc(c)
     setCf({ name: c.name, code: c.code, description: c.description || "" })
     setModCategory(true)
   }
 
-  // CRUD Remote //  ajouter catégorie
-  const hdlAddCatRemote = async () => {     // validation 
-    const e = vCat(); 
-    if (Object.keys(e).length) return setFe(e)    // condition 
+  //  ajouter catégorie
+  const hdlAddCatRemote = async () => {     
+    const e = vCat(); // validation 
+    if (Object.keys(e).length) return setFe(e)   
     try {
       //créer catégorie
       await categoryService.create(
@@ -107,9 +105,9 @@ const [msg, setMsg] = useState(null)
           code: cf.code.trim(),
            description: cf.description.trim() })
 
-      await loadData()  //njbdou data m back end 
+      await loadData() 
       rCat(); // mise a jour ll liste
-      setModCategory(false) // ysaker el modl
+      setModCategory(false) 
     } 
     catch (error) {
       window.alert(extractApiErrorMessage(error, "Impossible d'ajouter la categorie"))
@@ -126,7 +124,8 @@ const [msg, setMsg] = useState(null)
            code: cf.code.trim(),
             description: cf.description.trim() })
       await loadData()
-      rCat(); setModCategory(false)
+      rCat();// supp forme
+       setModCategory(false)
     } catch (error) {
       window.alert(extractApiErrorMessage(error, "Impossible de modifier la categorie"))
     }

@@ -309,7 +309,7 @@ const getCustomerStats = async (req, res) => {
   }
 };
 
-// ✅ UN SEUL export à la fin avec TOUTES les fonctions
+// UN SEUL export à la fin avec TOUTES les fonctions
 module.exports = {
   createCustomer,
   getAllCustomers,

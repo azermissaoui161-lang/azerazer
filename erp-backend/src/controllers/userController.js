@@ -690,7 +690,6 @@ exports.toggleUserStatus = async (req, res) => {
     user.updatedAt = Date.now();  // mise a jour 
     await user.save();
     
-    // Journaliser
     await AuditLog.create({
       user: req.user._id,
       action: 'TOGGLE_STATUS',

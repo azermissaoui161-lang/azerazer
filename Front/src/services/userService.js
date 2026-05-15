@@ -13,7 +13,7 @@ const userService = {
       const response = await api.get('/users/profile');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getProfile:', error);
+      console.error(' Erreur getProfile:', error);
       throw error;
     }
   },
@@ -71,7 +71,7 @@ const userService = {
       
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur updateProfile:', error);
+      console.error(' Erreur updateProfile:', error);
       throw error;
     }
   },
@@ -101,7 +101,7 @@ const userService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur changePassword:', error);
+      console.error(' Erreur changePassword:', error);
       throw error;
     }
   },
@@ -120,7 +120,7 @@ const userService = {
       const response = await api.get(`/users/preferences/${module}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getPreferences ${module}:`, error);
+      console.error(` Erreur getPreferences ${module}:`, error);
       throw error;
     }
   },
@@ -143,7 +143,7 @@ const userService = {
       const response = await api.put(`/users/preferences/${module}`, preferences);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur updatePreferences ${module}:`, error);
+      console.error(` Erreur updatePreferences ${module}:`, error);
       throw error;
     }
   },
@@ -216,7 +216,7 @@ const userService = {
       const response = await api.get('/users', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getAllUsers:', error);
+      console.error(' Erreur getAllUsers:', error);
       throw error;
     }
   },
@@ -241,7 +241,7 @@ const userService = {
       const response = await api.get(`/users/${id}`);
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getUserById:', error);
+      console.error(' Erreur getUserById:', error);
       throw error;
     }
   },
@@ -285,7 +285,7 @@ const userService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur createUser:', error);
+      console.error(' Erreur createUser:', error);
       throw error;
     }
   },
@@ -311,7 +311,7 @@ const userService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur updateUser:', error);
+      console.error(' Erreur updateUser:', error);
       throw error;
     }
   },
@@ -327,7 +327,7 @@ const userService = {
       const response = await api.delete(`/users/${id}`);
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur deleteUser:', error);
+      console.error(' Erreur deleteUser:', error);
       throw error;
     }
   },
@@ -365,7 +365,7 @@ const userService = {
       const response = await api.post(`/users/${id}/reset-password`, { newPassword });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur resetUserPassword:', error);
+      console.error(' Erreur resetUserPassword:', error);
       throw error;
     }
   },
@@ -381,7 +381,7 @@ const userService = {
       const response = await api.get('/users/roles');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getRoles:', error);
+      console.error(' Erreur getRoles:', error);
       throw error;
     }
   },
@@ -397,7 +397,7 @@ const userService = {
       const response = await api.get(`/users/roles/${role}/permissions`);
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getPermissions:', error);
+      console.error(' Erreur getPermissions:', error);
       throw error;
     }
   },
@@ -413,7 +413,7 @@ const userService = {
       const response = await api.get('/users/stats');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getUserStats:', error);
+      console.error(' Erreur getUserStats:', error);
       throw error;
     }
   },
@@ -433,7 +433,7 @@ const userService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur searchUsers:', error);
+      console.error(' Erreur searchUsers:', error);
       throw error;
     }
   },
@@ -465,7 +465,7 @@ const userService = {
       
       return true;
     } catch (error) {
-      console.error('❌ Erreur exportUsers:', error);
+      console.error(' Erreur exportUsers:', error);
       throw error;
     }
   }

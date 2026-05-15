@@ -6,7 +6,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
 // Debug
-console.log('🔍 financeController chargé avec:', Object.keys(financeController));
+console.log('financeController chargé avec:', Object.keys(financeController));
 
 // Middleware d'authentification
 router.use(protect);

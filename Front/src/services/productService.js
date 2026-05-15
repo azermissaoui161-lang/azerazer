@@ -15,7 +15,7 @@ const productService = {
       const response = await api.get('/products', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getAll produits:', error);
+      console.error(' Erreur getAll produits:', error);
       throw error;
     }
   },
@@ -33,7 +33,7 @@ getProducts: async (params = {}) => {
       const response = await api.get(`/products/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getById produit ${id}:`, error);
+      console.error(` Erreur getById produit ${id}:`, error);
       throw error;
     }
   },
@@ -56,7 +56,7 @@ getProducts: async (params = {}) => {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur create produit:', error);
+      console.error(' Erreur create produit:', error);
       throw error;
     }
   },
@@ -80,7 +80,7 @@ getProducts: async (params = {}) => {
       });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur update produit ${id}:`, error);
+      console.error(` Erreur update produit ${id}:`, error);
       throw error;
     }
   },
@@ -95,7 +95,7 @@ getProducts: async (params = {}) => {
       const response = await api.delete(`/products/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur delete produit ${id}:`, error);
+      console.error(` Erreur delete produit ${id}:`, error);
       throw error;
     }
   },
@@ -114,7 +114,7 @@ getProducts: async (params = {}) => {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getLowStock:', error);
+      console.error(' Erreur getLowStock:', error);
       throw error;
     }
   },
@@ -137,7 +137,7 @@ getProducts: async (params = {}) => {
       });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur updateStock produit ${id}:`, error);
+      console.error(` Erreur updateStock produit ${id}:`, error);
       throw error;
     }
   },
@@ -151,7 +151,7 @@ getProducts: async (params = {}) => {
       const response = await api.get('/products/stats');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getStats produits:', error);
+      console.error(' Erreur getStats produits:', error);
       throw error;
     }
   },
@@ -170,7 +170,7 @@ getProducts: async (params = {}) => {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur updateCategory:', error);
+      console.error(' Erreur updateCategory:', error);
       throw error;
     }
   },
@@ -185,7 +185,7 @@ getProducts: async (params = {}) => {
       const response = await api.get('/products/search', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur search produits:', error);
+      console.error(' Erreur search produits:', error);
       throw error;
     }
   }

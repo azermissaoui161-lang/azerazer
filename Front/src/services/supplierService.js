@@ -14,7 +14,7 @@ const supplierService = {
       const response = await api.get('/suppliers', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getAll fournisseurs:', error);
+      console.error(' Erreur getAll fournisseurs:', error);
       throw error;
     }
   },
@@ -29,7 +29,7 @@ const supplierService = {
       const response = await api.get(`/suppliers/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getById fournisseur ${id}:`, error);
+      console.error(` Erreur getById fournisseur ${id}:`, error);
       throw error;
     }
   },
@@ -96,7 +96,7 @@ const supplierService = {
       const response = await api.delete(`/suppliers/${id}`); // envoyer demande mn backend
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur delete fournisseur ${id}:`, error);
+      console.error(` Erreur delete fournisseur ${id}:`, error);
       throw error; // envoyer erreur ll component , alert 
     }
   },
@@ -112,7 +112,7 @@ const supplierService = {
       const response = await api.get('/suppliers/stats');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getStats fournisseurs:', error);
+      console.error(' Erreur getStats fournisseurs:', error);
       throw error;
     }
   },
@@ -128,7 +128,7 @@ const supplierService = {
       const response = await api.get(`/suppliers/${id}/products`, { params });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getProducts fournisseur ${id}:`, error);
+      console.error(` Erreur getProducts fournisseur ${id}:`, error);
       throw error;
     }
   },
@@ -145,7 +145,7 @@ const supplierService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur search fournisseurs:', error);
+      console.error(' Erreur search fournisseurs:', error);
       throw error;
     }
   }

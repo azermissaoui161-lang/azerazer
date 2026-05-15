@@ -14,7 +14,7 @@ const categoryService = {
       const response = await api.get('/categories', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getAll catégories:', error);
+      console.error(' Erreur getAll catégories:', error);
       throw error;
     }
   },
@@ -34,7 +34,7 @@ const categoryService = {
       const response = await api.get(`/categories/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getById catégorie ${id}:`, error);
+      console.error(` Erreur getById catégorie ${id}:`, error);
       throw error;
     }
   },
@@ -63,9 +63,9 @@ const categoryService = {
       if (typeof categoryData.name !== 'string') {
         throw new Error('Le nom de la catégorie doit être une chaîne de caractères');
       }
-      const trimmedName = categoryData.name.trim();    // ynahy l'espace m loul w m le5er w ynadhem ***********
+      const trimmedName = categoryData.name.trim();    
 
-      const trimmedCode = typeof categoryData.code === 'string' ? categoryData.code.trim() : '';   // ynadhef men hajet e zeyda 'espace'
+      const trimmedCode = typeof categoryData.code === 'string' ? categoryData.code.trim() : '';   
 
       if (trimmedName.length === 0) {
         throw new Error('Le nom de la catégorie ne peut pas être vide');
@@ -177,7 +177,7 @@ const categoryService = {
       const response = await api.put(`/categories/${id}`, updatedData);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur update catégorie ${id}:`, error);
+      console.error(` Erreur update catégorie ${id}:`, error);
       throw error;
     }
   },
@@ -193,12 +193,11 @@ const categoryService = {
       if (!id) {
         throw new Error('ID de la catégorie requis');
       }
-// demande ll backend de supprimer
       const response = await api.delete(`/categories/${id}`);
       return response.data;
 
     } catch (error) {
-      console.error(`❌ Erreur delete catégorie ${id}:`, error);
+      console.error(` Erreur delete catégorie ${id}:`, error);
       throw error;
     }
   },
@@ -212,15 +211,15 @@ const categoryService = {
    */
   getProducts: async (id, params = {}) => {
     try {
-      // Validation de l'ID
       if (!id) {
         throw new Error('ID de la catégorie requis');
       }
-// yatina erreur a consol
+
       const response = await api.get(`/categories/${id}/products`, { params });
       return response.data;
+      
     } catch (error) {
-      console.error(`❌ Erreur getProducts catégorie ${id}:`, error);
+      console.error(` Erreur getProducts catégorie ${id}:`, error);
       throw error;
     }
   },
@@ -229,7 +228,7 @@ const categoryService = {
       const response = await api.get('/categories/stats');
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getStats:', error);
+      console.error(' Erreur getStats:', error);
       throw error;
     }
   },

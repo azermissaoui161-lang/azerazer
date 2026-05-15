@@ -49,7 +49,7 @@ const archiveSchema = new mongoose.Schema(
   }
 );
 
-// 🚀 Indexes (performance)
+//  Indexes (performance)
 archiveSchema.index({ invoiceNumber: 1 });
 archiveSchema.index({ archivedAt: -1 });
 archiveSchema.index({ invoiceId: 1 });

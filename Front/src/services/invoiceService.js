@@ -30,7 +30,7 @@ export const invoiceService = {
       const response = await api.get(`/invoices/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getById invoice ${id}:`, error);
+      console.error(` Erreur getById invoice ${id}:`, error);
       throw error;
     }
   },
@@ -60,7 +60,7 @@ export const invoiceService = {
       const response = await api.post('/invoices', invoiceData);
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur create invoice:', error);
+      console.error(' Erreur create invoice:', error);
       throw error;
     }
   },
@@ -87,7 +87,7 @@ export const invoiceService = {
       const response = await api.put(`/invoices/${id}`, invoiceData);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur update invoice ${id}:`, error);
+      console.error(` Erreur update invoice ${id}:`, error);
       throw error;
     }
   },
@@ -105,7 +105,7 @@ export const invoiceService = {
       const response = await api.delete(`/invoices/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur delete invoice ${id}:`, error);
+      console.error(` Erreur delete invoice ${id}:`, error);
       throw error;
     }
   },
@@ -124,7 +124,7 @@ export const invoiceService = {
       const response = await api.patch(`/invoices/${id}/validate`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur validate invoice ${id}:`, error);
+      console.error(` Erreur validate invoice ${id}:`, error);
       throw error;
     }
   },
@@ -156,7 +156,7 @@ export const invoiceService = {
       const response = await api.patch(`/invoices/${id}/pay`, paymentData);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur markAsPaid invoice ${id}:`, error);
+      console.error(` Erreur markAsPaid invoice ${id}:`, error);
       throw error;
     }
   },
@@ -180,7 +180,7 @@ export const invoiceService = {
       const response = await api.post(`/invoices/${id}/credit-note`, data);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur createCreditNote invoice ${id}:`, error);
+      console.error(` Erreur createCreditNote invoice ${id}:`, error);
       throw error;
     }
   },
@@ -219,7 +219,7 @@ export const invoiceService = {
         console.warn('PDF may have downloaded despite network error');
         return true;
       }
-      console.error(`❌ Erreur downloadPdf invoice ${id}:`, error);
+      console.error(` Erreur downloadPdf invoice ${id}:`, error);
       throw error;
     }
   },
@@ -246,7 +246,7 @@ export const invoiceService = {
       const response = await api.post(`/invoices/${id}/email`, { email });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur sendByEmail invoice ${id}:`, error);
+      console.error(` Erreur sendByEmail invoice ${id}:`, error);
       throw error;
     }
   },
@@ -270,7 +270,7 @@ export const invoiceService = {
       const response = await api.get('/invoices/search', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur search invoices:', error);
+      console.error(' Erreur search invoices:', error);
       throw error;
     }
   }

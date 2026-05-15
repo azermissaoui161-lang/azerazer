@@ -44,7 +44,7 @@ const formatTransaction = (transaction) => ({
  * Gérer les erreurs de manière sécurisée
  */
 const handleError = (error, res, defaultMessage = 'Erreur serveur') => {
-  console.error(`❌ ${defaultMessage}:`, error);
+  console.error(` ${defaultMessage}:`, error);
   const message = process.env.NODE_ENV === 'production' 
     ? defaultMessage 
     : error.message;
@@ -103,16 +103,34 @@ const validateEntries = async (entries) => {
 /**
  * Générer un numéro de transaction unique
  */
+/**
+ * Générer un numéro de transaction unique (Version Robuste)
+ */
 const generateTransactionNumber = async () => {
   const date = new Date();
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
-  const count = await Transaction.countDocuments({
-    transactionNumber: { $regex: `^ECR-${year}${month}` }
-  });
-  return `ECR-${year}${month}-${String(count + 1).padStart(6, '0')}`;
-};
+  const prefix = `ECR-${year}${month}-`;
 
+  // On cherche la transaction avec le numéro le plus élevé pour ce préfixe
+  const lastTransaction = await Transaction.findOne({
+    transactionNumber: { $regex: `^${prefix}` }
+  })
+  .sort({ transactionNumber: -1 }) // Tri décroissant (le plus grand en premier)
+  .lean();
+
+  let nextNumber = 1;
+  if (lastTransaction && lastTransaction.transactionNumber) {
+    // On récupère la partie numérique après le dernier tiret
+    const parts = lastTransaction.transactionNumber.split('-');
+    const lastSequence = parseInt(parts[parts.length - 1]);
+    if (!isNaN(lastSequence)) {
+      nextNumber = lastSequence + 1;
+    }
+  }
+
+  return `${prefix}${String(nextNumber).padStart(6, '0')}`;
+};
 // ===== POST /api/transactions =====
 exports.create = async (req, res) => {
   const session = await startOptionalSession();
@@ -728,14 +746,15 @@ exports.getTrialBalance = async (req, res) => {
 };
 
 // ===== GET /api/transactions/stats =====
+// ===== GET /api/transactions/stats =====
 exports.getStats = async (req, res) => {
   try {
     const { year = new Date().getFullYear() } = req.query;
+    const today = new Date();
 
     const stats = await Transaction.aggregate([
       {
         $match: {
-          status: 'validé',
           date: {
             $gte: new Date(`${year}-01-01`),
             $lte: new Date(`${year}-12-31`)
@@ -744,61 +763,79 @@ exports.getStats = async (req, res) => {
       },
       {
         $facet: {
-          monthly: [
+          // 1. Statistiques par Statut (Complétées, En attente, En retard)
+          byStatus: [
             {
-              $group: {
-                _id: { $month: '$date' },
-                count: { $sum: 1 },
-                totalDebit: { $sum: '$totalDebit' },
-                totalCredit: { $sum: '$totalCredit' }
+              $project: {
+                totalCredit: 1,
+                status: 1,
+                isOverdue: { 
+                  $and: [
+                    { $eq: ["$status", "brouillon"] }, // Toujours en brouillon
+                    { $lt: ["$date", today] }         // Et la date est passée
+                  ]
+                }
               }
             },
-            { $sort: { _id: 1 } }
-          ],
-          byAccountType: [
-            { $unwind: '$entries' },
-            {
-              $lookup: {
-                from: 'accounts',
-                localField: 'entries.account',
-                foreignField: '_id',
-                as: 'account'
-              }
-            },
-            { $unwind: '$account' },
             {
               $group: {
-                _id: '$account.type',
+                _id: {
+                  $cond: [
+                    { $eq: ["$isOverdue", true] }, "en_retard",
+                    { $cond: [{ $eq: ["$status", "validé"] }, "complete", "en_attente"] }
+                  ]
+                },
                 count: { $sum: 1 },
-                totalDebit: { $sum: '$entries.debit' },
-                totalCredit: { $sum: '$entries.credit' }
+                totalAmount: { $sum: "$totalCredit" }
               }
             }
           ],
-          totals: [
+          // 2. Totaux globaux
+          globalTotals: [
             {
               $group: {
                 _id: null,
                 totalTransactions: { $sum: 1 },
-                totalDebit: { $sum: '$totalDebit' },
-                totalCredit: { $sum: '$totalCredit' }
+                totalAmount: { $sum: "$totalCredit" }
               }
             }
+          ],
+          // 3. Ton graphique mensuel (gardé pour ton UI)
+          monthly: [
+            { $match: { status: "validé" } },
+            {
+              $group: {
+                _id: { $month: "$date" },
+                count: { $sum: 1 },
+                totalAmount: { $sum: "$totalCredit" }
+              }
+            },
+            { $sort: { "_id": 1 } }
           ]
         }
       }
     ]);
 
+    // Formatter la réponse pour qu'elle soit facile à utiliser en Front
+    const result = stats[0];
+    const statusData = result.byStatus.reduce((acc, curr) => {
+      acc[curr._id] = { count: curr.count, total: curr.totalAmount };
+      return acc;
+    }, { complete: {count:0, total:0}, en_attente: {count:0, total:0}, en_retard: {count:0, total:0} });
+
     res.json({
       success: true,
       data: {
         year: parseInt(year),
-        monthly: stats[0].monthly,
-        byAccountType: stats[0].byAccountType,
-        totals: stats[0].totals[0] || { totalTransactions: 0, totalDebit: 0, totalCredit: 0 }
+        summary: {
+          total: result.globalTotals[0] || { totalTransactions: 0, totalAmount: 0 },
+          complete: statusData.complete,
+          enAttente: statusData.en_attente,
+          enRetard: statusData.en_retard
+        },
+        monthly: result.monthly
       }
     });
-
   } catch (error) {
     handleError(error, res, 'Erreur lors de la récupération des statistiques');
   }

@@ -40,7 +40,7 @@ const isAdminFinance = (req, res, next) => {
   next();
 };
 
-// ✅ Fonction authorize ajoutée ici
+//  Fonction authorize ajoutée ici
 const authorize = (...roles) => {
     return (req, res, next) => {
         if (!req.user) {
@@ -61,7 +61,7 @@ const authorize = (...roles) => {
     };
 };
 
-// ✅ UN SEUL module.exports avec toutes les fonctions
+//  UN SEUL module.exports avec toutes les fonctions
 module.exports = {
   isAdminPrincipal,
   isAdminFacture,

@@ -85,7 +85,7 @@ const createInvoice = async (req, res) => {
         await createNotification(
           req.user.id,
           'stock_faible',
-          '⚠️ Stock faible',
+          ' Stock faible',
           `Le produit "${product.name}" a un stock critique (${product.currentStock})`,
           { productId: product._id, stock: product.currentStock }
         );
@@ -456,7 +456,7 @@ const validateInvoice = async (req, res) => {
     await createNotification(
       req.user.id,
       'facture_emise',
-      '📄 Nouvelle facture',
+      'Nouvelle facture',
       `La facture ${invoice.invoiceNumber} a été émise`,
       { invoiceId: invoice._id, invoiceNumber: invoice.invoiceNumber }
     );
@@ -672,7 +672,7 @@ const sendInvoiceEmail = async (req, res) => {
     const pdfBuffer = await PDFGenerator.generateInvoice(invoice, invoice.customer, invoice.items);
 
     // Ici, vous intégreriez l'envoi d'email avec nodemailer
-    console.log(`📧 Email envoyé à ${invoice.customer.email}`);
+    console.log(` Email envoyé à ${invoice.customer.email}`);
     console.log(`📎 Pièce jointe: facture-${invoice.invoiceNumber}.pdf`);
 
     // Mettre à jour le statut si nécessaire
@@ -825,7 +825,7 @@ const createCreditNote = async (req, res) => {
   }
 };
 
-// ✅ UN SEUL export à la fin avec TOUTES les fonctions
+// UN SEUL export à la fin avec TOUTES les fonctions
 module.exports = {
   createInvoice,
   getAllInvoices,

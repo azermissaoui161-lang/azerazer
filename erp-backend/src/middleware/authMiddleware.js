@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const protect = async (req, res, next) => {
-     console.log('🔵 PROTECT EXÉCUTÉ - req.url:', req.url);
+     console.log(' PROTECT EXÉCUTÉ - req.url:', req.url);
     console.log('   next est une fonction?', typeof next === 'function');
     try {
         let token;

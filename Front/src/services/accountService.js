@@ -14,7 +14,7 @@ export const accountService = {
       const response = await api.get('/accounts', { params });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur getAll accounts:', error);
+      console.error(' Erreur getAll accounts:', error);
       throw error;
     }
   },
@@ -35,7 +35,7 @@ export const accountService = {
       const response = await api.get(`/accounts/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getById account ${id}:`, error);
+      console.error(` Erreur getById account ${id}:`, error);
       throw error;
     }
   },
@@ -71,7 +71,7 @@ export const accountService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur create account:', error);
+      console.error(' Erreur create account:', error);
       throw error;
     }
   },
@@ -97,7 +97,7 @@ export const accountService = {
       });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur update account ${id}:`, error);
+      console.error(` Erreur update account ${id}:`, error);
       throw error;
     }
   },
@@ -112,7 +112,7 @@ export const accountService = {
       const response = await api.delete(`/accounts/${id}`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur delete account ${id}:`, error);
+      console.error(` Erreur delete account ${id}:`, error);
       throw error;
     }
   },
@@ -128,7 +128,7 @@ export const accountService = {
       const response = await api.get(`/accounts/${id}/balance`);
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getBalance account ${id}:`, error);
+      console.error(` Erreur getBalance account ${id}:`, error);
       throw error;
     }
   },
@@ -149,7 +149,7 @@ export const accountService = {
       });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur updateBalance account ${id}:`, error);
+      console.error(` Erreur updateBalance account ${id}:`, error);
       throw error;
     }
   },
@@ -166,7 +166,7 @@ export const accountService = {
       const response = await api.get(`/accounts/${id}/transactions`, { params });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getTransactions account ${id}:`, error);
+      console.error(` Erreur getTransactions account ${id}:`, error);
       throw error;
     }
   },
@@ -184,7 +184,7 @@ export const accountService = {
       });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getByType ${type}:`, error);
+      console.error(` Erreur getByType ${type}:`, error);
       throw error;
     }
   },
@@ -201,7 +201,7 @@ export const accountService = {
       });
       return response.data;
     } catch (error) {
-      console.error(`❌ Erreur getByStatus ${status}:`, error);
+      console.error(` Erreur getByStatus ${status}:`, error);
       throw error;
     }
   },
@@ -218,7 +218,7 @@ export const accountService = {
       });
       return response.data;
     } catch (error) {
-      console.error('❌ Erreur search accounts:', error);
+      console.error(' Erreur search accounts:', error);
       throw error;
     }
   },

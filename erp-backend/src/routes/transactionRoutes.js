@@ -6,7 +6,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
 // Debug
-console.log('🔍 transactionController chargé avec:', Object.keys(transactionController));
+console.log(' transactionController chargé avec:', Object.keys(transactionController));
 
 // Middleware d'authentification
 router.use(protect);

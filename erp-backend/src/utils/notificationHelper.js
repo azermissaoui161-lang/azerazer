@@ -10,7 +10,7 @@ const notifyLowStock = async (product, currentStock) => {
     await createNotification(
       user._id,
       'stock_faible',
-      '⚠️ Stock faible',
+      ' Stock faible',
       `Le produit "${product.name}" a un stock critique (${currentStock} unités)`,
       { productId: product._id, productName: product.name, stock: currentStock },
       'haute'
@@ -28,7 +28,7 @@ const notifyUnpaidInvoice = async (invoice) => {
     await createNotification(
       user._id,
       'facture_impayee',
-      '💰 Facture impayée',
+      ' Facture impayée',
       `La facture ${invoice.invoiceNumber} est impayée depuis le ${new Date(invoice.dueDate).toLocaleDateString()}`,
       { invoiceId: invoice._id, invoiceNumber: invoice.invoiceNumber, amount: invoice.total },
       'moyenne'

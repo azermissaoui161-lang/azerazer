@@ -6,7 +6,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
 // Debug
-console.log('🔍 stockMovementController chargé avec:', Object.keys(stockMovementController));
+console.log(' stockMovementController chargé avec:', Object.keys(stockMovementController));
 
 // Middleware d'authentification
 router.use(protect);

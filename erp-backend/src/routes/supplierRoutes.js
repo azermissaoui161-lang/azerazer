@@ -6,7 +6,7 @@ const { protect } = require('../middleware/authMiddleware');  // ← CORRECTION:
 const { authorize } = require('../middleware/roleMiddleware'); // ← CORRECTION: destructurer authorize
 
 // Debug
-console.log('🔍 supplierController chargé avec:', Object.keys(supplierController));
+console.log(' supplierController chargé avec:', Object.keys(supplierController));
 
 // Middleware d'authentification - CORRECTION: utiliser protect au lieu de authMiddleware
 router.use(protect);

@@ -6,7 +6,7 @@ const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 
 // Debug (optionnel)
-console.log('✅ categoryRoutes configuré avec:');
+console.log(' categoryRoutes configuré avec:');
 console.log('   - protect:', typeof protect === 'function' ? '✓' : '✗');
 console.log('   - authorize:', typeof authorize === 'function' ? '✓' : '✗');
 

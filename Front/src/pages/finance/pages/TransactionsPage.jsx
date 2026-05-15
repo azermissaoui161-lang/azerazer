@@ -14,7 +14,6 @@ const COLORS = {
   successBg: '#c6f6d5', warningBg: '#feebc8', dangerBg: '#fed7d7',
   mutedBg: '#edf2f7', defaultBg: '#e2e8f0'
 }
-
 const STATUS_CONFIG = {
   'complété': { color: COLORS.success, bg: COLORS.successBg },
   'en attente': { color: COLORS.warning, bg: COLORS.warningBg },
@@ -110,6 +109,8 @@ function TransactionsPage({ showNotif }) {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const initialAccount = searchParams.get('account') || 'tous'
+  const [serverStats, setServerStats] = useState(null);
+
   const notify = (msg, type) => { if (typeof showNotif === 'function') showNotif(msg, type); else if (type === 'error') window.alert(msg) }
 
   const [transactions, setTransactions] = useState([])
@@ -128,20 +129,26 @@ function TransactionsPage({ showNotif }) {
   const formatCurrency = (amount) => (amount || 0).toLocaleString('fr-FR', FORMAT_OPTIONS.currency)
   const formatDate = (d) => d ? new Date(d).toLocaleDateString('fr-FR', FORMAT_OPTIONS.date) : ''
 
-  const loadData = async () => {
-    try {
-      const [txRes, accRes] = await Promise.all([
-        transactionService.getAll({ limit: 200 }),
-        accountService.getAll({ limit: 200 }),
-      ])
-      setTransactions(pickList(txRes, ['data']).map(mapTransactionToUi))
-      setAccounts(pickList(accRes, ['data']).map(mapAccountToUi))
-    } catch (error) {
-      notify(extractApiErrorMessage(error, 'Impossible de charger les transactions'), 'error')
-    } finally {
-      setLoading(false)
+ const loadData = async () => {
+  try {
+    const [txRes, accRes, statsRes] = await Promise.all([
+      transactionService.getAll({ limit: 200 }),
+      accountService.getAll({ limit: 200 }),
+      transactionService.getStats() // Appel à ton endpoint backend
+    ])
+    
+    setTransactions(pickList(txRes, ['data']).map(mapTransactionToUi))
+    setAccounts(pickList(accRes, ['data']).map(mapAccountToUi))
+    
+    if (statsRes.success) {
+      setServerStats(statsRes.data); // On stocke les stats du controller
     }
+  } catch (error) {
+    notify(extractApiErrorMessage(error, 'Erreur de chargement'), 'error')
+  } finally {
+    setLoading(false)
   }
+}
 
   useEffect(() => { loadData() }, [])
 
@@ -281,6 +288,34 @@ function TransactionsPage({ showNotif }) {
 
   return (
     <div className="transactions-content">
+     {/* Section Statistiques provenant du Backend */}
+{serverStats && serverStats.summary && (
+  <div className="stats-summary-grid">
+    <div className="stat-card total">
+      <span className="stat-label">Total Transactions</span>
+      <span className="stat-value">{serverStats.summary.total.totalTransactions}</span>
+      <small>{serverStats.summary.total.totalAmount.toLocaleString()} TND</small>
+    </div>
+    
+    <div className="stat-card complete">
+      <span className="stat-label">Complétées</span>
+      <span className="stat-value text-success">{serverStats.summary.complete.count}</span>
+      <small>{serverStats.summary.complete.total.toLocaleString()} TND</small>
+    </div>
+
+    <div className="stat-card pending">
+      <span className="stat-label">En attente</span>
+      <span className="stat-value text-warning">{serverStats.summary.enAttente.count}</span>
+      <small>{serverStats.summary.enAttente.total.toLocaleString()} TND</small>
+    </div>
+
+    <div className="stat-card overdue">
+      <span className="stat-label">En retard</span>
+      <span className="stat-value text-danger">{serverStats.summary.enRetard.count}</span>
+      <small>{serverStats.summary.enRetard.total.toLocaleString()} TND</small>
+    </div>
+  </div>
+)}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '12px' }}>
         <button className="btn-primary" onClick={() => openModal('add')}>+ Nouvelle transaction</button>
       </div>
